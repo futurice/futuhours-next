@@ -3,7 +3,7 @@ module Main exposing (Model, Msg(..), init, main, update, view)
 import Browser
 import Html exposing (Html, div, h1, img, text)
 import Html.Attributes exposing (src)
-
+import Types as T
 
 
 ---- MODEL ----
