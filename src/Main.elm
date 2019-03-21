@@ -19,20 +19,20 @@ import Types as T
 type alias Model =
     { isMenuOpen : Bool
     , user : Maybe T.User
-    , hasError : Maybe String 
-    }   
+    , hasError : Maybe String
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { isMenuOpen = False 
+    ( { isMenuOpen = False
       , user = Nothing
       , hasError = Nothing
       }
     , Http.get
-        { url = "/api/v1/user/" 
-        , expect = Http.expectJson UserResponse T.userDecoder 
-        } 
+        { url = "/api/v1/user/"
+        , expect = Http.expectJson UserResponse T.userDecoder
+        }
     )
 
 
@@ -53,10 +53,10 @@ update msg model =
             ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
 
         UserResponse result ->
-            case result of 
+            case result of
                 Ok user ->
                     ( { model | user = Just user }, Cmd.none )
-                
+
                 Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
 
@@ -85,29 +85,30 @@ faIcon c =
 statGroup : Model -> Element Msg
 statGroup model =
     let
-        user = Maybe.withDefault T.emptyUser model.user
+        user =
+            Maybe.withDefault T.emptyUser model.user
     in
-        row
-            [ spacing 40
-            , centerX
-            , Font.color colors.darkText
+    row
+        [ spacing 40
+        , centerX
+        , Font.color colors.darkText
+        ]
+        [ row
+            []
+            [ faIcon "far fa-clock"
+            , text <| " " ++ String.fromFloat user.balance ++ " h"
             ]
-            [ row
-                []
-                [ faIcon "far fa-clock"
-                , text <| " " ++ String.fromFloat user.balance ++  " h"
-                ]
-            , row
-                []
-                [ faIcon "far fa-chart-bar"
-                , text <| " " ++ String.fromFloat user.utilizationRate ++ " %"
-                ]
-            , row
-                []
-                [ faIcon "far fa-sun"
-                , text <| " " ++ String.fromFloat user.holidaysLeft ++ " days"
-                ]
+        , row
+            []
+            [ faIcon "far fa-chart-bar"
+            , text <| " " ++ String.fromFloat user.utilizationRate ++ " %"
             ]
+        , row
+            []
+            [ faIcon "far fa-sun"
+            , text <| " " ++ String.fromFloat user.holidaysLeft ++ " days"
+            ]
+        ]
 
 
 avatarDrop : Model -> Element Msg
@@ -175,7 +176,7 @@ errorMsg error =
 mainLayout : Model -> Element Msg
 mainLayout model =
     let
-        errorElem = 
+        errorElem =
             case model.hasError of
                 Just err ->
                     errorMsg err
@@ -183,14 +184,14 @@ mainLayout model =
                 Nothing ->
                     none
     in
-    column
-        [ width fill
-        , height fill
-        , Element.inFront errorElem
-        ]
-        [ topBar model
-        , hoursList model
-        ]
+        column
+            [ width fill
+            , height fill
+            , Element.inFront errorElem
+            ]
+            [ topBar model
+            , hoursList model
+            ]
 
 
 view : Model -> Html Msg
