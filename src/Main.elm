@@ -8,6 +8,7 @@ import Element.Events as Event
 import Element.Font as Font
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
+import Http
 import Types as T
 
 
@@ -16,12 +17,23 @@ import Types as T
 
 
 type alias Model =
-    { isMenuOpen : Bool }
+    { isMenuOpen : Bool
+    , user : Maybe T.User
+    , hasError : Maybe String 
+    }   
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { isMenuOpen = False }, Cmd.none )
+    ( { isMenuOpen = False 
+      , user = Nothing
+      , hasError = Nothing
+      }
+    , Http.get
+        { url = "/api/v1/user/" 
+        , expect = Http.expectJson UserResponse T.userDecoder 
+        } 
+    )
 
 
 
@@ -30,6 +42,7 @@ init =
 
 type Msg
     = NoOp
+    | UserResponse (Result Http.Error T.User)
     | ToggleMenu
 
 
@@ -39,7 +52,15 @@ update msg model =
         ToggleMenu ->
             ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
 
-        NoOp ->
+        UserResponse result ->
+            case result of 
+                Ok user ->
+                    ( { model | user = Just user }, Cmd.none )
+                
+                Err err ->
+                    ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+        _ ->
             ( model, Cmd.none )
 
 
@@ -63,27 +84,30 @@ faIcon c =
 
 statGroup : Model -> Element Msg
 statGroup model =
-    row
-        [ spacing 40
-        , centerX
-        , Font.color colors.darkText
-        ]
-        [ row
-            []
-            [ faIcon "far fa-clock"
-            , text " -20 h"
+    let
+        user = Maybe.withDefault T.emptyUser model.user
+    in
+        row
+            [ spacing 40
+            , centerX
+            , Font.color colors.darkText
             ]
-        , row
-            []
-            [ faIcon "far fa-chart-bar"
-            , text " 0 %"
+            [ row
+                []
+                [ faIcon "far fa-clock"
+                , text <| " " ++ String.fromFloat user.balance ++  " h"
+                ]
+            , row
+                []
+                [ faIcon "far fa-chart-bar"
+                , text <| " " ++ String.fromFloat user.utilizationRate ++ " %"
+                ]
+            , row
+                []
+                [ faIcon "far fa-sun"
+                , text <| " " ++ String.fromFloat user.holidaysLeft ++ " days"
+                ]
             ]
-        , row
-            []
-            [ faIcon "far fa-sun"
-            , text " 6 days"
-            ]
-        ]
 
 
 avatarDrop : Model -> Element Msg
@@ -143,11 +167,26 @@ hoursList model =
         [ text "I'm the body " ]
 
 
+errorMsg : String -> Element Msg
+errorMsg error =
+    el [ centerX, centerY ] (text error)
+
+
 mainLayout : Model -> Element Msg
 mainLayout model =
+    let
+        errorElem = 
+            case model.hasError of
+                Just err ->
+                    errorMsg err
+
+                Nothing ->
+                    none
+    in
     column
         [ width fill
         , height fill
+        , Element.inFront errorElem
         ]
         [ topBar model
         , hoursList model

@@ -1,6 +1,8 @@
-module Types exposing (Day, Entry(..), EntryType(..), EntryUpdate(..), EntryUpdateResponse(..), HoursDay(..), HoursMonth(..), HoursResponse(..), Identifier, LatestEntry(..), Login, Month, NDTd, NDTh, Project(..), ReportableTask(..), User(..))
+module Types exposing (Day, Entry(..), EntryType(..), EntryUpdate(..), EntryUpdateResponse(..), HoursDay(..), HoursMonth(..), HoursResponse(..), Identifier, LatestEntry(..), Login, Month, NDTd, NDTh, Project(..), ReportableTask(..), User, emptyUser, userDecoder)
 
 import Dict exposing (Dict)
+import Json.Decode as Decode exposing (Decoder, field, float, string)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 
 
 type alias Identifier =
@@ -54,15 +56,36 @@ type LatestEntry
         }
 
 
-type User
-    = User
-        { firstName : String
-        , lastName : String
-        , balance : NDTh
-        , holidaysLeft : NDTd
-        , utilizationRate : Float
-        , profilePicture : String
-        }
+type alias User =
+    { firstName : String
+    , lastName : String
+    , balance : NDTh
+    , holidaysLeft : NDTd
+    , utilizationRate : Float
+    , profilePicture : String
+    }
+
+
+emptyUser : User
+emptyUser =
+    { firstName = ""
+    , lastName = ""
+    , balance = 0.0
+    , holidaysLeft = 0.0
+    , utilizationRate = 0.0
+    , profilePicture = ""
+    }
+
+
+userDecoder : Decoder User
+userDecoder =
+    Decode.succeed User
+        |> required "firstName" string
+        |> required "lastName" string
+        |> required "balance" float
+        |> required "holidaysLeft" float
+        |> required "utilizationRate" float
+        |> required "profilePicture" string
 
 
 type HoursResponse
