@@ -48,8 +48,8 @@ update msg model =
 
 
 colors =
-    { darkBlue = rgb255 0 54 67
-    , lightBlue = rgb255 227 236 236
+    { topBarBackground = rgb255 0 54 67
+    , bodyBackground = rgb255 227 236 236
     , darkText = rgb255 133 178 190
     , white = rgb 1 1 1
     , black = rgb 0 0 0
@@ -121,7 +121,7 @@ topBar model =
         , height <| px 70
         , paddingXY 50 20
         , spacing 20
-        , Background.color colors.darkBlue
+        , Background.color colors.topBarBackground
         , Font.color colors.white
         , Font.size 16
         ]
@@ -134,7 +134,7 @@ topBar model =
 hoursList : Model -> Element Msg
 hoursList model =
     row
-        [ Background.color colors.lightBlue
+        [ Background.color colors.bodyBackground
         , width fill
         , height fill
         , scrollbars
