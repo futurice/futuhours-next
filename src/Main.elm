@@ -113,30 +113,38 @@ statGroup model =
 
 avatarDrop : Model -> Element Msg
 avatarDrop model =
-    row
-        [ Event.onClick ToggleMenu
-        , Font.color colors.darkText
-        , spacing 10
-        ]
-        [ image
-            [ alignRight
-            , width <| px 40
-            , height <| px 40
-            , htmlAttribute <| style "clip-path" "circle(20px at center)"
+    let
+        img =
+            case model.user of
+                Just user ->
+                    user.profilePicture
+                Nothing ->
+                    ""
+    in
+        row
+            [ Event.onClick ToggleMenu
+            , Font.color colors.darkText
+            , spacing 10
             ]
-            { src = "https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.popjam.com%2Fsticker%2FDefault%2Favatar_kitten&f=1"
-            , description = "User profile image"
-            }
-        , el
-            [ if model.isMenuOpen then
-                rotate Basics.pi
+            [ image
+                [ alignRight
+                , width <| px 40
+                , height <| px 40
+                , htmlAttribute <| style "clip-path" "circle(20px at center)"
+                ]
+                { src = img
+                , description = "User profile image"
+                }
+            , el
+                [ if model.isMenuOpen then
+                    rotate Basics.pi
 
-              else
-                rotate 0
-            , Font.color colors.white
+                else
+                    rotate 0
+                , Font.color colors.white
+                ]
+                (html <| Html.i [ class "fa fa-angle-down" ] [])
             ]
-            (html <| Html.i [ class "fa fa-angle-down" ] [])
-        ]
 
 
 topBar : Model -> Element Msg
