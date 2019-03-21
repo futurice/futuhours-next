@@ -1,9 +1,12 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Element exposing (..)
+import Element.Font as Font
+import Element.Background as Background
+import Html exposing (Html)
 import Types as T
+
 
 
 ---- MODEL ----
@@ -34,13 +37,46 @@ update msg model =
 
 ---- VIEW ----
 
+topBar : Model -> Element Msg
+topBar model =
+    row 
+        [ width fill 
+        , height <| px 80
+        , padding 20
+        , Background.color <| rgb255 0 54 67
+        , Font.color <| rgb 1 1 1
+        ] 
+        [ text "FutuHours" ]
+
+
+hoursList : Model -> Element Msg
+hoursList model =
+    row 
+    [ Background.color <| rgb255 227 236 236
+    , width fill
+    , height fill
+    , scrollbars
+    , padding 20 
+    ] 
+    [ text "I'm the body " ]
+
+
+mainLayout : Model -> Element Msg
+mainLayout model =
+    column 
+        [ width fill 
+        , height fill 
+        ]
+        [ topBar model
+        , hoursList model
+        ]
+
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Your Elm App is working!" ]
-        ]
+    Element.layout 
+        [ Font.family [ Font.sansSerif ] ]
+        (mainLayout model)
 
 
 
