@@ -1,13 +1,13 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Html exposing (Html)
-import Html.Attributes exposing (style, class)
 import Element exposing (..)
-import Element.Events as Event
 import Element.Background as Background
-import Element.Font as Font
 import Element.Border as Border
+import Element.Events as Event
+import Element.Font as Font
+import Html exposing (Html)
+import Html.Attributes exposing (class, style)
 import Types as T
 
 
@@ -38,13 +38,23 @@ update msg model =
     case msg of
         ToggleMenu ->
             ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
-    
+
         NoOp ->
             ( model, Cmd.none )
 
 
 
 ---- VIEW ----
+
+
+colors =
+    { darkBlue = rgb255 0 54 67
+    , lightBlue = rgb255 227 236 236
+    , darkText = rgb255 133 178 190
+    , white = rgb 1 1 1
+    , black = rgb 0 0 0
+    }
+
 
 faIcon : String -> Element Msg
 faIcon c =
@@ -56,45 +66,50 @@ statGroup model =
     row
         [ spacing 40
         , centerX
-        , Font.color <| rgb255 133 178 190
+        , Font.color colors.darkText
         ]
-        [ row 
-            [] 
+        [ row
+            []
             [ faIcon "far fa-clock"
-            , (text " -20 h") 
+            , text " -20 h"
             ]
-        , row 
-            [] 
+        , row
+            []
             [ faIcon "far fa-chart-bar"
-            , (text " 0 %") 
+            , text " 0 %"
             ]
-        , row 
-            [] 
+        , row
+            []
             [ faIcon "far fa-sun"
-            , (text " 6 days") 
+            , text " 6 days"
             ]
         ]
 
 
 avatarDrop : Model -> Element Msg
 avatarDrop model =
-    row 
+    row
         [ Event.onClick ToggleMenu
-        , Font.color <| rgb 133 178 190
+        , Font.color colors.darkText
         , spacing 10
-        ] 
-        [ image 
+        ]
+        [ image
             [ alignRight
             , width <| px 40
             , height <| px 40
             , htmlAttribute <| style "clip-path" "circle(20px at center)"
-            ] 
-            { src = "https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.popjam.com%2Fsticker%2FDefault%2Favatar_kitten&f=1" 
-            , description = "User profile image" 
+            ]
+            { src = "https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.popjam.com%2Fsticker%2FDefault%2Favatar_kitten&f=1"
+            , description = "User profile image"
             }
-        , el 
-            [ if model.isMenuOpen then rotate Basics.pi else rotate 0 
-            , Font.color <| rgb 1 1 1 ] 
+        , el
+            [ if model.isMenuOpen then
+                rotate Basics.pi
+
+              else
+                rotate 0
+            , Font.color colors.white
+            ]
             (html <| Html.i [ class "fa fa-angle-down" ] [])
         ]
 
@@ -106,8 +121,8 @@ topBar model =
         , height <| px 70
         , paddingXY 50 20
         , spacing 20
-        , Background.color <| rgb255 0 54 67
-        , Font.color <| rgb 1 1 1
+        , Background.color colors.darkBlue
+        , Font.color colors.white
         , Font.size 16
         ]
         [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
@@ -119,7 +134,7 @@ topBar model =
 hoursList : Model -> Element Msg
 hoursList model =
     row
-        [ Background.color <| rgb255 227 236 236
+        [ Background.color colors.lightBlue
         , width fill
         , height fill
         , scrollbars
