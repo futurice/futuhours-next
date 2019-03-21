@@ -1,13 +1,13 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import Html exposing (Html)
 import Html.Attributes exposing (style, class)
 import Element exposing (..)
 import Element.Events as Event
 import Element.Background as Background
 import Element.Font as Font
 import Element.Border as Border
-import Html exposing (Html)
 import Types as T
 
 
@@ -46,23 +46,43 @@ update msg model =
 
 ---- VIEW ----
 
+faIcon : String -> Element Msg
+faIcon c =
+    html <| Html.i [ class c ] []
+
 
 statGroup : Model -> Element Msg
 statGroup model =
     row
         [ spacing 40
         , centerX
+        , Font.color <| rgb255 133 178 190
         ]
-        [ el [] (text "⏲ -20 h")
-        , el [] (text "📊 0 %")
-        , el [] (text "☀ 6 days")
+        [ row 
+            [] 
+            [ faIcon "far fa-clock"
+            , (text " -20 h") 
+            ]
+        , row 
+            [] 
+            [ faIcon "far fa-chart-bar"
+            , (text " 0 %") 
+            ]
+        , row 
+            [] 
+            [ faIcon "far fa-sun"
+            , (text " 6 days") 
+            ]
         ]
 
 
 avatarDrop : Model -> Element Msg
 avatarDrop model =
     row 
-        [ Event.onClick ToggleMenu ] 
+        [ Event.onClick ToggleMenu
+        , Font.color <| rgb 133 178 190
+        , spacing 10
+        ] 
         [ image 
             [ alignRight
             , width <| px 40
@@ -72,7 +92,10 @@ avatarDrop model =
             { src = "https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.popjam.com%2Fsticker%2FDefault%2Favatar_kitten&f=1" 
             , description = "User profile image" 
             }
-        , el [ if model.isMenuOpen then rotate Basics.pi else rotate 0 ] (text "🔻")
+        , el 
+            [ if model.isMenuOpen then rotate Basics.pi else rotate 0 
+            , Font.color <| rgb 1 1 1 ] 
+            (html <| Html.i [ class "fa fa-angle-down" ] [])
         ]
 
 
