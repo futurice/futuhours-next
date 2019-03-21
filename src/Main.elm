@@ -1,9 +1,12 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import Html.Attributes exposing (style, class)
 import Element exposing (..)
+import Element.Events as Event
 import Element.Background as Background
 import Element.Font as Font
+import Element.Border as Border
 import Html exposing (Html)
 import Types as T
 
@@ -13,12 +16,12 @@ import Types as T
 
 
 type alias Model =
-    {}
+    { isMenuOpen : Bool }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    ( { isMenuOpen = False }, Cmd.none )
 
 
 
@@ -27,11 +30,17 @@ init =
 
 type Msg
     = NoOp
+    | ToggleMenu
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        ToggleMenu ->
+            ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
+    
+        NoOp ->
+            ( model, Cmd.none )
 
 
 
@@ -52,7 +61,19 @@ statGroup model =
 
 avatarDrop : Model -> Element Msg
 avatarDrop model =
-    el [ alignRight ] (text "\u{1F913}")
+    row 
+        [ Event.onClick ToggleMenu ] 
+        [ image 
+            [ alignRight
+            , width <| px 40
+            , height <| px 40
+            , htmlAttribute <| style "clip-path" "circle(20px at center)"
+            ] 
+            { src = "https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.popjam.com%2Fsticker%2FDefault%2Favatar_kitten&f=1" 
+            , description = "User profile image" 
+            }
+        , el [ if model.isMenuOpen then rotate Basics.pi else rotate 0 ] (text "🔻")
+        ]
 
 
 topBar : Model -> Element Msg
