@@ -103,13 +103,14 @@ topBar : Model -> Element Msg
 topBar model =
     row
         [ width fill
-        , height <| px 80
+        , height <| px 70
         , paddingXY 50 20
         , spacing 20
         , Background.color <| rgb255 0 54 67
         , Font.color <| rgb 1 1 1
+        , Font.size 16
         ]
-        [ el [ alignLeft ] (text "FutuHours")
+        [ el [ alignLeft, Font.bold ] (text "FutuHours")
         , statGroup model
         , avatarDrop model
         ]
