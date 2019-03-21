@@ -110,7 +110,7 @@ topBar model =
         , Font.color <| rgb 1 1 1
         , Font.size 16
         ]
-        [ el [ alignLeft, Font.bold ] (text "FutuHours")
+        [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
         , statGroup model
         , avatarDrop model
         ]
