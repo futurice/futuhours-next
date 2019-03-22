@@ -79,6 +79,7 @@ colors =
     , darkText = rgb255 133 178 190
     , white = rgb 1 1 1
     , gray = rgb 0.5 0.5 0.5
+    , lightGray = rgb 0.75 0.75 0.75
     , black = rgb 0 0 0
     }
 
@@ -214,19 +215,32 @@ topBar model =
         ]
 
 
+dayRow : T.Day -> T.HoursDay -> Element Msg
+dayRow day hoursDay =
+    row
+        [ width fill
+        , paddingXY 20 25
+        , Font.size 16
+        , Border.shadow { offset = (2, 2), size = 1, blur = 3, color = colors.lightGray }
+        , Background.color colors.white
+        ]
+        [ text day
+        , el [ alignRight ] (text <| String.fromFloat hoursDay.hours) ]
+
+
 monthHeader : T.Month -> T.HoursMonth -> Element Msg
 monthHeader month hoursMonth =
     row
-        [ width fill 
-        , padding 10
+        [ width fill
+        , padding 20
         , Font.size 24
-        , Font.extraLight 
+        , Font.extraLight
         ]
         [ el [] (text month)
         , el [ alignRight ]
-            (row 
+            (row
                 [ spacing 10 ]
-                [ paragraph [] 
+                [ paragraph []
                     [ text <| String.fromFloat hoursMonth.hours
                     , text "/"
                     , text <| String.fromFloat hoursMonth.capacity
@@ -238,8 +252,21 @@ monthHeader month hoursMonth =
         ]
 
 
+monthColumn : T.Month -> T.HoursMonth -> Element Msg
+monthColumn month hoursMonth =
+    column
+        [ width fill ]
+        ([ monthHeader month hoursMonth ]
+            ++ (Dict.map dayRow hoursMonth.days |> Dict.values)
+        )
+
+
 hoursList : Model -> Element Msg
 hoursList model =
+    let 
+        days : Dict.Dict T.Day T.HoursDay
+        days = Dict.singleton "2018-03-01" { type_ = "IT", hours = 7.5, entries = [], closed = False }
+    in
     column
         [ Background.color colors.bodyBackground
         , width fill
@@ -247,7 +274,13 @@ hoursList model =
         , scrollbars
         , paddingXY 50 20
         ]
-        [ monthHeader "2018-03" { hours = 120, capacity = 157.5, utilizationRate = 0, days = Dict.empty } ]
+        [ monthColumn "2018-03"
+            { hours = 120
+            , capacity = 157.5
+            , utilizationRate = 0
+            , days = days
+            }
+        ]
 
 
 errorMsg : String -> Element Msg
