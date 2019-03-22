@@ -168,8 +168,8 @@ profileDropdown model =
             ]
             [ el [ Font.color colors.darkText, paddingXY 40 0 ] (text name)
             , el [ Border.widthEach { top = 0, left = 0, right = 0, bottom = 1 }, width fill ] none
-            , el [ paddingXY 40 0 ] <| link [] { url = "https://online.planmill.com/futurice/", label = (text "Planmill") }
-            , el [ paddingXY 40 0 ] <| link [] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = (text "Help") }
+            , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://online.planmill.com/futurice/", label = (text "Planmill") }
+            , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = (text "Help") }
             , el [ paddingXY 40 0 ] <| link [] { url = "https://login.futurice.com/?logout=true", label = (text "Logout") }
             ]
 
