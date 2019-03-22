@@ -1,4 +1,4 @@
-module Types exposing (Day, Entry(..), EntryType(..), EntryUpdate(..), EntryUpdateResponse(..), HoursDay(..), HoursMonth(..), HoursResponse(..), Identifier, LatestEntry(..), Login, Month, NDTd, NDTh, Project(..), ReportableTask(..), User, emptyUser, userDecoder)
+module Types exposing (Day, Entry(..), EntryType(..), EntryUpdate(..), EntryUpdateResponse(..), HoursDay(..), HoursMonth, HoursResponse(..), Identifier, LatestEntry(..), Login, Month, NDTd, NDTh, Project(..), ReportableTask(..), User, emptyUser, userDecoder)
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder, field, float, string)
@@ -97,13 +97,12 @@ type HoursResponse
         }
 
 
-type HoursMonth
-    = HoursMonth
-        { hours : NDTh
-        , capacity : NDTh
-        , utilizationRate : Float
-        , days : Dict Day HoursDay
-        }
+type alias HoursMonth = 
+    { hours : NDTh
+    , capacity : NDTh
+    , utilizationRate : Float
+    , days : Dict Day HoursDay
+    }
 
 
 type HoursDay

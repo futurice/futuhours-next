@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import Dict
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -213,16 +214,40 @@ topBar model =
         ]
 
 
+monthHeader : T.Month -> T.HoursMonth -> Element Msg
+monthHeader month hoursMonth =
+    row
+        [ width fill 
+        , padding 10
+        , Font.size 24
+        , Font.extraLight 
+        ]
+        [ el [] (text month)
+        , el [ alignRight ]
+            (row 
+                [ spacing 10 ]
+                [ paragraph [] 
+                    [ text <| String.fromFloat hoursMonth.hours
+                    , text "/"
+                    , text <| String.fromFloat hoursMonth.capacity
+                    ]
+                , el [] (faIcon "far fa-chart-bar")
+                , paragraph [] [ text <| String.fromFloat hoursMonth.utilizationRate, text "%" ]
+                ]
+            )
+        ]
+
+
 hoursList : Model -> Element Msg
 hoursList model =
-    row
+    column
         [ Background.color colors.bodyBackground
         , width fill
         , height fill
         , scrollbars
-        , padding 20
+        , paddingXY 50 20
         ]
-        [ text "I'm the body " ]
+        [ monthHeader "2018-03" { hours = 120, capacity = 157.5, utilizationRate = 0, days = Dict.empty } ]
 
 
 errorMsg : String -> Element Msg
