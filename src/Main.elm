@@ -147,7 +147,7 @@ avatarDrop model =
                 rotate 0
             , Font.color colors.white
             ]
-            (html <| Html.i [ class "fa fa-angle-down" ] [])
+            (faIcon "fa fa-angle-down")
         ]
 
 
