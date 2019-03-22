@@ -93,24 +93,25 @@ statGroup model =
         user =
             Maybe.withDefault T.emptyUser model.user
 
-        statElement icon value label = 
+        statElement icon value label =
             row [ spacing 10 ]
-                [ el [] (faIcon icon) 
+                [ el [] (faIcon icon)
                 , text <| String.fromFloat value
-                , text label 
+                , text label
                 ]
     in
-        row
-            [ spacing 40
-            , centerX
-            , Font.color colors.darkText
-            ]
-            [ statElement "far fa-clock" user.balance "h"
-            , text "|"
-            , statElement "far fa-chart-bar" user.utilizationRate "%"
-            , text "|"
-            , statElement "far fa-sun" user.holidaysLeft "days"
-            ]
+    row
+        [ spacing 40
+        , centerX
+        , Font.color colors.darkText
+        , Font.size 18
+        ]
+        [ statElement "far fa-clock" user.balance "h"
+        , text "|"
+        , statElement "far fa-chart-bar" user.utilizationRate "%"
+        , text "|"
+        , statElement "far fa-sun" user.holidaysLeft "days"
+        ]
 
 
 avatarDrop : Model -> Element Msg
@@ -120,79 +121,90 @@ avatarDrop model =
             case model.user of
                 Just user ->
                     user.profilePicture
+
                 Nothing ->
                     ""
     in
-        row
-            [ Event.onClick ToggleMenu
-            , Font.color colors.darkText
-            , spacing 10
+    row
+        [ Event.onClick ToggleMenu
+        , Font.color colors.darkText
+        , spacing 10
+        ]
+        [ image
+            [ alignRight
+            , width <| px 40
+            , height <| px 40
+            , htmlAttribute <| style "clip-path" "circle(20px at center)"
             ]
-            [ image
-                [ alignRight
-                , width <| px 40
-                , height <| px 40
-                , htmlAttribute <| style "clip-path" "circle(20px at center)"
-                ]
-                { src = img
-                , description = "User profile image"
-                }
-            , el
-                [ if model.isMenuOpen then
-                    rotate Basics.pi
+            { src = img
+            , description = "User profile image"
+            }
+        , el
+            [ if model.isMenuOpen then
+                rotate Basics.pi
 
-                else
-                    rotate 0
-                , Font.color colors.white
-                ]
-                (html <| Html.i [ class "fa fa-angle-down" ] [])
+              else
+                rotate 0
+            , Font.color colors.white
             ]
+            (html <| Html.i [ class "fa fa-angle-down" ] [])
+        ]
 
 
 profileDropdown : Model -> Element Msg
 profileDropdown model =
     let
-        name = case model.user of
-            Just user ->
-                user.firstName
-            Nothing ->
-                "Noname"
+        name =
+            case model.user of
+                Just user ->
+                    user.firstName
+
+                Nothing ->
+                    "Noname"
     in
-        column
-            [ alignRight
-            , paddingXY 0 20
-            , spacing 20
-            , moveLeft 40
-            , Font.color colors.white
-            , Background.color colors.topBarBackground
-            ]
-            [ el [ Font.color colors.darkText, paddingXY 40 0 ] (text name)
-            , el [ Border.widthEach { top = 0, left = 0, right = 0, bottom = 1 }, width fill ] none
-            , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://online.planmill.com/futurice/", label = (text "Planmill") }
-            , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = (text "Help") }
-            , el [ paddingXY 40 0 ] <| link [] { url = "https://login.futurice.com/?logout=true", label = (text "Logout") }
-            ]
+    column
+        [ alignRight
+        , paddingXY 0 30
+        , spacing 20
+        , moveLeft 40
+        , Font.color colors.white
+        , Font.light
+        , Font.size 16
+        , Background.color colors.topBarBackground
+        ]
+        [ el [ Font.color colors.darkText, paddingXY 40 0 ] (text name)
+        , el [ Border.widthEach { top = 0, left = 0, right = 0, bottom = 1 }, width fill ] none
+        , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://online.planmill.com/futurice/", label = text "Planmill" }
+        , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = text "Help" }
+        , el [ paddingXY 40 0 ] <| newTabLink [] { url = "https://hours-api.app.futurice.com/debug/users", label = text "Debug: users" }
+        , el [ paddingXY 40 0 ] <| link [] { url = "https://login.futurice.com/?logout=true", label = text "Logout" }
+        ]
 
 
 topBar : Model -> Element Msg
 topBar model =
     let
-        dropdown = if model.isMenuOpen then profileDropdown model else none
+        dropdown =
+            if model.isMenuOpen then
+                profileDropdown model
+
+            else
+                none
     in
-        row
-            [ width fill
-            , height <| px 70
-            , paddingXY 50 20
-            , spacing 20
-            , Background.color colors.topBarBackground
-            , Font.color colors.white
-            , Font.size 16
-            , below dropdown
-            ]
-            [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
-            , statGroup model
-            , avatarDrop model
-            ]
+    row
+        [ width fill
+        , height <| px 70
+        , paddingXY 50 20
+        , spacing 20
+        , Background.color colors.topBarBackground
+        , Font.color colors.white
+        , Font.size 16
+        , below dropdown
+        ]
+        [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
+        , statGroup model
+        , avatarDrop model
+        ]
 
 
 hoursList : Model -> Element Msg
@@ -210,21 +222,21 @@ hoursList model =
 errorMsg : String -> Element Msg
 errorMsg error =
     let
-        closeButton = 
+        closeButton =
             el [ Event.onClick CloseError, paddingXY 4 3 ] (faIcon "fa fa-times")
     in
-        el  
-            [ centerX
-            , centerY
-            , padding 20
-            , Border.solid
-            , Border.width 2
-            , Border.rounded 10
-            , Border.shadow { offset = (4, 4), size = 1, blur = 5, color = colors.gray }
-            , Background.color colors.white
-            , behindContent closeButton
-            ] 
-            (text <| "FutuHours encountered an error: " ++ error)
+    el
+        [ centerX
+        , centerY
+        , padding 20
+        , Border.solid
+        , Border.width 2
+        , Border.rounded 10
+        , Border.shadow { offset = ( 4, 4 ), size = 1, blur = 5, color = colors.gray }
+        , Background.color colors.white
+        , behindContent closeButton
+        ]
+        (text <| "FutuHours encountered an error: " ++ error)
 
 
 mainLayout : Model -> Element Msg
@@ -238,14 +250,14 @@ mainLayout model =
                 Nothing ->
                     none
     in
-        column
-            [ width fill
-            , height fill
-            , Element.inFront errorElem
-            ]
-            [ topBar model
-            , hoursList model
-            ]
+    column
+        [ width fill
+        , height fill
+        , Element.inFront errorElem
+        ]
+        [ topBar model
+        , hoursList model
+        ]
 
 
 view : Model -> Html Msg
