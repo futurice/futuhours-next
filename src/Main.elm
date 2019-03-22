@@ -251,7 +251,7 @@ mainLayout model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Font.family [ Font.sansSerif ] ]
+        [ Font.family [ Font.typeface "Work Sans", Font.sansSerif ] ]
         (mainLayout model)
 
 
