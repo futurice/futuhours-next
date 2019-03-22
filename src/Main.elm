@@ -11,7 +11,9 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Http
 import Types as T
-
+import Iso8601 as Date
+import Time
+import Util
 
 
 ---- MODEL ----
@@ -224,7 +226,7 @@ dayRow day hoursDay =
         , Border.shadow { offset = (2, 2), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
         ]
-        [ text day
+        [ text (Util.formatDate day)
         , el [ alignRight ] (text <| String.fromFloat hoursDay.hours) ]
 
 
@@ -236,7 +238,7 @@ monthHeader month hoursMonth =
         , Font.size 24
         , Font.extraLight
         ]
-        [ el [] (text month)
+        [ el [] (text <| Util.formatMonth month)
         , el [ alignRight ]
             (row
                 [ spacing 10 ]
