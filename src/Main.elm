@@ -149,21 +149,50 @@ avatarDrop model =
             ]
 
 
+profileDropdown : Model -> Element Msg
+profileDropdown model =
+    let
+        name = case model.user of
+            Just user ->
+                user.firstName
+            Nothing ->
+                "Noname"
+    in
+        column
+            [ alignRight
+            , paddingXY 0 20
+            , spacing 20
+            , moveLeft 40
+            , Font.color colors.white
+            , Background.color colors.topBarBackground
+            ]
+            [ el [ Font.color colors.darkText, paddingXY 40 0 ] (text name)
+            , el [ Border.widthEach { top = 0, left = 0, right = 0, bottom = 1 }, width fill ] none
+            , el [ paddingXY 40 0 ] <| link [] { url = "https://online.planmill.com/futurice/", label = (text "Planmill") }
+            , el [ paddingXY 40 0 ] <| link [] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = (text "Help") }
+            , el [ paddingXY 40 0 ] <| link [] { url = "https://login.futurice.com/?logout=true", label = (text "Logout") }
+            ]
+
+
 topBar : Model -> Element Msg
 topBar model =
-    row
-        [ width fill
-        , height <| px 70
-        , paddingXY 50 20
-        , spacing 20
-        , Background.color colors.topBarBackground
-        , Font.color colors.white
-        , Font.size 16
-        ]
-        [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
-        , statGroup model
-        , avatarDrop model
-        ]
+    let
+        dropdown = if model.isMenuOpen then profileDropdown model else none
+    in
+        row
+            [ width fill
+            , height <| px 70
+            , paddingXY 50 20
+            , spacing 20
+            , Background.color colors.topBarBackground
+            , Font.color colors.white
+            , Font.size 16
+            , below dropdown
+            ]
+            [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
+            , statGroup model
+            , avatarDrop model
+            ]
 
 
 hoursList : Model -> Element Msg
