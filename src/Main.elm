@@ -42,6 +42,7 @@ init =
 
 type Msg
     = NoOp
+    | CloseError
     | UserResponse (Result Http.Error T.User)
     | ToggleMenu
 
@@ -49,6 +50,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        CloseError ->
+            ( { model | hasError = Nothing }, Cmd.none )
+
         ToggleMenu ->
             ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
 
@@ -73,6 +77,7 @@ colors =
     , bodyBackground = rgb255 227 236 236
     , darkText = rgb255 133 178 190
     , white = rgb 1 1 1
+    , gray = rgb 0.5 0.5 0.5
     , black = rgb 0 0 0
     }
 
@@ -95,17 +100,17 @@ statGroup model =
                 , text label 
                 ]
     in
-    row
-        [ spacing 40
-        , centerX
-        , Font.color colors.darkText
-        ]
-        [ statElement "far fa-clock" user.balance "h"
-        , text "|"
-        , statElement "far fa-chart-bar" user.utilizationRate "%"
-        , text "|"
-        , statElement "far fa-sun" user.holidaysLeft "days"
-        ]
+        row
+            [ spacing 40
+            , centerX
+            , Font.color colors.darkText
+            ]
+            [ statElement "far fa-clock" user.balance "h"
+            , text "|"
+            , statElement "far fa-chart-bar" user.utilizationRate "%"
+            , text "|"
+            , statElement "far fa-sun" user.holidaysLeft "days"
+            ]
 
 
 avatarDrop : Model -> Element Msg
@@ -175,7 +180,22 @@ hoursList model =
 
 errorMsg : String -> Element Msg
 errorMsg error =
-    el [ centerX, centerY ] (text error)
+    let
+        closeButton = 
+            el [ Event.onClick CloseError, paddingXY 4 3 ] (faIcon "fa fa-times")
+    in
+        el  
+            [ centerX
+            , centerY
+            , padding 20
+            , Border.solid
+            , Border.width 2
+            , Border.rounded 10
+            , Border.shadow { offset = (4, 4), size = 1, blur = 5, color = colors.gray }
+            , Background.color colors.white
+            , behindContent closeButton
+            ] 
+            (text <| "FutuHours encountered an error: " ++ error)
 
 
 mainLayout : Model -> Element Msg
