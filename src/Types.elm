@@ -1,4 +1,24 @@
-module Types exposing (Day, Entry(..), EntryType(..), EntryUpdate(..), EntryUpdateResponse(..), HoursDay(..), HoursMonth, HoursResponse(..), Identifier, LatestEntry(..), Login, Month, NDTd, NDTh, Project(..), ReportableTask(..), User, emptyUser, userDecoder)
+module Types exposing
+    ( Day
+    , Entry
+    , EntryType
+    , EntryUpdate
+    , EntryUpdateResponse
+    , HoursDay
+    , HoursMonth
+    , HoursResponse
+    , Identifier
+    , LatestEntry
+    , Login
+    , Month
+    , NDTd
+    , NDTh
+    , Project
+    , ReportableTask
+    , User
+    , emptyUser
+    , userDecoder
+    )
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder, field, float, string)
@@ -29,31 +49,28 @@ type alias Login =
     String
 
 
-type Project
-    = Project
-        { id : Identifier
-        , name : String
-        , tasks : List ReportableTask
-        , closed : Bool
-        }
+type alias Project =
+    { id : Identifier
+    , name : String
+    , tasks : List ReportableTask
+    , closed : Bool
+    }
 
 
-type ReportableTask
-    = ReportableTask
-        { id : Identifier
-        , name : String
-        , closed : Bool
-        , latestEntry : LatestEntry
-        , hoursRemaining : NDTh
-        }
+type alias ReportableTask =
+    { id : Identifier
+    , name : String
+    , closed : Bool
+    , latestEntry : LatestEntry
+    , hoursRemaining : NDTh
+    }
 
 
-type LatestEntry
-    = LatestEntry
-        { description : String
-        , date : Day
-        , hours : NDTh
-        }
+type alias LatestEntry =
+    { description : String
+    , date : Day
+    , hours : NDTh
+    }
 
 
 type alias User =
@@ -88,16 +105,15 @@ userDecoder =
         |> required "profilePicture" string
 
 
-type HoursResponse
-    = HoursResponse
-        { defaultWorkHours : NDTh
-        , reportableProjects : List Project
-        , markedProjects : List Project
-        , months : Dict Month HoursMonth
-        }
+type alias HoursResponse =
+    { defaultWorkHours : NDTh
+    , reportableProjects : List Project
+    , markedProjects : List Project
+    , months : Dict Month HoursMonth
+    }
 
 
-type alias HoursMonth = 
+type alias HoursMonth =
     { hours : NDTh
     , capacity : NDTh
     , utilizationRate : Float
@@ -105,26 +121,24 @@ type alias HoursMonth =
     }
 
 
-type HoursDay
-    = HoursDay
-        { type_ : String
-        , hours : NDTh
-        , entries : List Entry
-        , closed : Bool
-        }
+type alias HoursDay =
+    { type_ : String
+    , hours : NDTh
+    , entries : List Entry
+    , closed : Bool
+    }
 
 
-type Entry
-    = Entry
-        { id : Identifier
-        , projectId : Identifier
-        , taskId : Identifier
-        , day : Day
-        , description : String
-        , closed : Bool
-        , hours : NDTh
-        , billably : EntryType
-        }
+type alias Entry =
+    { id : Identifier
+    , projectId : Identifier
+    , taskId : Identifier
+    , day : Day
+    , description : String
+    , closed : Bool
+    , hours : NDTh
+    , billably : EntryType
+    }
 
 
 type EntryType
@@ -133,19 +147,17 @@ type EntryType
     | Absence
 
 
-type EntryUpdateResponse
-    = EntryUpdateResponse
-        { user : User
-        , hours : HoursResponse
-        }
+type alias EntryUpdateResponse =
+    { user : User
+    , hours : HoursResponse
+    }
 
 
-type EntryUpdate
-    = EntryUpdate
-        { taskId : Identifier
-        , projectId : Identifier
-        , description : String
-        , date : Day
-        , hours : NDTh
-        , closed : Bool
-        }
+type alias EntryUpdate =
+    { taskId : Identifier
+    , projectId : Identifier
+    , description : String
+    , date : Day
+    , hours : NDTh
+    , closed : Bool
+    }
