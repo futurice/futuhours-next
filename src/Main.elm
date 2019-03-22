@@ -87,27 +87,24 @@ statGroup model =
     let
         user =
             Maybe.withDefault T.emptyUser model.user
+
+        statElement icon value label = 
+            row [ spacing 10 ]
+                [ el [] (faIcon icon) 
+                , text <| String.fromFloat value
+                , text label 
+                ]
     in
     row
         [ spacing 40
         , centerX
         , Font.color colors.darkText
         ]
-        [ row
-            []
-            [ faIcon "far fa-clock"
-            , text <| " " ++ String.fromFloat user.balance ++ " h"
-            ]
-        , row
-            []
-            [ faIcon "far fa-chart-bar"
-            , text <| " " ++ String.fromFloat user.utilizationRate ++ " %"
-            ]
-        , row
-            []
-            [ faIcon "far fa-sun"
-            , text <| " " ++ String.fromFloat user.holidaysLeft ++ " days"
-            ]
+        [ statElement "far fa-clock" user.balance "h"
+        , text "|"
+        , statElement "far fa-chart-bar" user.utilizationRate "%"
+        , text "|"
+        , statElement "far fa-sun" user.holidaysLeft "days"
         ]
 
 
