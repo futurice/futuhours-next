@@ -217,16 +217,41 @@ topBar model =
         ]
 
 
+entryRow : T.Entry -> Element Msg
+entryRow entry =
+    row
+        [ spaceEvenly
+        , width fill
+        , Font.color colors.gray
+        ]
+        [ text "7.5"
+        , text "IT Infra and Services"
+        , text "IT Development Work"
+        , text "futuhours-next" 
+        ]
+
+
+entryColumn : List T.Entry -> Element Msg
+entryColumn entries =
+    column
+        [ centerX
+        , width fill
+        ]
+        (List.map entryRow entries)
+
+
 dayRow : T.Day -> T.HoursDay -> Element Msg
 dayRow day hoursDay =
     row
         [ width fill
         , paddingXY 20 25
+        , spacing 50
         , Font.size 16
         , Border.shadow { offset = (2, 2), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
         ]
         [ text (Util.formatDate day)
+        , entryColumn hoursDay.entries
         , el [ alignRight ] (text <| String.fromFloat hoursDay.hours) ]
 
 
@@ -267,7 +292,7 @@ hoursList : Model -> Element Msg
 hoursList model =
     let 
         days : Dict.Dict T.Day T.HoursDay
-        days = Dict.singleton "2018-03-01" { type_ = "IT", hours = 7.5, entries = [], closed = False }
+        days = Dict.singleton "2018-03-01" { type_ = "IT", hours = 7.5, entries = [ T.emptyEntry ], closed = False }
     in
     column
         [ Background.color colors.bodyBackground

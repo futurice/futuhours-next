@@ -16,6 +16,7 @@ module Types exposing
     , Project
     , ReportableTask
     , User
+    , emptyEntry
     , emptyUser
     , userDecoder
     )
@@ -140,6 +141,17 @@ type alias Entry =
     , billably : EntryType
     }
 
+emptyEntry : Entry
+emptyEntry =
+    { id = 1 
+    , projectId = 1 
+    , taskId = 1 
+    , day = "2019-03-01"
+    , description = "did stuff"
+    , closed = False 
+    , hours = 7.5
+    , billably = Billable
+    }
 
 type EntryType
     = Billable
