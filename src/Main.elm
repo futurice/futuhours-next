@@ -335,9 +335,6 @@ monthColumn model month hoursMonth =
 hoursList : Model -> Element Msg
 hoursList model =
     let 
-        days : Dict.Dict T.Day T.HoursDay
-        days = Dict.singleton "2018-03-01" { type_ = T.Normal, hours = 7.5, entries = [ T.emptyEntry ], closed = False }
-
         months = model.hours
             |> Maybe.map (.months)
             |> Maybe.withDefault Dict.empty
@@ -350,13 +347,6 @@ hoursList model =
         , paddingXY 50 20
         ]
         (Dict.map (monthColumn model) months |> Dict.values)
-        -- [ monthColumn "2018-03"
-        --     { hours = 120
-        --     , capacity = 157.5
-        --     , utilizationRate = 0
-        --     , days = days
-        --     }
-        -- ]
 
 
 errorMsg : String -> Element Msg
