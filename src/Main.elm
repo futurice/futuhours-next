@@ -10,11 +10,12 @@ import Element.Font as Font
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Http
-import Types as T
 import Iso8601 as Date
 import Task
 import Time
+import Types as T
 import Util
+
 
 
 ---- API ----
@@ -31,13 +32,17 @@ fetchUser =
 fetchHours : Time.Posix -> Time.Posix -> Cmd Msg
 fetchHours start end =
     let
-        startISO = String.left 10 <| Date.fromTime start
-        endISO = String.left 10 <| Date.fromTime end
+        startISO =
+            String.left 10 <| Date.fromTime start
+
+        endISO =
+            String.left 10 <| Date.fromTime end
     in
-        Http.get
-            { url = "/api/v1/hours?start-date=" ++ startISO ++"&end-date=" ++ endISO
-            , expect = Http.expectJson HoursResponse T.hoursResponseDecoder 
-            }
+    Http.get
+        { url = "/api/v1/hours?start-date=" ++ startISO ++ "&end-date=" ++ endISO
+        , expect = Http.expectJson HoursResponse T.hoursResponseDecoder
+        }
+
 
 
 ---- MODEL ----
@@ -57,9 +62,12 @@ type alias Model =
 init : Int -> ( Model, Cmd Msg )
 init now =
     let
-        today = Time.millisToPosix now
-        thirtyDaysAgo = Time.millisToPosix <| now - 2592000000
-    in    
+        today =
+            Time.millisToPosix now
+
+        thirtyDaysAgo =
+            Time.millisToPosix <| now - 2592000000
+    in
     ( { isMenuOpen = False
       , user = Nothing
       , hours = Nothing
@@ -68,7 +76,7 @@ init now =
       , hasError = Nothing
       , today = today
       }
-    , Cmd.batch 
+    , Cmd.batch
         [ fetchUser
         , fetchHours thirtyDaysAgo today
         ]
@@ -105,11 +113,11 @@ update msg model =
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
 
         HoursResponse result ->
-            case result of 
+            case result of
                 Ok hours ->
-                    ( { model | hours = Just hours }, Cmd.none )
-                
-                Err err -> 
+                    ( { model | hours = Just hours, projectNames = Just <| T.hoursToProjectDict hours }, Cmd.none )
+
+                Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
 
         _ ->
@@ -262,15 +270,21 @@ topBar model =
         ]
 
 
-entryRow : T.Entry -> Element Msg
-entryRow entry =
+entryRow : Model -> T.Entry -> Element Msg
+entryRow model entry =
+    let
+        projectName =
+            model.projectNames
+                |> Maybe.andThen (\names -> Dict.get entry.projectId names)
+                |> Maybe.withDefault "PROJECT NOT FOUND"
+    in
     row
         [ spacing 75
         , width fill
         , Font.color colors.gray
         ]
         [ text <| String.fromFloat entry.hours
-        , text <| String.fromInt entry.projectId
+        , text projectName
         , text <| String.fromInt entry.taskId
         , text entry.description
         ]
@@ -282,7 +296,7 @@ entryColumn model entries =
         [ centerX
         , width fill
         ]
-        (List.map (entryRow) entries)
+        (List.map (entryRow model) entries)
 
 
 dayRow : Model -> T.Day -> T.HoursDay -> Element Msg
@@ -292,12 +306,12 @@ dayRow model day hoursDay =
         , paddingXY 20 25
         , spacing 75
         , Font.size 16
-        , Border.shadow { offset = (2, 2), size = 1, blur = 3, color = colors.lightGray }
+        , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
         ]
         [ text (Util.formatDate day)
         , entryColumn model hoursDay.entries
-        , el [ alignRight ] (text <| String.fromFloat hoursDay.hours) 
+        , el [ alignRight ] (text <| String.fromFloat hoursDay.hours)
         ]
 
 
@@ -328,27 +342,29 @@ monthHeader month hoursMonth =
 monthColumn : Model -> T.Month -> T.HoursMonth -> Element Msg
 monthColumn model month hoursMonth =
     let
-        days = hoursMonth.days
-            |> Dict.toList
-            |> List.sortBy (\(k, _) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k )
-            |> List.reverse
+        days =
+            hoursMonth.days
+                |> Dict.toList
+                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
+                |> List.reverse
     in
     column
         [ width fill ]
         ([ monthHeader month hoursMonth ]
-            ++ (List.map (\(d, hd) -> dayRow model d hd) days)
+            ++ List.map (\( d, hd ) -> dayRow model d hd) days
         )
 
 
 hoursList : Model -> Element Msg
 hoursList model =
-    let 
-        months = model.hours
-            |> Maybe.map (.months)
-            |> Maybe.withDefault Dict.empty
-            |> Dict.toList
-            |> List.sortBy (\(k, _) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k )
-            |> List.reverse
+    let
+        months =
+            model.hours
+                |> Maybe.map .months
+                |> Maybe.withDefault Dict.empty
+                |> Dict.toList
+                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
+                |> List.reverse
     in
     column
         [ Background.color colors.bodyBackground
@@ -357,7 +373,7 @@ hoursList model =
         , scrollbars
         , paddingXY 50 20
         ]
-        (List.map (\(m, hm) -> monthColumn model m hm) months)
+        (List.map (\( m, hm ) -> monthColumn model m hm) months)
 
 
 errorMsg : String -> Element Msg

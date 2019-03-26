@@ -129,6 +129,19 @@ hoursResponseDecoder =
         |> required "months" (dict hoursMonthDecoder)
 
 
+hoursToProjectDict : HoursResponse -> Dict Identifier String
+hoursToProjectDict hours =
+    let
+        toDict tasks =
+            List.map (\t -> (t.id, t.name)) tasks
+                |> Dict.fromList
+        
+        reportable = toDict hours.reportableProjects
+        marked = toDict hours.markedProjects
+    in
+        Dict.union marked reportable
+
+
 type alias HoursMonth =
     { hours : NDTh
     , capacity : NDTh
