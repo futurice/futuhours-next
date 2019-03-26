@@ -3,6 +3,7 @@ module Util exposing (..)
 import Time exposing (Month(..), Weekday(..))
 import Iso8601 as Date
 import Types as T
+import Parser
 
 toEnglishMonth : Time.Month -> String
 toEnglishMonth month =
@@ -42,9 +43,11 @@ formatMonth : T.Month -> String
 formatMonth month =
     case Date.toTime <| month ++ "-01" of
         Ok posix ->
-            (toEnglishMonth <| Time.toMonth Time.utc posix) ++ " " ++ (String.fromInt <| Time.toYear Time.utc posix)
+            (toEnglishMonth <| Time.toMonth Time.utc posix) 
+                ++ " " 
+                ++ (String.fromInt <| Time.toYear Time.utc posix)
         Err debug ->
-            Debug.toString debug
+            Parser.deadEndsToString debug
 
 
 toEnglishWeekday : Time.Weekday -> String
@@ -69,4 +72,4 @@ formatDate day =
                 ++ "." 
                 ++ (Time.toMonth Time.utc posix |> monthToInt |> String.fromInt)
         Err debug ->
-            Debug.toString debug
+            Parser.deadEndsToString debug
