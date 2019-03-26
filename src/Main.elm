@@ -12,8 +12,32 @@ import Html.Attributes exposing (class, style)
 import Http
 import Types as T
 import Iso8601 as Date
+import Task
 import Time
 import Util
+
+
+---- API ----
+
+
+fetchUser : Cmd Msg
+fetchUser =
+    Http.get
+        { url = "/api/v1/user/"
+        , expect = Http.expectJson UserResponse T.userDecoder
+        }
+
+
+fetchHours : Time.Posix -> Time.Posix -> Cmd Msg
+fetchHours start end =
+    let
+        startISO = String.left 10 <| Date.fromTime start
+        endISO = String.left 10 <| Date.fromTime end
+    in
+        Http.get
+            { url = "/api/v1/hours?start-date=" ++ startISO ++"&end-date=" ++ endISO
+            , expect = Http.expectJson HoursResponse T.hoursResponseDecoder 
+            }
 
 
 ---- MODEL ----
@@ -29,8 +53,12 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Int -> ( Model, Cmd Msg )
+init now =
+    let
+        today = Time.millisToPosix now
+        thirtyDaysAgo = Time.millisToPosix <| now - 2592000000
+    in    
     ( { isMenuOpen = False
       , user = Nothing
       , hours = Nothing
@@ -39,14 +67,8 @@ init =
       , hasError = Nothing
       }
     , Cmd.batch 
-        [ Http.get
-            { url = "/api/v1/user/"
-            , expect = Http.expectJson UserResponse T.userDecoder
-            }
-        , Http.get 
-            { url = "/api/v1/hours?start-date=2019-03-01&end-date=2019-03-31"
-            , expect = Http.expectJson HoursResponse T.hoursResponseDecoder
-            }
+        [ fetchUser
+        , fetchHours thirtyDaysAgo today
         ]
     )
 
@@ -389,11 +411,11 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program () Model Msg
+main : Program Int Model Msg
 main =
     Browser.element
         { view = view
-        , init = \_ -> init
+        , init = \now -> init now
         , update = update
         , subscriptions = always Sub.none
         }
