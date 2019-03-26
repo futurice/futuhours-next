@@ -1,7 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Dict
+import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -23,6 +23,8 @@ type alias Model =
     { isMenuOpen : Bool
     , user : Maybe T.User
     , hours : Maybe T.HoursResponse
+    , projectNames : Maybe (Dict T.Identifier String)
+    , taskNames : Maybe (Dict T.Identifier String)
     , hasError : Maybe String
     }
 
@@ -32,6 +34,8 @@ init =
     ( { isMenuOpen = False
       , user = Nothing
       , hours = Nothing
+      , projectNames = Nothing
+      , taskNames = Nothing
       , hasError = Nothing
       }
     , Cmd.batch 
@@ -241,24 +245,24 @@ entryRow entry =
         , width fill
         , Font.color colors.gray
         ]
-        [ text "7.5"
-        , text "IT Infra and Services"
-        , text "IT Development Work"
-        , text "futuhours-next" 
+        [ text <| String.fromFloat entry.hours
+        , text <| String.fromInt entry.projectId
+        , text <| String.fromInt entry.taskId
+        , text entry.description
         ]
 
 
-entryColumn : List T.Entry -> Element Msg
-entryColumn entries =
+entryColumn : Model -> List T.Entry -> Element Msg
+entryColumn model entries =
     column
         [ centerX
         , width fill
         ]
-        (List.map entryRow entries)
+        (List.map (entryRow) entries)
 
 
-dayRow : T.Day -> T.HoursDay -> Element Msg
-dayRow day hoursDay =
+dayRow : Model -> T.Day -> T.HoursDay -> Element Msg
+dayRow model day hoursDay =
     row
         [ width fill
         , paddingXY 20 25
@@ -268,8 +272,9 @@ dayRow day hoursDay =
         , Background.color colors.white
         ]
         [ text (Util.formatDate day)
-        , entryColumn hoursDay.entries
-        , el [ alignRight ] (text <| String.fromFloat hoursDay.hours) ]
+        , entryColumn model hoursDay.entries
+        , el [ alignRight ] (text <| String.fromFloat hoursDay.hours) 
+        ]
 
 
 monthHeader : T.Month -> T.HoursMonth -> Element Msg
@@ -296,12 +301,12 @@ monthHeader month hoursMonth =
         ]
 
 
-monthColumn : T.Month -> T.HoursMonth -> Element Msg
-monthColumn month hoursMonth =
+monthColumn : Model -> T.Month -> T.HoursMonth -> Element Msg
+monthColumn model month hoursMonth =
     column
         [ width fill ]
         ([ monthHeader month hoursMonth ]
-            ++ (Dict.map dayRow hoursMonth.days |> Dict.values)
+            ++ (Dict.map (dayRow model) hoursMonth.days |> Dict.values)
         )
 
 
@@ -310,6 +315,10 @@ hoursList model =
     let 
         days : Dict.Dict T.Day T.HoursDay
         days = Dict.singleton "2018-03-01" { type_ = T.Normal, hours = 7.5, entries = [ T.emptyEntry ], closed = False }
+
+        months = model.hours
+            |> Maybe.map (.months)
+            |> Maybe.withDefault Dict.empty
     in
     column
         [ Background.color colors.bodyBackground
@@ -318,13 +327,14 @@ hoursList model =
         , scrollbars
         , paddingXY 50 20
         ]
-        [ monthColumn "2018-03"
-            { hours = 120
-            , capacity = 157.5
-            , utilizationRate = 0
-            , days = days
-            }
-        ]
+        (Dict.map (monthColumn model) months |> Dict.values)
+        -- [ monthColumn "2018-03"
+        --     { hours = 120
+        --     , capacity = 157.5
+        --     , utilizationRate = 0
+        --     , days = days
+        --     }
+        -- ]
 
 
 errorMsg : String -> Element Msg
