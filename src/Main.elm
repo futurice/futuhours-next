@@ -325,10 +325,16 @@ monthHeader month hoursMonth =
 
 monthColumn : Model -> T.Month -> T.HoursMonth -> Element Msg
 monthColumn model month hoursMonth =
+    let
+        days = hoursMonth.days
+            |> Dict.toList
+            |> List.sortBy (\(k, _) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k )
+            |> List.reverse
+    in
     column
         [ width fill ]
         ([ monthHeader month hoursMonth ]
-            ++ (Dict.map (dayRow model) hoursMonth.days |> Dict.values)
+            ++ (List.map (\(d, hd) -> dayRow model d hd) days)
         )
 
 
@@ -338,6 +344,9 @@ hoursList model =
         months = model.hours
             |> Maybe.map (.months)
             |> Maybe.withDefault Dict.empty
+            |> Dict.toList
+            |> List.sortBy (\(k, _) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k )
+            |> List.reverse
     in
     column
         [ Background.color colors.bodyBackground
@@ -346,7 +355,7 @@ hoursList model =
         , scrollbars
         , paddingXY 50 20
         ]
-        (Dict.map (monthColumn model) months |> Dict.values)
+        (List.map (\(m, hm) -> monthColumn model m hm) months)
 
 
 errorMsg : String -> Element Msg
