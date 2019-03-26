@@ -22,6 +22,7 @@ import Util
 type alias Model =
     { isMenuOpen : Bool
     , user : Maybe T.User
+    , hours : Maybe T.HoursResponse
     , hasError : Maybe String
     }
 
@@ -30,12 +31,19 @@ init : ( Model, Cmd Msg )
 init =
     ( { isMenuOpen = False
       , user = Nothing
+      , hours = Nothing
       , hasError = Nothing
       }
-    , Http.get
-        { url = "/api/v1/user/"
-        , expect = Http.expectJson UserResponse T.userDecoder
-        }
+    , Cmd.batch 
+        [ Http.get
+            { url = "/api/v1/user/"
+            , expect = Http.expectJson UserResponse T.userDecoder
+            }
+        , Http.get 
+            { url = "/api/v1/hours?start-date=2019-03-01&end-date=2019-03-31"
+            , expect = Http.expectJson HoursResponse T.hoursResponseDecoder
+            }
+        ]
     )
 
 
@@ -47,6 +55,7 @@ type Msg
     = NoOp
     | CloseError
     | UserResponse (Result Http.Error T.User)
+    | HoursResponse (Result Http.Error T.HoursResponse)
     | ToggleMenu
 
 
@@ -65,6 +74,14 @@ update msg model =
                     ( { model | user = Just user }, Cmd.none )
 
                 Err err ->
+                    ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+        HoursResponse result ->
+            case result of 
+                Ok hours ->
+                    ( { model | hours = Just hours }, Cmd.none )
+                
+                Err err -> 
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
 
         _ ->
@@ -292,7 +309,7 @@ hoursList : Model -> Element Msg
 hoursList model =
     let 
         days : Dict.Dict T.Day T.HoursDay
-        days = Dict.singleton "2018-03-01" { type_ = "IT", hours = 7.5, entries = [ T.emptyEntry ], closed = False }
+        days = Dict.singleton "2018-03-01" { type_ = T.Normal, hours = 7.5, entries = [ T.emptyEntry ], closed = False }
     in
     column
         [ Background.color colors.bodyBackground
@@ -327,7 +344,7 @@ errorMsg error =
         , Background.color colors.white
         , behindContent closeButton
         ]
-        (text <| "FutuHours encountered an error: " ++ error)
+        (paragraph [] [ text "FutuHours encountered an error: ", text error ])
 
 
 mainLayout : Model -> Element Msg
