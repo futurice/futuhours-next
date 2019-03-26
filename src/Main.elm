@@ -319,7 +319,7 @@ dayRow model day hoursDay =
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
         ]
-        [ text (Util.formatDate day)
+        [ el [ width <| px 50 ] (text (Util.formatDate day))
         , entryColumn model hoursDay.entries
         , el [ alignRight ] (text <| String.fromFloat hoursDay.hours)
         ]
