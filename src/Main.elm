@@ -220,7 +220,7 @@ topBar model =
 entryRow : T.Entry -> Element Msg
 entryRow entry =
     row
-        [ spaceEvenly
+        [ spacing 75
         , width fill
         , Font.color colors.gray
         ]
@@ -245,7 +245,7 @@ dayRow day hoursDay =
     row
         [ width fill
         , paddingXY 20 25
-        , spacing 50
+        , spacing 75
         , Font.size 16
         , Border.shadow { offset = (2, 2), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
