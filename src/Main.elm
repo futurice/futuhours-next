@@ -50,6 +50,7 @@ type alias Model =
     , projectNames : Maybe (Dict T.Identifier String)
     , taskNames : Maybe (Dict T.Identifier String)
     , hasError : Maybe String
+    , today : Time.Posix
     }
 
 
@@ -65,6 +66,7 @@ init now =
       , projectNames = Nothing
       , taskNames = Nothing
       , hasError = Nothing
+      , today = today
       }
     , Cmd.batch 
         [ fetchUser
