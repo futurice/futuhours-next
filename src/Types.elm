@@ -132,14 +132,29 @@ hoursResponseDecoder =
 hoursToProjectDict : HoursResponse -> Dict Identifier String
 hoursToProjectDict hours =
     let
-        toDict tasks =
-            List.map (\t -> (t.id, t.name)) tasks
+        toDict projects =
+            List.map (\t -> (t.id, t.name)) projects
                 |> Dict.fromList
         
         reportable = toDict hours.reportableProjects
         marked = toDict hours.markedProjects
     in
         Dict.union marked reportable
+
+
+hoursToTaskDict : HoursResponse -> Dict Identifier String
+hoursToTaskDict hours =
+    let
+        toTasks projects = 
+            List.map .tasks projects
+                |> List.foldl (++) []
+                |> List.map (\t -> (t.id, t.name))
+                
+        reportableTasks = toTasks hours.reportableProjects
+        markedTasks = toTasks hours.markedProjects
+    in
+        (reportableTasks ++ markedTasks)
+            |> Dict.fromList
 
 
 type alias HoursMonth =

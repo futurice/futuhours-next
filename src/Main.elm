@@ -115,7 +115,12 @@ update msg model =
         HoursResponse result ->
             case result of
                 Ok hours ->
-                    ( { model | hours = Just hours, projectNames = Just <| T.hoursToProjectDict hours }, Cmd.none )
+                    ( { model 
+                      | hours = Just hours
+                      , projectNames = Just <| T.hoursToProjectDict hours 
+                      , taskNames = Just <| T.hoursToTaskDict hours 
+                      }
+                    , Cmd.none )
 
                 Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
@@ -277,6 +282,11 @@ entryRow model entry =
             model.projectNames
                 |> Maybe.andThen (\names -> Dict.get entry.projectId names)
                 |> Maybe.withDefault "PROJECT NOT FOUND"
+
+        taskName =
+            model.taskNames
+                |> Maybe.andThen (\names -> Dict.get entry.taskId names)
+                |> Maybe.withDefault "TASK NOT FOUND"
     in
     row
         [ spacing 75
@@ -285,7 +295,7 @@ entryRow model entry =
         ]
         [ text <| String.fromFloat entry.hours
         , text projectName
-        , text <| String.fromInt entry.taskId
+        , text taskName
         , text entry.description
         ]
 
