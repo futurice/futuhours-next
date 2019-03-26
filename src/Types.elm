@@ -29,23 +29,17 @@ type alias Login =
     String
 
 
-type Project task =
-    Project
-        { id : Identifier
-        , name : String
-        , tasks : List task
-        , closed : Bool
-        }
-
-
-mkProject : Identifier -> String -> List task -> Bool -> Project task
-mkProject id name tasks closed =
-    Project { id = id, name = name, tasks = tasks, closed = closed }
+type alias Project task =
+    { id : Identifier
+    , name : String
+    , tasks : List task
+    , closed : Bool
+    }
 
 
 projectDecoder : Decoder task -> Decoder (Project task)
 projectDecoder taskDecoder =
-    Decode.succeed mkProject
+    Decode.succeed Project
         |> required "id" int
         |> required "name" string
         |> required "tasks" (list taskDecoder)
