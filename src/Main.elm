@@ -1,6 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import Browser.Events
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
@@ -44,14 +45,19 @@ fetchHours start end =
         }
 
 
+
 ---- SUBSCRIPTIONS ----
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Browser.Events.onResize WindowResize ]
+
 
 
 ---- MODEL ----
+
 
 type alias Flags =
     { now : Int
@@ -62,9 +68,26 @@ type alias Flags =
 
 type alias Window =
     { width : Int
-    , height : Int 
+    , height : Int
     , device : Device
     }
+
+
+isMobile : Window -> Bool
+isMobile win =
+    let
+        device =
+            win.device
+    in
+    case ( device.class, device.orientation ) of
+        ( Phone, _ ) ->
+            True
+
+        ( Tablet, Portrait ) ->
+            True
+
+        _ ->
+            False
 
 
 type alias Model =
@@ -137,15 +160,26 @@ update msg model =
         HoursResponse result ->
             case result of
                 Ok hours ->
-                    ( { model 
-                      | hours = Just hours
-                      , projectNames = Just <| T.hoursToProjectDict hours 
-                      , taskNames = Just <| T.hoursToTaskDict hours 
+                    ( { model
+                        | hours = Just hours
+                        , projectNames = Just <| T.hoursToProjectDict hours
+                        , taskNames = Just <| T.hoursToTaskDict hours
                       }
-                    , Cmd.none )
+                    , Cmd.none
+                    )
 
                 Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+        WindowResize width height ->
+            let
+                newWindow =
+                    { height = height
+                    , width = width
+                    , device = classifyDevice { height = height, width = width }
+                    }
+            in
+            ( { model | window = newWindow }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -183,13 +217,23 @@ statGroup model =
                 , text <| String.fromFloat value
                 , text label
                 ]
+
+        deskOptions =
+            [ spacing 40
+            , centerX
+            , Font.color colors.darkText
+            , Font.size 18
+            ]
+
+        mobileOptions =
+            [ spacing 20
+            , centerX 
+            , Font.color colors.darkText 
+            , Font.size 16
+            ]
     in
     row
-        [ spacing 40
-        , centerX
-        , Font.color colors.darkText
-        , Font.size 18
-        ]
+        (if isMobile model.window then mobileOptions else deskOptions)
         [ statElement "far fa-clock" user.balance "h"
         , text "|"
         , statElement "far fa-chart-bar" user.utilizationRate "%"
@@ -253,7 +297,7 @@ profileDropdown model =
         [ alignRight
         , paddingXY 0 30
         , spacing 20
-        , moveLeft 40
+        , (if isMobile model.window then moveLeft 0 else moveLeft 40)
         , Font.color colors.white
         , Font.light
         , Font.size 16
@@ -280,21 +324,45 @@ topBar model =
 
             else
                 none
+
+        commonOptions =
+            [ width fill 
+            , spacing 20
+            , Background.color colors.topBarBackground
+            , Font.color colors.white
+            , below dropdown
+            ]
+
+        deskOptions = 
+            [ height <| px 70
+            , paddingXY 50 20
+            , Font.size 16
+            ] ++ commonOptions
+
+        mobileOptions = 
+            [ paddingXY 20 15
+            , spacing 20
+            , Font.size 12
+            ] ++ commonOptions
+
+        futuLogo = image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
     in
-    row
-        [ width fill
-        , height <| px 70
-        , paddingXY 50 20
-        , spacing 20
-        , Background.color colors.topBarBackground
-        , Font.color colors.white
-        , Font.size 16
-        , below dropdown
-        ]
-        [ image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
-        , statGroup model
-        , avatarDrop model
-        ]
+    if (isMobile model.window) then 
+        column
+            mobileOptions
+            [ row [ width fill ] 
+                [ futuLogo
+                , el [ alignRight ] (avatarDrop model)
+                ]
+            , statGroup model
+            ]
+    else 
+        row
+            deskOptions
+            [ futuLogo
+            , statGroup model
+            , avatarDrop model
+            ]
 
 
 entryRow : Model -> T.Entry -> Element Msg
@@ -466,5 +534,5 @@ main =
         { view = view
         , init = init
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
