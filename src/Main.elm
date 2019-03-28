@@ -79,11 +79,8 @@ isMobile win =
         device =
             win.device
     in
-    case ( device.class, device.orientation ) of
-        ( Phone, _ ) ->
-            True
-
-        ( Tablet, Portrait ) ->
+    case device.class of
+        Phone ->
             True
 
         _ ->
