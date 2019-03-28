@@ -44,8 +44,27 @@ fetchHours start end =
         }
 
 
+---- SUBSCRIPTIONS ----
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
 
 ---- MODEL ----
+
+type alias Flags =
+    { now : Int
+    , width : Int
+    , height : Int
+    }
+
+
+type alias Window =
+    { width : Int
+    , height : Int 
+    , device : Device
+    }
 
 
 type alias Model =
@@ -56,17 +75,18 @@ type alias Model =
     , taskNames : Maybe (Dict T.Identifier String)
     , hasError : Maybe String
     , today : Time.Posix
+    , window : Window
     }
 
 
-init : Int -> ( Model, Cmd Msg )
-init now =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         today =
-            Time.millisToPosix now
+            Time.millisToPosix flags.now
 
         thirtyDaysAgo =
-            Time.millisToPosix <| now - 2592000000
+            Time.millisToPosix <| flags.now - 2592000000
     in
     ( { isMenuOpen = False
       , user = Nothing
@@ -75,6 +95,7 @@ init now =
       , taskNames = Nothing
       , hasError = Nothing
       , today = today
+      , window = { width = flags.width, height = flags.height, device = classifyDevice flags }
       }
     , Cmd.batch
         [ fetchUser
@@ -92,6 +113,7 @@ type Msg
     | CloseError
     | UserResponse (Result Http.Error T.User)
     | HoursResponse (Result Http.Error T.HoursResponse)
+    | WindowResize Int Int
     | ToggleMenu
 
 
@@ -438,11 +460,11 @@ view model =
 ---- PROGRAM ----
 
 
-main : Program Int Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element
         { view = view
-        , init = \now -> init now
+        , init = init
         , update = update
         , subscriptions = always Sub.none
         }
