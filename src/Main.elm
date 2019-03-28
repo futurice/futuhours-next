@@ -415,12 +415,12 @@ dayRow model day hoursDay =
         ]
 
 
-monthHeader : T.Month -> T.HoursMonth -> Element Msg
-monthHeader month hoursMonth =
+monthHeader : Model -> T.Month -> T.HoursMonth -> Element Msg
+monthHeader model month hoursMonth =
     row
         [ width fill
         , padding 20
-        , Font.size 24
+        , Font.size (if isMobile model.window then 20 else 24)
         , Font.extraLight
         ]
         [ el [] (text <| Util.formatMonth month)
@@ -450,7 +450,7 @@ monthColumn model month hoursMonth =
     in
     column
         [ width fill ]
-        ([ monthHeader month hoursMonth ]
+        ([ monthHeader model month hoursMonth ]
             ++ List.map (\( d, hd ) -> dayRow model d hd) days
         )
 
@@ -471,7 +471,7 @@ hoursList model =
         , width fill
         , height fill
         , scrollbars
-        , paddingXY 50 20
+        , (if isMobile model.window then paddingXY 0 0 else paddingXY 50 20)
         ]
         (List.map (\( m, hm ) -> monthColumn model m hm) months)
 
