@@ -413,24 +413,23 @@ entryRow model entry =
                 10
 
              else
-                75
+                70
             )
         , width fill
         , Font.color colors.gray
         ]
-        [ el [ width (px 25) ] (text <| String.fromFloat entry.hours)
-        , text projectName
-        , displayIfDesk (text taskName)
-        , displayIfDesk (text entry.description)
+        [ el [ width (fillPortion 1) ] (text <| String.fromFloat entry.hours)
+        , el [ width (fillPortion 6) ] (text projectName)
+        , displayIfDesk <| el [ width (fillPortion 6) ] (text taskName)
+        , displayIfDesk <| el [ width (fillPortion 6) ] (text entry.description)
         ]
 
 
 entryColumn : Model -> List T.Entry -> Element Msg
 entryColumn model entries =
     column
-        [ centerX
-        , width fill
-        , spacing 10
+        [ width fill
+        , spacing 15
         ]
         (List.map (entryRow model) entries)
 
@@ -464,8 +463,8 @@ dayRow model day hoursDay =
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color backgroundColor
         ]
-        [ el [ alignTop, width <| px 70 ] (text (Util.formatDate day))
-        , el [ centerX ] (entryColumn model hoursDay.entries)
+        [ el [ alignLeft, alignTop, width <| px 70 ] (text (Util.formatDate day))
+        , el [  ] (entryColumn model hoursDay.entries)
         , if hoursDay.hours == 0 then
             Element.none
 
