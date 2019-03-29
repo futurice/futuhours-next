@@ -406,6 +406,9 @@ entryRow model entry =
 
             else
                 el
+
+        textElem t =
+            el [ width (px 180) ] (text t)
     in
     row
         [ spacing
@@ -420,9 +423,9 @@ entryRow model entry =
         , Font.alignLeft
         ]
         [ el [ width (px 30) ] (text <| String.fromFloat entry.hours)
-        , el [ width (px 200) ] (text projectName)
-        , displayIfDesk <| el [ width (px 200) ] (text taskName)
-        , displayIfDesk <| el [ width (px 200) ] (text entry.description)
+        , textElem projectName
+        , displayIfDesk <| textElem taskName
+        , displayIfDesk <| textElem entry.description
         ]
 
 
