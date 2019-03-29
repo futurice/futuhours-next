@@ -413,15 +413,16 @@ entryRow model entry =
                 10
 
              else
-                70
+                50
             )
         , width fill
         , Font.color colors.gray
+        , Font.alignLeft
         ]
-        [ el [ width (fillPortion 1) ] (text <| String.fromFloat entry.hours)
-        , el [ width (fillPortion 6) ] (text projectName)
-        , displayIfDesk <| el [ width (fillPortion 6) ] (text taskName)
-        , displayIfDesk <| el [ width (fillPortion 6) ] (text entry.description)
+        [ el [ width (px 30) ] (text <| String.fromFloat entry.hours)
+        , el [ width (px 200) ] (text projectName)
+        , displayIfDesk <| el [ width (px 200) ] (text taskName)
+        , displayIfDesk <| el [ width (px 200) ] (text entry.description)
         ]
 
 
