@@ -374,16 +374,19 @@ entryRow model entry =
             model.taskNames
                 |> Maybe.andThen (\names -> Dict.get entry.taskId names)
                 |> Maybe.withDefault "TASK NOT FOUND"
+
+        displayIfDesk el =
+            if isMobile model.window then Element.none else el
     in
     row
-        [ spacing 75
+        [ spacing (if isMobile model.window then 10 else 75)
         , width fill
         , Font.color colors.gray
         ]
         [ text <| String.fromFloat entry.hours
         , text projectName
-        , text taskName
-        , text entry.description
+        , displayIfDesk (text taskName)
+        , displayIfDesk (text entry.description)
         ]
 
 
@@ -401,13 +404,13 @@ dayRow model day hoursDay =
     row
         [ width fill
         , paddingXY 20 25
-        , spacing 75
+        , spacing (if isMobile model.window then 10 else 75)
         , Font.size 16
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
         ]
         [ el [ width <| px 50 ] (text (Util.formatDate day))
-        , entryColumn model hoursDay.entries
+        , el [ centerX ] (entryColumn model hoursDay.entries)
         , el [ alignRight ] (text <| String.fromFloat hoursDay.hours)
         ]
 
