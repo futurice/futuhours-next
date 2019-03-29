@@ -372,6 +372,7 @@ entryRow model entry =
             model.projectNames
                 |> Maybe.andThen (\names -> Dict.get entry.projectId names)
                 |> Maybe.withDefault "PROJECT NOT FOUND"
+                |> (\n -> if isMobile model.window then (String.slice 0 18 n) ++ "..." else n)
 
         taskName =
             model.taskNames
