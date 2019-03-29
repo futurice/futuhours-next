@@ -457,20 +457,14 @@ dayRow model day hoursDay =
     row
         [ width fill
         , paddingXY 20 25
-        , spacing
-            (if isMobile model.window then
-                10
-
-             else
-                75
-            )
+        , spaceEvenly
         , Font.size 16
         , Font.color colors.gray
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color backgroundColor
         ]
-        [ el [ alignLeft, alignTop, width <| px 70 ] (text (Util.formatDate day))
-        , el [  ] (entryColumn model hoursDay.entries)
+        [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
+        , entryColumn model hoursDay.entries
         , if hoursDay.hours == 0 then
             Element.none
 
@@ -483,7 +477,7 @@ monthHeader : Model -> T.Month -> T.HoursMonth -> Element Msg
 monthHeader model month hoursMonth =
     row
         [ width fill
-        , padding 20
+        , paddingXY 20 0
         , Font.size
             (if isMobile model.window then
                 20
