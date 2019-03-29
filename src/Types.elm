@@ -193,14 +193,14 @@ hoursDayDecoder =
 
 type DayType
     = Normal
-    | Zero
+    | Weekend
     | Holiday String
 
 
 dayTypeDecoder : Decoder DayType
 dayTypeDecoder =
     Decode.oneOf
-        [ bool |> Decode.andThen (\b -> if b then Decode.succeed Zero else Decode.succeed Normal)
+        [ bool |> Decode.andThen (\b -> if b then Decode.succeed Weekend else Decode.succeed Normal)
         , string |> Decode.andThen (\a -> Decode.succeed (Holiday a))  
         ]
 

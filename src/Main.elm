@@ -191,8 +191,9 @@ colors =
     , bodyBackground = rgb255 227 236 236
     , darkText = rgb255 133 178 190
     , white = rgb 1 1 1
-    , gray = rgb 0.5 0.5 0.5
+    , gray = rgb255 96 96 96
     , lightGray = rgb 0.75 0.75 0.75
+    , holidayGray = rgb255 205 219 220
     , black = rgb 0 0 0
     }
 
@@ -402,17 +403,28 @@ entryColumn model entries =
 
 dayRow : Model -> T.Day -> T.HoursDay -> Element Msg
 dayRow model day hoursDay =
+    let
+        backgroundColor =
+            case hoursDay.type_ of
+                T.Normal ->
+                    colors.white
+            
+                _ ->
+                    colors.holidayGray   
+    in
+    
     row
         [ width fill
         , paddingXY 20 25
         , spacing (if isMobile model.window then 10 else 75)
         , Font.size 16
+        , Font.color colors.gray
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
-        , Background.color colors.white
+        , Background.color backgroundColor
         ]
-        [ el [ alignTop, width <| px 50 ] (text (Util.formatDate day))
+        [ el [ alignTop, width <| px 70 ] (text (Util.formatDate day))
         , el [ centerX ] (entryColumn model hoursDay.entries)
-        , el [ alignTop, alignRight ] (text <| String.fromFloat hoursDay.hours)
+        , el [ alignTop, alignRight, Font.medium ] (text <| String.fromFloat hoursDay.hours)
         ]
 
 
@@ -521,7 +533,9 @@ mainLayout model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Font.family [ Font.typeface "Work Sans", Font.sansSerif ] ]
+        [ Font.family [ Font.typeface "Work Sans" ]
+        , Font.light
+        ]
         (mainLayout model)
 
 
