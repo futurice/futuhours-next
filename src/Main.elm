@@ -308,7 +308,7 @@ profileDropdown model =
             moveLeft 0
 
           else
-            moveLeft 40
+            moveLeft (model.window |> .width |> (\x -> (x - 920) // 2) |> toFloat)
         , Font.color colors.white
         , Font.light
         , Font.size 16
