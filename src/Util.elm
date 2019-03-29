@@ -71,5 +71,6 @@ formatDate day =
                 ++ (Time.toDay Time.utc posix |> String.fromInt) 
                 ++ "." 
                 ++ (Time.toMonth Time.utc posix |> monthToInt |> String.fromInt)
+                ++ "."
         Err debug ->
             Parser.deadEndsToString debug

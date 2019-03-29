@@ -383,7 +383,7 @@ entryRow model entry =
         , width fill
         , Font.color colors.gray
         ]
-        [ text <| String.fromFloat entry.hours
+        [ el [ width (px 25) ] (text <| String.fromFloat entry.hours)
         , text projectName
         , displayIfDesk (text taskName)
         , displayIfDesk (text entry.description)
@@ -395,6 +395,7 @@ entryColumn model entries =
     column
         [ centerX
         , width fill
+        , spacing 10
         ]
         (List.map (entryRow model) entries)
 
@@ -409,9 +410,9 @@ dayRow model day hoursDay =
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color colors.white
         ]
-        [ el [ width <| px 50 ] (text (Util.formatDate day))
+        [ el [ alignTop, width <| px 50 ] (text (Util.formatDate day))
         , el [ centerX ] (entryColumn model hoursDay.entries)
-        , el [ alignRight ] (text <| String.fromFloat hoursDay.hours)
+        , el [ alignTop, alignRight ] (text <| String.fromFloat hoursDay.hours)
         ]
 
 
