@@ -217,23 +217,30 @@ statGroup model =
                 ]
 
         commonOptions =
-            [ Font.regular             
-            , centerX 
-            , Font.color colors.darkText 
+            [ Font.regular
+            , centerX
+            , Font.color colors.darkText
             ]
 
         deskOptions =
             [ spacing 40
             , Font.size 18
-            ] ++ commonOptions
+            ]
+                ++ commonOptions
 
         mobileOptions =
             [ spacing 20
             , Font.size 16
-            ] ++ commonOptions
+            ]
+                ++ commonOptions
     in
     row
-        (if isMobile model.window then mobileOptions else deskOptions)
+        (if isMobile model.window then
+            mobileOptions
+
+         else
+            deskOptions
+        )
         [ statElement "far fa-clock" user.balance "h"
         , text "|"
         , statElement "far fa-chart-bar" user.utilizationRate "%"
@@ -297,7 +304,11 @@ profileDropdown model =
         [ alignRight
         , paddingXY 0 30
         , spacing 20
-        , (if isMobile model.window then moveLeft 0 else moveLeft 40)
+        , if isMobile model.window then
+            moveLeft 0
+
+          else
+            moveLeft 40
         , Font.color colors.white
         , Font.light
         , Font.size 16
@@ -326,37 +337,41 @@ topBar model =
                 none
 
         commonOptions =
-            [ width fill 
+            [ width fill
             , spacing 20
             , Background.color colors.topBarBackground
             , Font.color colors.white
             , below dropdown
             ]
 
-        deskOptions = 
+        deskOptions =
             [ height <| px 70
             , paddingXY 50 20
             , Font.size 16
-            ] ++ commonOptions
+            ]
+                ++ commonOptions
 
-        mobileOptions = 
+        mobileOptions =
             [ paddingXY 20 15
             , spacing 20
             , Font.size 12
-            ] ++ commonOptions
+            ]
+                ++ commonOptions
 
-        futuLogo = image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
+        futuLogo =
+            image [ alignLeft ] { src = "futuhours.svg", description = "FutuHours" }
     in
-    if (isMobile model.window) then 
+    if isMobile model.window then
         column
             mobileOptions
-            [ row [ width fill ] 
+            [ row [ width fill ]
                 [ futuLogo
                 , el [ alignRight ] (avatarDrop model)
                 ]
             , statGroup model
             ]
-    else 
+
+    else
         row
             deskOptions
             [ futuLogo
@@ -372,7 +387,13 @@ entryRow model entry =
             model.projectNames
                 |> Maybe.andThen (\names -> Dict.get entry.projectId names)
                 |> Maybe.withDefault "PROJECT NOT FOUND"
-                |> (\n -> if isMobile model.window then (String.slice 0 18 n) ++ "..." else n)
+                |> (\n ->
+                        if isMobile model.window then
+                            String.slice 0 18 n ++ "..."
+
+                        else
+                            n
+                   )
 
         taskName =
             model.taskNames
@@ -380,10 +401,20 @@ entryRow model entry =
                 |> Maybe.withDefault "TASK NOT FOUND"
 
         displayIfDesk el =
-            if isMobile model.window then Element.none else el
+            if isMobile model.window then
+                Element.none
+
+            else
+                el
     in
     row
-        [ spacing (if isMobile model.window then 10 else 75)
+        [ spacing
+            (if isMobile model.window then
+                10
+
+             else
+                75
+            )
         , width fill
         , Font.color colors.gray
         ]
@@ -411,18 +442,23 @@ dayRow model day hoursDay =
             case hoursDay.type_ of
                 T.Normal ->
                     colors.white
-            
+
                 _ ->
                     colors.holidayGray
 
         hoursElem =
             el [ alignTop, alignRight, Font.medium ] (text <| String.fromFloat hoursDay.hours)
     in
-    
     row
         [ width fill
         , paddingXY 20 25
-        , spacing (if isMobile model.window then 10 else 75)
+        , spacing
+            (if isMobile model.window then
+                10
+
+             else
+                75
+            )
         , Font.size 16
         , Font.color colors.gray
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
@@ -430,7 +466,11 @@ dayRow model day hoursDay =
         ]
         [ el [ alignTop, width <| px 70 ] (text (Util.formatDate day))
         , el [ centerX ] (entryColumn model hoursDay.entries)
-        , if hoursDay.hours == 0 then Element.none else hoursElem
+        , if hoursDay.hours == 0 then
+            Element.none
+
+          else
+            hoursElem
         ]
 
 
@@ -439,7 +479,13 @@ monthHeader model month hoursMonth =
     row
         [ width fill
         , padding 20
-        , Font.size (if isMobile model.window then 20 else 24)
+        , Font.size
+            (if isMobile model.window then
+                20
+
+             else
+                24
+            )
         , Font.extraLight
         ]
         [ el [] (text <| Util.formatMonth month)
@@ -490,7 +536,11 @@ hoursList model =
         , width fill
         , height fill
         , scrollbars
-        , (if isMobile model.window then paddingXY 0 0 else paddingXY 50 20)
+        , if isMobile model.window then
+            paddingXY 0 0
+
+          else
+            paddingXY 50 20
         ]
         (List.map (\( m, hm ) -> monthColumn model m hm) months)
 
