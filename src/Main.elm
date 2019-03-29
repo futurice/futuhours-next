@@ -216,19 +216,21 @@ statGroup model =
                 , text label
                 ]
 
+        commonOptions =
+            [ Font.regular             
+            , centerX 
+            , Font.color colors.darkText 
+            ]
+
         deskOptions =
             [ spacing 40
-            , centerX
-            , Font.color colors.darkText
             , Font.size 18
-            ]
+            ] ++ commonOptions
 
         mobileOptions =
             [ spacing 20
-            , centerX 
-            , Font.color colors.darkText 
             , Font.size 16
-            ]
+            ] ++ commonOptions
     in
     row
         (if isMobile model.window then mobileOptions else deskOptions)
