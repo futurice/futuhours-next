@@ -422,7 +422,7 @@ entryRow model entry =
         , Font.color colors.gray
         , Font.alignLeft
         ]
-        [ el [ width (px 30) ] (text <| String.fromFloat entry.hours)
+        [ el [ width (px 30), Font.center ] (text <| String.fromFloat entry.hours)
         , textElem projectName
         , displayIfDesk <| textElem taskName
         , displayIfDesk <| textElem entry.description
