@@ -517,7 +517,9 @@ monthColumn model month hoursMonth =
                 |> List.reverse
     in
     column
-        [ width fill ]
+        [ width fill
+        , spacing 15 
+        ]
         ([ monthHeader model month hoursMonth ]
             ++ List.map (\( d, hd ) -> dayRow model d hd) days
         )
