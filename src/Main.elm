@@ -374,9 +374,11 @@ topBar model =
     else
         row
             deskOptions
-            [ futuLogo
-            , statGroup model
-            , avatarDrop model
+            [ row [ centerX, width (fill |> maximum 900) ]
+                [ futuLogo
+                , statGroup model
+                , avatarDrop model
+                ]
             ]
 
 
@@ -537,15 +539,15 @@ hoursList model =
                 |> List.reverse
     in
     column
-        [ Background.color colors.bodyBackground
-        , width fill
+        [ centerX
+        , width (fill |> maximum 900)
         , height fill
         , scrollbars
         , if isMobile model.window then
             paddingXY 0 0
 
           else
-            paddingXY 50 20
+            paddingXY 0 20
         ]
         (List.map (\( m, hm ) -> monthColumn model m hm) months)
 
@@ -582,7 +584,8 @@ mainLayout model =
                     none
     in
     column
-        [ width fill
+        [ Background.color colors.bodyBackground
+        , width fill
         , height fill
         , Element.inFront errorElem
         ]
