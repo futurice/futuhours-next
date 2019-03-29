@@ -338,7 +338,6 @@ topBar model =
 
         commonOptions =
             [ width fill
-            , spacing 20
             , Background.color colors.topBarBackground
             , Font.color colors.white
             , below dropdown
@@ -477,7 +476,7 @@ monthHeader : Model -> T.Month -> T.HoursMonth -> Element Msg
 monthHeader model month hoursMonth =
     row
         [ width fill
-        , paddingXY 20 0
+        , paddingEach { left = 20, right = 20, top = 20, bottom = 0 }
         , Font.size
             (if isMobile model.window then
                 20
