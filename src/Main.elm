@@ -412,7 +412,10 @@ dayRow model day hoursDay =
                     colors.white
             
                 _ ->
-                    colors.holidayGray   
+                    colors.holidayGray
+
+        hoursElem =
+            el [ alignTop, alignRight, Font.medium ] (text <| String.fromFloat hoursDay.hours)
     in
     
     row
@@ -426,7 +429,7 @@ dayRow model day hoursDay =
         ]
         [ el [ alignTop, width <| px 70 ] (text (Util.formatDate day))
         , el [ centerX ] (entryColumn model hoursDay.entries)
-        , el [ alignTop, alignRight, Font.medium ] (text <| String.fromFloat hoursDay.hours)
+        , if hoursDay.hours == 0 then Element.none else hoursElem
         ]
 
 
