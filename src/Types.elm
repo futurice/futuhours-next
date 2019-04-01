@@ -146,7 +146,7 @@ mergeHoursResponse h1 h2 =
             Dict.insert
             (\key a b -> 
                 Dict.insert key
-                    { a | days = Dict.union a.days b.days }
+                    { b | days = Dict.union a.days b.days }
             )
             Dict.insert
             h1.months 
