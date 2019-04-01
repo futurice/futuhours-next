@@ -8,10 +8,12 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Event
 import Element.Font as Font
+import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Http
 import Iso8601 as Date
+import Time.Extra as TE
 import Task
 import Time
 import Types as T
@@ -106,7 +108,9 @@ init flags =
             Time.millisToPosix flags.now
 
         thirtyDaysAgo =
-            Time.millisToPosix <| flags.now - 2592000000
+            flags.now
+            |> Time.millisToPosix
+            |> TE.add TE.Day -30 Time.utc
     in
     ( { isMenuOpen = False
       , user = Nothing
@@ -131,6 +135,8 @@ init flags =
 type Msg
     = NoOp
     | CloseError
+    | LoadMoreNext
+    | LoadMorePrevious
     | UserResponse (Result Http.Error T.User)
     | HoursResponse (Result Http.Error T.HoursResponse)
     | WindowResize Int Int
@@ -146,6 +152,15 @@ update msg model =
         ToggleMenu ->
             ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
 
+        LoadMoreNext ->
+            let
+                nextThirtyDays =
+                    TE.add TE.Day 30 Time.utc model.today
+            in            
+            ( model 
+            , fetchHours model.today nextThirtyDays
+            )
+
         UserResponse result ->
             case result of
                 Ok user ->
@@ -156,11 +171,22 @@ update msg model =
 
         HoursResponse result ->
             case result of
-                Ok hours ->
+                Ok hoursResponse ->
+                    let
+                        newHours =
+                            case model.hours of
+                                Just oldHours ->
+                                    T.mergeHoursResponse oldHours hoursResponse
+                            
+                                Nothing ->
+                                    hoursResponse
+                                    
+                    in
+                    
                     ( { model
-                        | hours = Just hours
-                        , projectNames = Just <| T.hoursToProjectDict hours
-                        , taskNames = Just <| T.hoursToTaskDict hours
+                        | hours = Just newHours
+                        , projectNames = Just <| T.hoursToProjectDict newHours
+                        , taskNames = Just <| T.hoursToTaskDict newHours
                       }
                     , Cmd.none
                     )
@@ -534,6 +560,9 @@ hoursList model =
                 |> Dict.toList
                 |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
                 |> List.reverse
+
+        loadMoreButton msg =
+            Input.button [] { onPress = Just msg, label = text "Load More" }
     in
     column
         [ centerX
@@ -546,7 +575,9 @@ hoursList model =
           else
             paddingXY 0 20
         ]
-        (List.map (\( m, hm ) -> monthColumn model m hm) months)
+        (loadMoreButton LoadMoreNext
+            :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
+        )
 
 
 errorMsg : String -> Element Msg

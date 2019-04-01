@@ -1,6 +1,7 @@
 module Types exposing (..)
 
 import Dict exposing (Dict)
+import EverySet as Set
 import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 
@@ -127,6 +128,21 @@ hoursResponseDecoder =
         |> required "reportableProjects" (list (projectDecoder reportableTaskDecoder))
         |> required "markedProjects" (list (projectDecoder markableTaskDecoder))
         |> required "months" (dict hoursMonthDecoder)
+
+
+mergeHoursResponse : HoursResponse -> HoursResponse -> HoursResponse
+mergeHoursResponse h1 h2 =
+    let
+        mergeLists : List (Project a) -> List (Project a) -> List (Project a)
+        mergeLists l1 l2 =
+            Set.union (Set.fromList l1) (Set.fromList l2)
+                |> Set.toList
+    in
+    HoursResponse
+        h2.defaultWorkHours
+        ( mergeLists h1.reportableProjects h2.reportableProjects )
+        ( mergeLists h1.markedProjects h2.markedProjects )
+        ( Dict.union h2.months h1.months )
 
 
 hoursToProjectDict : HoursResponse -> Dict Identifier String
