@@ -154,8 +154,22 @@ update msg model =
 
         LoadMoreNext ->
             let
+                latestDate =
+                    model.hours
+                        |> Maybe.andThen (\hours ->
+                            hours.months
+                                |> Dict.values
+                                |> List.map .days
+                                |> List.concatMap Dict.keys
+                                |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
+                                |> List.sortBy Time.posixToMillis
+                                |> List.reverse
+                                |> List.head
+                            )
+                        |> Maybe.withDefault model.today
+
                 nextThirtyDays =
-                    TE.add TE.Day 30 Time.utc model.today
+                    TE.add TE.Day 30 Time.utc latestDate
             in            
             ( model 
             , fetchHours model.today nextThirtyDays

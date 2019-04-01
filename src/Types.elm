@@ -142,7 +142,7 @@ mergeHoursResponse h1 h2 =
         h2.defaultWorkHours
         ( mergeLists h1.reportableProjects h2.reportableProjects )
         ( mergeLists h1.markedProjects h2.markedProjects )
-        ( Dict.union h2.months h1.months )
+        ( Dict.union h2.months h1.months )    
 
 
 hoursToProjectDict : HoursResponse -> Dict Identifier String
