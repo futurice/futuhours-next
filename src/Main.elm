@@ -530,7 +530,11 @@ dayRow model day hoursDay =
         , Background.color backgroundColor
         ]
         [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
-        , entryColumn model hoursDay.entries
+        , case hoursDay.type_ of 
+            T.Holiday name -> 
+               el [ Font.alignLeft, width fill ] (text name)
+            _ ->
+                entryColumn model hoursDay.entries
         , if hoursDay.hours == 0 then
             Element.none
 
