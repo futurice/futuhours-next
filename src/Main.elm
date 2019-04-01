@@ -599,7 +599,15 @@ hoursList model =
                 |> List.reverse
 
         loadMoreButton msg =
-            Input.button [] { onPress = Just msg, label = text "Load More" }
+            Input.button 
+                [ Background.color colors.topBarBackground
+                , Font.color colors.white
+                , Font.size 12
+                , paddingXY 25 15
+                , Border.rounded 5
+                , centerX
+                ] 
+                { onPress = Just msg, label = text "Load More" }
     in
     column
         [ centerX
@@ -612,9 +620,14 @@ hoursList model =
           else
             paddingXY 0 20
         ]
-        (loadMoreButton LoadMoreNext
-            :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
-            ++ [loadMoreButton LoadMorePrevious]
+        (case months of
+            [] ->
+                [ none ]
+
+            _ ->
+                loadMoreButton LoadMoreNext
+                :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
+                ++ [loadMoreButton LoadMorePrevious]
         )
 
 
