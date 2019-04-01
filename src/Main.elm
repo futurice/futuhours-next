@@ -194,6 +194,7 @@ colors =
     , gray = rgb255 96 96 96
     , lightGray = rgb 0.75 0.75 0.75
     , holidayGray = rgb255 205 219 220
+    , holidayYellow = rgb255 254 254 230
     , black = rgb 0 0 0
     }
 
@@ -447,7 +448,10 @@ dayRow model day hoursDay =
                 T.Normal ->
                     colors.white
 
-                _ ->
+                T.Holiday _ ->
+                    colors.holidayYellow
+
+                T.Weekend ->
                     colors.holidayGray
 
         hoursElem =
