@@ -613,26 +613,26 @@ hoursList model =
                 ] 
                 { onPress = Just msg, label = text "Load More" }
     in
-    column
-        [ centerX
-        , width (fill |> maximum 900)
-        , height fill
-        , scrollbars
-        , if isMobile model.window then
-            paddingXY 0 0
+    el [ scrollbarY, width fill, height fill ] <|
+        column
+            [ centerX
+            , width (fill |> maximum 900)
+            , height fill
+            , if isMobile model.window then
+                paddingXY 0 0
 
-          else
-            paddingXY 0 20
-        ]
-        (case months of
-            [] ->
-                [ none ]
+            else
+                paddingXY 0 20
+            ]
+            (case months of
+                [] ->
+                    [ none ]
 
-            _ ->
-                loadMoreButton LoadMoreNext
-                :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
-                ++ [loadMoreButton LoadMorePrevious]
-        )
+                _ ->
+                    loadMoreButton LoadMoreNext
+                    :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
+                    ++ [loadMoreButton LoadMorePrevious]
+            )
 
 
 errorMsg : String -> Element Msg
@@ -670,6 +670,7 @@ mainLayout model =
         [ Background.color colors.bodyBackground
         , width fill
         , height fill
+        , htmlAttribute <| style "height" "100vh"
         , Element.inFront errorElem
         ]
         [ topBar model
