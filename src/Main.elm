@@ -175,6 +175,29 @@ update msg model =
             , fetchHours model.today nextThirtyDays
             )
 
+        LoadMorePrevious ->
+            let
+                oldestDate =
+                    model.hours
+                        |> Maybe.andThen (\hours ->
+                            hours.months
+                                |> Dict.values
+                                |> List.map .days
+                                |> List.concatMap Dict.keys
+                                |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
+                                |> List.sortBy Time.posixToMillis
+                                |> List.head
+                            )
+                        |> Maybe.withDefault model.today
+                
+                oldestMinus30 =
+                    TE.add TE.Day -30 Time.utc oldestDate
+            in
+                ( model 
+                , fetchHours oldestMinus30 oldestDate 
+                )
+            
+
         UserResponse result ->
             case result of
                 Ok user ->
@@ -591,6 +614,7 @@ hoursList model =
         ]
         (loadMoreButton LoadMoreNext
             :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
+            ++ [loadMoreButton LoadMorePrevious]
         )
 
 
