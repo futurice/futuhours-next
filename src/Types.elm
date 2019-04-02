@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Dict exposing (Dict)
 import EverySet as Set
+import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 
@@ -299,3 +300,15 @@ type alias EntryUpdate =
     , hours : NDTh
     , closed : Bool
     }
+
+
+entryUpdateEncoder : EntryUpdate -> Encode.Value
+entryUpdateEncoder eu =
+    Encode.object
+        [ ("taskId", Encode.int eu.taskId)
+        , ("projectId", Encode.int eu.projectId)
+        , ("description", Encode.string eu.description)
+        , ("date", Encode.string eu.date)
+        , ("hours", Encode.float eu.hours)
+        , ("closed", Encode.bool eu.closed) 
+        ]
