@@ -254,19 +254,7 @@ entryDecoder =
         |> required "closed" bool
         |> required "hours" float
         |> required "billable" entryTypeDecoder
-
-
-emptyEntry : Entry
-emptyEntry =
-    { id = 1 
-    , projectId = 1 
-    , taskId = 1 
-    , day = "2019-03-01"
-    , description = "did stuff"
-    , closed = False 
-    , hours = 7.5
-    , billable = Billable
-    }
+        
 
 type EntryType
     = Billable
