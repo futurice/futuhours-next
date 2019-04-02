@@ -254,7 +254,7 @@ entryDecoder =
         |> required "closed" bool
         |> required "hours" float
         |> required "billable" entryTypeDecoder
-        
+
 
 type EntryType
     = Billable
@@ -282,6 +282,13 @@ type alias EntryUpdateResponse =
     { user : User
     , hours : HoursResponse
     }
+
+
+entryUpdateResponseDecoder : Decoder EntryUpdateResponse
+entryUpdateResponseDecoder =
+    Decode.succeed EntryUpdateResponse
+        |> required "user" userDecoder 
+        |> required "hours" hoursResponseDecoder
 
 
 type alias EntryUpdate =
