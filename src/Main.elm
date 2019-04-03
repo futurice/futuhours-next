@@ -585,6 +585,8 @@ dayRow model day hoursDay =
             , Font.color colors.gray
             , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
             , Background.color backgroundColor
+            , Event.onClick <| OpenDay day hoursDay
+            , pointer
             ]
             [ row [ paddingXY 5 10, width fill ]
                 [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
