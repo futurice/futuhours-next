@@ -1,10 +1,32 @@
 module Ui exposing (..)
 
 import Element exposing (..)
-import Element.Input as Input
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events as Event
 import Element.Font as Font
+import Element.Input as Input
+import Html
+import Html.Attributes as HA
+
+
+colors =
+    { topBarBackground = rgb255 0 54 67
+    , bodyBackground = rgb255 227 236 236
+    , darkText = rgb255 133 178 190
+    , white = rgb 1 1 1
+    , gray = rgb255 96 96 96
+    , lightGray = rgb 0.75 0.75 0.75
+    , holidayGray = rgb255 205 219 220
+    , holidayYellow = rgb255 254 254 230
+    , black = rgb 0 0 0
+    }
+
+
+faIcon : String -> Element msg
+faIcon c =
+    html <| Html.i [ HA.class c ] []
+
 
 roundButton : Element.Color -> Element.Color -> msg -> String -> Element msg
 roundButton bkgColor txtColor msg label =
@@ -21,3 +43,18 @@ roundButton bkgColor txtColor msg label =
         { onPress = Just msg
         , label = el [ centerX, centerY ] (text label)
         }
+
+
+stepper : Float -> Float -> Float -> Float -> msg -> msg -> Element msg
+stepper min max step val up down =
+    row
+        [ spacing 15
+        , Border.width 1
+        , Border.rounded 5
+        , padding 10
+        ]
+        [ Input.button [ ] { onPress = Just down, label = el [ ] <| faIcon "fa fa-angle-left" }
+        , el [ Font.size 16 ] (text <| String.fromFloat val)
+        , Input.button [ ] { onPress = Just up, label = el [ ] <| faIcon "fa fa-angle-right" }
+        ]
+

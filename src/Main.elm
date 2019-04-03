@@ -17,7 +17,7 @@ import Task
 import Time
 import Time.Extra as TE
 import Types as T
-import Ui
+import Ui exposing (colors)
 import Util
 
 
@@ -263,24 +263,6 @@ update msg model =
 ---- VIEW ----
 
 
-colors =
-    { topBarBackground = rgb255 0 54 67
-    , bodyBackground = rgb255 227 236 236
-    , darkText = rgb255 133 178 190
-    , white = rgb 1 1 1
-    , gray = rgb255 96 96 96
-    , lightGray = rgb 0.75 0.75 0.75
-    , holidayGray = rgb255 205 219 220
-    , holidayYellow = rgb255 254 254 230
-    , black = rgb 0 0 0
-    }
-
-
-faIcon : String -> Element Msg
-faIcon c =
-    html <| Html.i [ class c ] []
-
-
 statGroup : Model -> Element Msg
 statGroup model =
     let
@@ -289,7 +271,7 @@ statGroup model =
 
         statElement icon value label =
             row [ spacing 10 ]
-                [ el [] (faIcon icon)
+                [ el [] (Ui.faIcon icon)
                 , text <| String.fromFloat value
                 , text label
                 ]
@@ -360,7 +342,7 @@ avatarDrop model =
                 rotate 0
             , Font.color colors.white
             ]
-            (faIcon "fa fa-angle-down")
+            (Ui.faIcon "fa fa-angle-down")
         ]
 
 
@@ -542,7 +524,6 @@ dayEdit model day hoursDay =
                         NoOp "Save"
                     ]
                 ]
-
     in    
     column
         [ width fill
@@ -567,7 +548,7 @@ dayEdit model day hoursDay =
             , padding 30
             , spacing 20
             ]
-            [ row [ width fill ] [ text "some editing boxes go here" ]
+            [ row [ width fill ] [ Ui.stepper 0.5 18 0.5 7.5 NoOp NoOp ]
             , editingControls
             ]
         ]
@@ -665,7 +646,7 @@ monthHeader model month hoursMonth =
                     , text "/"
                     , text <| String.fromFloat hoursMonth.capacity
                     ]
-                , el [] (faIcon "far fa-chart-bar")
+                , el [] (Ui.faIcon "far fa-chart-bar")
                 , paragraph [] [ text <| String.fromFloat hoursMonth.utilizationRate, text "%" ]
                 ]
             )
@@ -738,7 +719,7 @@ errorMsg : String -> Element Msg
 errorMsg error =
     let
         closeButton =
-            el [ Event.onClick CloseError, paddingXY 4 3 ] (faIcon "fa fa-times")
+            el [ Event.onClick CloseError, paddingXY 4 3 ] (Ui.faIcon "fa fa-times")
     in
     el
         [ centerX
