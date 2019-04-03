@@ -516,6 +516,23 @@ entryColumn model entries =
         (List.map (entryRow model) entries)
 
 
+roundButton : Element.Color -> Element.Color -> Msg -> String -> Element Msg
+roundButton bkgColor txtColor msg label =
+    Input.button
+        [ Background.color bkgColor
+        , Font.color txtColor
+        , Font.size 30
+        , Font.extraLight
+        , width <| px 35
+        , height <| px 35
+        , Border.rounded 50
+        , Border.width 1
+        ]
+        { onPress = Just msg
+        , label = el [ centerX, centerY ] (text label)
+        }
+
+
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
     let
@@ -526,8 +543,12 @@ dayEdit model day hoursDay =
 
         editingControls =
             row 
-                [ width fill ] 
-                [ text "add row" 
+                [ width fill
+                , spacing 15
+                , Font.size 16
+                ] 
+                [ roundButton colors.white colors.black NoOp "+"
+                , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
                         [ Background.color colors.holidayGray ] 
@@ -593,18 +614,11 @@ dayRow model day hoursDay =
                     False
 
         openButton =
-            Input.button
-                [ Background.color colors.topBarBackground
-                , Font.color colors.white
-                , Font.size 30
-                , Font.extraLight
-                , width <| px 35
-                , height <| px 35
-                , Border.rounded 50
-                ]
-                { onPress = Just <| OpenDay day hoursDay
-                , label = el [ centerX, centerY ] (text "+")
-                }
+            roundButton
+                colors.topBarBackground
+                colors.white
+                (OpenDay day hoursDay)
+                "+"
     in
     if Dict.member day model.editingHours then
         dayEdit model day hoursDay
