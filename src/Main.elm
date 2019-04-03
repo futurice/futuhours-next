@@ -17,6 +17,7 @@ import Task
 import Time
 import Time.Extra as TE
 import Types as T
+import Ui
 import Util
 
 
@@ -516,23 +517,6 @@ entryColumn model entries =
         (List.map (entryRow model) entries)
 
 
-roundButton : Element.Color -> Element.Color -> Msg -> String -> Element Msg
-roundButton bkgColor txtColor msg label =
-    Input.button
-        [ Background.color bkgColor
-        , Font.color txtColor
-        , Font.size 30
-        , Font.extraLight
-        , width <| px 35
-        , height <| px 35
-        , Border.rounded 50
-        , Border.width 1
-        ]
-        { onPress = Just msg
-        , label = el [ centerX, centerY ] (text label)
-        }
-
-
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
     let
@@ -547,7 +531,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ] 
-                [ roundButton colors.white colors.black NoOp "+"
+                [ Ui.roundButton colors.white colors.black NoOp "+"
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
@@ -558,6 +542,7 @@ dayEdit model day hoursDay =
                         NoOp "Save"
                     ]
                 ]
+
     in    
     column
         [ width fill
@@ -580,7 +565,7 @@ dayEdit model day hoursDay =
             [ width fill 
             , Background.color colors.white
             , padding 30
-            , spacing 10
+            , spacing 20
             ]
             [ row [ width fill ] [ text "some editing boxes go here" ]
             , editingControls
@@ -614,7 +599,7 @@ dayRow model day hoursDay =
                     False
 
         openButton =
-            roundButton
+            Ui.roundButton
                 colors.topBarBackground
                 colors.white
                 (OpenDay day hoursDay)
