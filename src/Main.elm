@@ -98,6 +98,7 @@ type alias Model =
     , hasError : Maybe String
     , today : Time.Posix
     , window : Window
+    , editingHours : Dict T.Day T.HoursDay
     }
 
 
@@ -120,6 +121,7 @@ init flags =
       , hasError = Nothing
       , today = today
       , window = { width = flags.width, height = flags.height, device = classifyDevice flags }
+      , editingHours = Dict.empty
       }
     , Cmd.batch
         [ fetchUser
@@ -137,6 +139,7 @@ type Msg
     | CloseError
     | LoadMoreNext
     | LoadMorePrevious
+    | OpenDay T.Day T.HoursDay
     | UserResponse (Result Http.Error T.User)
     | HoursResponse (Result Http.Error T.HoursResponse)
     | WindowResize Int Int
@@ -196,6 +199,12 @@ update msg model =
                 ( model 
                 , fetchHours oldestMinus30 oldestDate 
                 )
+
+
+        OpenDay date hoursDay ->
+            ( { model | editingHours = Dict.insert date hoursDay model.editingHours }
+            , Cmd.none 
+            )
             
 
         UserResponse result ->
@@ -519,27 +528,52 @@ dayRow model day hoursDay =
 
         hoursElem =
             el [ alignTop, alignRight, Font.medium ] (text <| String.fromFloat hoursDay.hours)
+
+        showButton =
+            case hoursDay.type_ of
+                T.Normal ->
+                    hoursDay.hours == 0
+            
+                _ ->
+                    False   
+
+        openButton =
+            Input.button 
+                [ Background.color colors.topBarBackground
+                , Font.color colors.white
+                , Font.size 30
+                , Font.extraLight
+                , width <| px 35
+                , height <| px 35
+                , Border.rounded 50
+                ] 
+                { onPress = Just <| OpenDay day hoursDay
+                , label = el [ centerX, centerY ] (text "+" )
+                }
     in
     row
         [ width fill
-        , paddingXY 20 25
+        , paddingXY 15 15
         , spaceEvenly
         , Font.size 16
         , Font.color colors.gray
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         , Background.color backgroundColor
         ]
-        [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
-        , case hoursDay.type_ of 
-            T.Holiday name -> 
-               el [ Font.alignLeft, width fill ] (text name)
-            _ ->
-                entryColumn model hoursDay.entries
-        , if hoursDay.hours == 0 then
-            Element.none
+        [ row [ paddingXY 5 10, width fill ]
+            [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
+            , case hoursDay.type_ of 
+                T.Holiday name -> 
+                    el [ Font.alignLeft, width fill ] (text name)
+                _ ->
+                    entryColumn model hoursDay.entries
+            , if hoursDay.hours == 0 then Element.none else hoursElem
+            ]
+        , if showButton then
+            openButton
 
           else
-            hoursElem
+            Element.none
         ]
 
 
