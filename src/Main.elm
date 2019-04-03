@@ -518,19 +518,52 @@ entryColumn model entries =
 
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
-    column 
-        [ width fill ]
-        [ row 
+    let
+        scButton attrs msg label =
+            Input.button 
+                    ([ Font.size 14, width (px 100), height (px 40), Border.rounded 5 ] ++ attrs)
+                    { onPress = Just msg, label = text label }
+
+        editingControls =
+            row 
+                [ width fill ] 
+                [ text "add row" 
+                , row [ alignRight, spacing 10 ]
+                    [ scButton
+                        [ Background.color colors.holidayGray ] 
+                        (CloseDay day) "Cancel"
+                    , scButton
+                        [ Background.color colors.topBarBackground, Font.color colors.white ]
+                        NoOp "Save"
+                    ]
+                ]
+    in    
+    column
+        [ width fill
+        , Font.extraLight
+        , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
+        ]
+        [ row
             [ width fill
-            , Background.color colors.topBarBackground 
+            , Background.color colors.topBarBackground
             , Font.color colors.white
             , Font.size 16
             , paddingXY 20 25
             , Event.onClick <| CloseDay day
-            , pointer 
-            ] 
+            , pointer
+            ]
             [ el [ alignLeft, centerY ] (text <| Util.formatDate day)
-            , el [ alignRight, centerY ] (text <| String.fromFloat hoursDay.hours ++ " h") ] 
+            , el [ alignRight, centerY ] (text <| String.fromFloat hoursDay.hours ++ " h")
+            ]
+        , column 
+            [ width fill 
+            , Background.color colors.white
+            , padding 30
+            , spacing 10
+            ]
+            [ row [ width fill ] [ text "some editing boxes go here" ]
+            , editingControls
+            ]
         ]
 
 
