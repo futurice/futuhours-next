@@ -140,6 +140,7 @@ type Msg
     | LoadMoreNext
     | LoadMorePrevious
     | OpenDay T.Day T.HoursDay
+    | CloseDay T.Day
     | UserResponse (Result Http.Error T.User)
     | HoursResponse (Result Http.Error T.HoursResponse)
     | WindowResize Int Int
@@ -204,6 +205,11 @@ update msg model =
 
         OpenDay date hoursDay ->
             ( { model | editingHours = Dict.insert date hoursDay model.editingHours }
+            , Cmd.none
+            )
+
+        CloseDay date ->
+            ( { model | editingHours = Dict.remove date model.editingHours }
             , Cmd.none
             )
 
@@ -512,7 +518,20 @@ entryColumn model entries =
 
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
-    Element.none
+    column 
+        [ width fill ]
+        [ row 
+            [ width fill
+            , Background.color colors.topBarBackground 
+            , Font.color colors.white
+            , Font.size 16
+            , paddingXY 20 25
+            , Event.onClick <| CloseDay day
+            , pointer 
+            ] 
+            [ el [ alignLeft, centerY ] (text <| Util.formatDate day)
+            , el [ alignRight, centerY ] (text <| String.fromFloat hoursDay.hours ++ " h") ] 
+        ]
 
 
 dayRow : Model -> T.Day -> T.HoursDay -> Element Msg
