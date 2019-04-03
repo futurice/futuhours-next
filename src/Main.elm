@@ -13,9 +13,9 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Http
 import Iso8601 as Date
-import Time.Extra as TE
 import Task
 import Time
+import Time.Extra as TE
 import Types as T
 import Util
 
@@ -110,8 +110,8 @@ init flags =
 
         thirtyDaysAgo =
             flags.now
-            |> Time.millisToPosix
-            |> TE.add TE.Day -30 Time.utc
+                |> Time.millisToPosix
+                |> TE.add TE.Day -30 Time.utc
     in
     ( { isMenuOpen = False
       , user = Nothing
@@ -159,22 +159,23 @@ update msg model =
             let
                 latestDate =
                     model.hours
-                        |> Maybe.andThen (\hours ->
-                            hours.months
-                                |> Dict.values
-                                |> List.map .days
-                                |> List.concatMap Dict.keys
-                                |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
-                                |> List.sortBy Time.posixToMillis
-                                |> List.reverse
-                                |> List.head
+                        |> Maybe.andThen
+                            (\hours ->
+                                hours.months
+                                    |> Dict.values
+                                    |> List.map .days
+                                    |> List.concatMap Dict.keys
+                                    |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
+                                    |> List.sortBy Time.posixToMillis
+                                    |> List.reverse
+                                    |> List.head
                             )
                         |> Maybe.withDefault model.today
 
                 nextThirtyDays =
                     TE.add TE.Day 30 Time.utc latestDate
-            in            
-            ( model 
+            in
+            ( model
             , fetchHours model.today nextThirtyDays
             )
 
@@ -182,30 +183,29 @@ update msg model =
             let
                 oldestDate =
                     model.hours
-                        |> Maybe.andThen (\hours ->
-                            hours.months
-                                |> Dict.values
-                                |> List.map .days
-                                |> List.concatMap Dict.keys
-                                |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
-                                |> List.sortBy Time.posixToMillis
-                                |> List.head
+                        |> Maybe.andThen
+                            (\hours ->
+                                hours.months
+                                    |> Dict.values
+                                    |> List.map .days
+                                    |> List.concatMap Dict.keys
+                                    |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
+                                    |> List.sortBy Time.posixToMillis
+                                    |> List.head
                             )
                         |> Maybe.withDefault model.today
-                
+
                 oldestMinus30 =
                     TE.add TE.Day -30 Time.utc oldestDate
             in
-                ( model 
-                , fetchHours oldestMinus30 oldestDate 
-                )
-
+            ( model
+            , fetchHours oldestMinus30 oldestDate
+            )
 
         OpenDay date hoursDay ->
             ( { model | editingHours = Dict.insert date hoursDay model.editingHours }
-            , Cmd.none 
+            , Cmd.none
             )
-            
 
         UserResponse result ->
             case result of
@@ -223,12 +223,10 @@ update msg model =
                             case model.hours of
                                 Just oldHours ->
                                     T.mergeHoursResponse oldHours hoursResponse
-                            
+
                                 Nothing ->
                                     hoursResponse
-                                    
                     in
-                    
                     ( { model
                         | hours = Just newHours
                         , projectNames = Just <| T.hoursToProjectDict newHours
@@ -512,6 +510,11 @@ entryColumn model entries =
         (List.map (entryRow model) entries)
 
 
+dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
+dayEdit model day hoursDay =
+    Element.none
+
+
 dayRow : Model -> T.Day -> T.HoursDay -> Element Msg
 dayRow model day hoursDay =
     let
@@ -533,12 +536,12 @@ dayRow model day hoursDay =
             case hoursDay.type_ of
                 T.Normal ->
                     hoursDay.hours == 0
-            
+
                 _ ->
-                    False   
+                    False
 
         openButton =
-            Input.button 
+            Input.button
                 [ Background.color colors.topBarBackground
                 , Font.color colors.white
                 , Font.size 30
@@ -546,35 +549,44 @@ dayRow model day hoursDay =
                 , width <| px 35
                 , height <| px 35
                 , Border.rounded 50
-                ] 
+                ]
                 { onPress = Just <| OpenDay day hoursDay
-                , label = el [ centerX, centerY ] (text "+" )
+                , label = el [ centerX, centerY ] (text "+")
                 }
     in
-    row
-        [ width fill
-        , paddingXY 15 15
-        , spaceEvenly
-        , Font.size 16
-        , Font.color colors.gray
-        , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
-        , Background.color backgroundColor
-        ]
-        [ row [ paddingXY 5 10, width fill ]
-            [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
-            , case hoursDay.type_ of 
-                T.Holiday name -> 
-                    el [ Font.alignLeft, width fill ] (text name)
-                _ ->
-                    entryColumn model hoursDay.entries
-            , if hoursDay.hours == 0 then Element.none else hoursElem
-            ]
-        , if showButton then
-            openButton
+    if Dict.member day model.editingHours then
+        dayEdit model day hoursDay
 
-          else
-            Element.none
-        ]
+    else
+        row
+            [ width fill
+            , paddingXY 15 15
+            , spaceEvenly
+            , Font.size 16
+            , Font.color colors.gray
+            , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
+            , Background.color backgroundColor
+            ]
+            [ row [ paddingXY 5 10, width fill ]
+                [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
+                , case hoursDay.type_ of
+                    T.Holiday name ->
+                        el [ Font.alignLeft, width fill ] (text name)
+
+                    _ ->
+                        entryColumn model hoursDay.entries
+                , if hoursDay.hours == 0 then
+                    Element.none
+
+                  else
+                    hoursElem
+                ]
+            , if showButton then
+                openButton
+
+              else
+                Element.none
+            ]
 
 
 monthHeader : Model -> T.Month -> T.HoursMonth -> Element Msg
@@ -618,7 +630,7 @@ monthColumn model month hoursMonth =
     in
     column
         [ width fill
-        , spacing 15 
+        , spacing 15
         ]
         ([ monthHeader model month hoursMonth ]
             ++ List.map (\( d, hd ) -> dayRow model d hd) days
@@ -637,14 +649,14 @@ hoursList model =
                 |> List.reverse
 
         loadMoreButton msg =
-            Input.button 
+            Input.button
                 [ Background.color colors.topBarBackground
                 , Font.color colors.white
                 , Font.size 12
                 , paddingXY 25 15
                 , Border.rounded 5
                 , centerX
-                ] 
+                ]
                 { onPress = Just msg, label = text "Load More" }
     in
     el [ scrollbarY, width fill, height fill ] <|
@@ -655,7 +667,7 @@ hoursList model =
             , if isMobile model.window then
                 paddingXY 0 0
 
-            else
+              else
                 paddingXY 0 20
             ]
             (case months of
@@ -664,8 +676,8 @@ hoursList model =
 
                 _ ->
                     loadMoreButton LoadMoreNext
-                    :: (List.map (\( m, hm ) -> monthColumn model m hm) months)
-                    ++ [loadMoreButton LoadMorePrevious]
+                        :: List.map (\( m, hm ) -> monthColumn model m hm) months
+                        ++ [ loadMoreButton LoadMorePrevious ]
             )
 
 
