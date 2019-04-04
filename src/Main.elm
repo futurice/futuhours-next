@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg(..), init, main, update, view)
+module Main exposing (Model, init, main, update, view)
 
 import Browser
 import Browser.Events
@@ -16,7 +16,7 @@ import Iso8601 as Date
 import Task
 import Time
 import Time.Extra as TE
-import Types as T
+import Types as T exposing (Msg(..))
 import Ui exposing (colors)
 import Util
 
@@ -44,7 +44,7 @@ fetchHours start end =
     in
     Http.get
         { url = "/api/v1/hours?start-date=" ++ startISO ++ "&end-date=" ++ endISO
-        , expect = Http.expectJson HoursResponse T.hoursResponseDecoder
+        , expect = Http.expectJson HandleHoursResponse T.hoursResponseDecoder
         }
 
 
@@ -133,26 +133,6 @@ init flags =
 
 
 ---- UPDATE ----
-
-
-type Msg
-    = NoOp
-    | CloseError
-    | LoadMoreNext
-    | LoadMorePrevious
-    | OpenDay T.Day T.HoursDay
-    | EditEntry T.Day T.Entry
-    | CloseDay T.Day
-    | UserResponse (Result Http.Error T.User)
-    | HoursResponse (Result Http.Error T.HoursResponse)
-    | WindowResize Int Int
-    | ToggleMenu
-
-
-send : Msg -> Cmd Msg
-send msg =
-    Task.succeed msg
-        |> Task.perform identity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -257,7 +237,7 @@ update msg model =
                 Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
 
-        HoursResponse result ->
+        HandleHoursResponse result ->
             case result of
                 Ok hoursResponse ->
                     let
@@ -545,7 +525,7 @@ editEntry model day entry =
         [ width fill
         , spacing 10
         ]
-        [ Ui.stepper entry EditEntry
+        [ Ui.stepper entry
         , Ui.dropdown latestEntry.projectId entry.projectId <| Maybe.withDefault Dict.empty model.projectNames
         , Ui.dropdown latestEntry.taskId entry.taskId <| Maybe.withDefault Dict.empty model.taskNames
         , Input.text

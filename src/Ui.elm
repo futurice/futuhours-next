@@ -10,7 +10,7 @@ import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
-import Types as T
+import Types as T exposing (Msg(..))
 
 
 colors =
@@ -26,12 +26,12 @@ colors =
     }
 
 
-faIcon : String -> Element msg
+faIcon : String -> Element Msg
 faIcon c =
     html <| Html.i [ HA.class c ] []
 
 
-roundButton : Element.Color -> Element.Color -> msg -> String -> Element msg
+roundButton : Element.Color -> Element.Color -> Msg -> String -> Element Msg
 roundButton bkgColor txtColor msg label =
     Input.button
         [ Background.color bkgColor
@@ -48,14 +48,14 @@ roundButton bkgColor txtColor msg label =
         }
 
 
-stepper : T.Entry -> (T.Day -> T.Entry -> msg) -> Element msg
-stepper entry msg =
+stepper : T.Entry -> Element Msg
+stepper entry =
     let
         down =
-            msg entry.day { entry | hours = max 0.5 (entry.hours - 0.5) }
+            EditEntry entry.day { entry | hours = max 0.5 (entry.hours - 0.5) }
 
         up =
-            msg entry.day { entry | hours = min 18 (entry.hours + 0.5) }
+            EditEntry entry.day { entry | hours = min 18 (entry.hours + 0.5) }
     in    
     row
         [ spacing 10
@@ -70,7 +70,7 @@ stepper entry msg =
         ]
 
 
-dropdown : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element msg
+dropdown : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
 dropdown latest value options = 
     row 
         [ width (shrink |> minimum 200)
@@ -78,7 +78,7 @@ dropdown latest value options =
         [ html <| dropdownRaw latest value options ]
 
 
-dropdownRaw : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html msg
+dropdownRaw : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
 dropdownRaw latest value options =
     Html.select 
         [ HA.class "dropdown" ]

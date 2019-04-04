@@ -2,11 +2,33 @@ module Types exposing (..)
 
 import Dict exposing (Dict)
 import EverySet as Set
+import Http
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Task
 import Time
 import Iso8601 as Date
+
+
+type Msg
+    = NoOp
+    | CloseError
+    | LoadMoreNext
+    | LoadMorePrevious
+    | OpenDay Day HoursDay
+    | EditEntry Day Entry
+    | CloseDay Day
+    | UserResponse (Result Http.Error User)
+    | HandleHoursResponse (Result Http.Error HoursResponse)
+    | WindowResize Int Int
+    | ToggleMenu
+
+
+send : Msg -> Cmd Msg
+send msg =
+    Task.succeed msg
+        |> Task.perform identity
 
 
 type alias Identifier =
