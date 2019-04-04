@@ -32,14 +32,17 @@ img {
 .dropdown {
   appearance: none;
   background: none;
-  border: none;
+  border: 1px solid black;
+  border-radius: 5px 5px 5px 5px;
+  padding: 10px;
   font-family: 'Work Sans';
   font-size: 16px;
   font-weight: lighter;
   width: 100%;
   background-image: url('/angle-down-solid.svg'), linear-gradient(#ffffff, #ffffff);
+  background-size: 16px;
   background-repeat: no-repeat;
-  background-position: right;
+  background-position: right 10px center;
 }
 
 .dropdown:focus {

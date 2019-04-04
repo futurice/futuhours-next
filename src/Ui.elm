@@ -62,10 +62,7 @@ stepper val up down =
 
 dropdown = 
     row 
-        [ Border.width 1
-        , Border.rounded 5
-        , padding 10
-        , width (shrink |> minimum 200)
+        [ width (shrink |> minimum 200)
         ] 
         [ html dropdownRaw ]
 
