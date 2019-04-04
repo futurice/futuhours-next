@@ -520,14 +520,23 @@ editEntry model day entry =
         latestEntry =
             Maybe.andThen T.latestEntry model.hours
                 |> Maybe.withDefault entry
+
+        projectNames = Maybe.withDefault Dict.empty model.projectNames
+        taskNames = Maybe.withDefault Dict.empty model.taskNames
+
+        updateProject i =
+            EditEntry day { entry | projectId = i }
+
+        updateTask i =
+            EditEntry day { entry | taskId = i }
     in    
     row
         [ width fill
         , spacing 10
         ]
         [ Ui.stepper entry
-        , Ui.dropdown latestEntry.projectId entry.projectId <| Maybe.withDefault Dict.empty model.projectNames
-        , Ui.dropdown latestEntry.taskId entry.taskId <| Maybe.withDefault Dict.empty model.taskNames
+        , Ui.dropdown updateProject latestEntry.projectId entry.projectId projectNames
+        , Ui.dropdown updateTask latestEntry.taskId entry.taskId taskNames
         , Input.text
             [ Border.width 1
             , Border.rounded 5

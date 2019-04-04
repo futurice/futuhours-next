@@ -10,7 +10,9 @@ import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
+import Html.Events.Extra as HEX
 import Types as T exposing (Msg(..))
+import Json.Decode as Json
 
 
 colors =
@@ -70,18 +72,20 @@ stepper entry =
         ]
 
 
-dropdown : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
-dropdown latest value options = 
+dropdown : (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
+dropdown handler latest value options = 
     row 
         [ width (shrink |> minimum 200)
         ] 
-        [ html <| dropdownRaw latest value options ]
+        [ html <| dropdownRaw handler latest value options ]
 
 
-dropdownRaw : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
-dropdownRaw latest value options =
+dropdownRaw : (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
+dropdownRaw handler latest value options =
     Html.select 
-        [ HA.class "dropdown" ]
+        [ HA.class "dropdown"
+        , HE.on "change" <| Json.map handler HEX.targetValueIntParse
+        ]
         [ Html.optgroup [ HA.attribute "label" "Most Recent"] 
             [ Html.option [ HA.value <| String.fromInt latest ] [ Html.text <| Maybe.withDefault "" <| Dict.get latest options ]
             ] 
