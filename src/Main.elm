@@ -188,7 +188,25 @@ update msg model =
             )
 
         OpenDay date hoursDay ->
-            ( { model | editingHours = Dict.insert date hoursDay model.editingHours }
+            let
+                latest = 
+                    Maybe.andThen T.latestEntry model.hours
+
+                addHoursIfEmpty =
+                    if List.isEmpty hoursDay.entries then
+                        { hoursDay 
+                        | entries = 
+                            Maybe.map List.singleton latest
+                                |> Maybe.withDefault []
+                        , hours = 
+                            Maybe.map .hours latest
+                                |> Maybe.withDefault 0
+                        }
+                    else
+                        hoursDay
+                            
+            in            
+            ( { model | editingHours = Dict.insert date addHoursIfEmpty model.editingHours }
             , Cmd.none
             )
 
@@ -486,7 +504,7 @@ editEntry : Model -> T.Day -> T.Entry -> Element Msg
 editEntry model day entry =
     row 
         [ width fill ] 
-        [ Ui.stepper 0.5 18 0.5 7.5 NoOp NoOp
+        [ Ui.stepper 0.5 18 0.5 entry.hours NoOp NoOp
         , Ui.dropdown
         , Ui.dropdown 
         ]
@@ -495,6 +513,11 @@ editEntry model day entry =
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
     let
+        editingDay =
+            model.editingHours
+                |> Dict.get day
+                |> Maybe.withDefault hoursDay
+
         scButton attrs msg label =
             Input.button 
                     ([ Font.size 14, width (px 100), height (px 40), Border.rounded 5 ] ++ attrs)
@@ -541,7 +564,7 @@ dayEdit model day hoursDay =
             , padding 30
             , spacing 20
             ]
-            (List.map (editEntry model day) hoursDay.entries ++ [ editingControls ])
+            (List.map (editEntry model day) editingDay.entries ++ [ editingControls ])
         ]
 
 
