@@ -1,4 +1,4 @@
-module Main exposing (Model, init, main, update, view)
+module Main exposing (main)
 
 import Browser
 import Browser.Events
@@ -535,7 +535,7 @@ editEntry model day entry =
             , Font.size 16
             , padding 10
             ]
-            { onChange = \_ -> NoOp
+            { onChange = \t -> EditEntry day { entry | description = t }
             , text = entry.description
             , placeholder = Nothing
             , label = Input.labelHidden "description"
