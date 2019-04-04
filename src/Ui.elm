@@ -1,13 +1,15 @@
 module Ui exposing (..)
 
+import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Event
 import Element.Font as Font
 import Element.Input as Input
-import Html
+import Html exposing (Html)
 import Html.Attributes as HA
+import Html.Events as HE
 import Types as T
 
 
@@ -68,23 +70,23 @@ stepper entry msg =
         ]
 
 
-dropdown = 
+dropdown : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element msg
+dropdown latest value options = 
     row 
         [ width (shrink |> minimum 200)
         ] 
-        [ html dropdownRaw ]
+        [ html <| dropdownRaw latest value options ]
 
 
-dropdownRaw =
+dropdownRaw : T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html msg
+dropdownRaw latest value options =
     Html.select 
         [ HA.class "dropdown" ]
-        [ Html.optgroup [ HA.attribute "label" "Most Frequent"] 
-            [ Html.option [] [ Html.text "IT" ]
+        [ Html.optgroup [ HA.attribute "label" "Most Recent"] 
+            [ Html.option [ HA.value <| String.fromInt latest ] [ Html.text <| Maybe.withDefault "" <| Dict.get latest options ]
             ] 
         , Html.optgroup [ HA.attribute "label" "All" ]
-            [ Html.option [] [ Html.text "IT" ]
-            , Html.option [] [ Html.text "Marketing" ]
-            , Html.option [] [ Html.text "Sales" ]
-            ]
+            (Dict.map (\id name -> Html.option [ HA.value <| String.fromInt id ] [ Html.text name ] ) options
+                |> Dict.values)
         ]
         

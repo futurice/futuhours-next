@@ -536,13 +536,18 @@ entryColumn model entries =
 
 editEntry : Model -> T.Day -> T.Entry -> Element Msg
 editEntry model day entry =
+    let
+        latestEntry =
+            Maybe.andThen T.latestEntry model.hours
+                |> Maybe.withDefault entry
+    in    
     row
         [ width fill
         , spacing 10
         ]
         [ Ui.stepper entry EditEntry
-        , Ui.dropdown
-        , Ui.dropdown
+        , Ui.dropdown latestEntry.projectId entry.projectId <| Maybe.withDefault Dict.empty model.projectNames
+        , Ui.dropdown latestEntry.taskId entry.taskId <| Maybe.withDefault Dict.empty model.taskNames
         , Input.text
             [ Border.width 1
             , Border.rounded 5
