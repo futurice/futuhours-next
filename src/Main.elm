@@ -141,11 +141,18 @@ type Msg
     | LoadMoreNext
     | LoadMorePrevious
     | OpenDay T.Day T.HoursDay
+    | EditEntry T.Day T.Entry
     | CloseDay T.Day
     | UserResponse (Result Http.Error T.User)
     | HoursResponse (Result Http.Error T.HoursResponse)
     | WindowResize Int Int
     | ToggleMenu
+
+
+send : Msg -> Cmd Msg
+send msg =
+    Task.succeed msg
+        |> Task.perform identity
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -162,7 +169,7 @@ update msg model =
                 latestDate =
                     model.hours
                         |> Maybe.andThen T.latestEntry
-                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe )                            
+                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
                         |> Maybe.withDefault model.today
 
                 nextThirtyDays =
@@ -177,7 +184,7 @@ update msg model =
                 oldestDate =
                     model.hours
                         |> Maybe.andThen T.oldestEntry
-                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe )
+                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
                         |> Maybe.withDefault model.today
 
                 oldestMinus30 =
@@ -189,24 +196,50 @@ update msg model =
 
         OpenDay date hoursDay ->
             let
-                latest = 
+                latest =
                     Maybe.andThen T.latestEntry model.hours
 
-                addHoursIfEmpty =
+                addEntryIfEmpty =
                     if List.isEmpty hoursDay.entries then
-                        { hoursDay 
-                        | entries = 
-                            Maybe.map List.singleton latest
-                                |> Maybe.withDefault []
-                        , hours = 
-                            Maybe.map .hours latest
-                                |> Maybe.withDefault 0
+                        { hoursDay
+                            | entries =
+                                Maybe.map List.singleton latest
+                                    |> Maybe.withDefault []
+                            , hours =
+                                Maybe.map .hours latest
+                                    |> Maybe.withDefault 0
                         }
+
                     else
                         hoursDay
-                            
-            in            
-            ( { model | editingHours = Dict.insert date addHoursIfEmpty model.editingHours }
+            in
+            ( { model | editingHours = Dict.insert date addEntryIfEmpty model.editingHours }
+            , Cmd.none
+            )
+
+        EditEntry date newEntry ->
+            let
+                updateEntries : Maybe T.HoursDay -> Maybe T.HoursDay
+                updateEntries =
+                    Maybe.map
+                        (\hd ->
+                            { hd
+                                | entries =
+                                    List.map
+                                        (\e ->
+                                            if e.id == newEntry.id then
+                                                newEntry
+
+                                            else
+                                                e
+                                        )
+                                        hd.entries
+                            }
+                        )
+            in
+            ( { model
+                | editingHours = Dict.update date updateEntries model.editingHours
+              }
             , Cmd.none
             )
 
@@ -255,7 +288,7 @@ update msg model =
                     }
             in
             ( { model | window = newWindow }, Cmd.none )
-
+            
         _ ->
             ( model, Cmd.none )
 
@@ -502,24 +535,24 @@ entryColumn model entries =
 
 editEntry : Model -> T.Day -> T.Entry -> Element Msg
 editEntry model day entry =
-    row 
+    row
         [ width fill
         , spacing 10
-        ] 
-        [ Ui.stepper 0.5 18 0.5 entry.hours NoOp NoOp
+        ]
+        [ Ui.stepper entry.hours NoOp NoOp
         , Ui.dropdown
         , Ui.dropdown
-        , Input.text 
+        , Input.text
             [ Border.width 1
             , Border.rounded 5
             , Border.color colors.black
             , Font.size 16
             , padding 10
-            ] 
-            { onChange = (\_ -> NoOp)
+            ]
+            { onChange = \_ -> NoOp
             , text = entry.description
             , placeholder = Nothing
-            , label = Input.labelHidden "description" 
+            , label = Input.labelHidden "description"
             }
         , Ui.roundButton colors.white colors.black NoOp "-"
         ]
@@ -528,34 +561,31 @@ editEntry model day entry =
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
     let
-        editingDay =
-            model.editingHours
-                |> Dict.get day
-                |> Maybe.withDefault hoursDay
-
         scButton attrs msg label =
-            Input.button 
-                    ([ Font.size 14, width (px 100), height (px 40), Border.rounded 5 ] ++ attrs)
-                    { onPress = Just msg, label = text label }
+            Input.button
+                ([ Font.size 14, width (px 100), height (px 40), Border.rounded 5 ] ++ attrs)
+                { onPress = Just msg, label = text label }
 
         editingControls =
-            row 
+            row
                 [ width fill
                 , spacing 15
                 , Font.size 16
-                ] 
+                ]
                 [ Ui.roundButton colors.white colors.black NoOp "+"
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
-                        [ Background.color colors.holidayGray ] 
-                        (CloseDay day) "Cancel"
+                        [ Background.color colors.holidayGray ]
+                        (CloseDay day)
+                        "Cancel"
                     , scButton
                         [ Background.color colors.topBarBackground, Font.color colors.white ]
-                        NoOp "Save"
+                        NoOp
+                        "Save"
                     ]
                 ]
-    in    
+    in
     column
         [ width fill
         , Font.extraLight
@@ -573,13 +603,13 @@ dayEdit model day hoursDay =
             [ el [ alignLeft, centerY ] (text <| Util.formatDate day)
             , el [ alignRight, centerY ] (text <| String.fromFloat hoursDay.hours ++ " h")
             ]
-        , column 
-            [ width fill 
+        , column
+            [ width fill
             , Background.color colors.white
             , padding 30
             , spacing 20
             ]
-            (List.map (editEntry model day) editingDay.entries ++ [ editingControls ])
+            (List.map (editEntry model day) hoursDay.entries ++ [ editingControls ])
         ]
 
 
@@ -615,41 +645,42 @@ dayRow model day hoursDay =
                 (OpenDay day hoursDay)
                 "+"
     in
-    if Dict.member day model.editingHours then
-        dayEdit model day hoursDay
+    case Dict.get day model.editingHours of
+        Just hd ->
+            dayEdit model day hd
 
-    else
-        row
-            [ width fill
-            , paddingXY 15 15
-            , spaceEvenly
-            , Font.size 16
-            , Font.color colors.gray
-            , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
-            , Background.color backgroundColor
-            , Event.onClick <| OpenDay day hoursDay
-            , pointer
-            ]
-            [ row [ paddingXY 5 10, width fill ]
-                [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
-                , case hoursDay.type_ of
-                    T.Holiday name ->
-                        el [ Font.alignLeft, width fill ] (text name)
+        Nothing ->
+            row
+                [ width fill
+                , paddingXY 15 15
+                , spaceEvenly
+                , Font.size 16
+                , Font.color colors.gray
+                , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
+                , Background.color backgroundColor
+                , Event.onClick <| OpenDay day hoursDay
+                , pointer
+                ]
+                [ row [ paddingXY 5 10, width fill ]
+                    [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
+                    , case hoursDay.type_ of
+                        T.Holiday name ->
+                            el [ Font.alignLeft, width fill ] (text name)
 
-                    _ ->
-                        entryColumn model hoursDay.entries
-                , if hoursDay.hours == 0 then
-                    Element.none
+                        _ ->
+                            entryColumn model hoursDay.entries
+                    , if hoursDay.hours == 0 then
+                        Element.none
+
+                      else
+                        hoursElem
+                    ]
+                , if showButton then
+                    openButton
 
                   else
-                    hoursElem
+                    Element.none
                 ]
-            , if showButton then
-                openButton
-
-              else
-                Element.none
-            ]
 
 
 monthHeader : Model -> T.Month -> T.HoursMonth -> Element Msg
