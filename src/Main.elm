@@ -198,6 +198,7 @@ update msg model =
             let
                 latest =
                     Maybe.andThen T.latestEntry model.hours
+                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date })
 
                 addEntryIfEmpty =
                     if List.isEmpty hoursDay.entries then
@@ -288,7 +289,7 @@ update msg model =
                     }
             in
             ( { model | window = newWindow }, Cmd.none )
-            
+
         _ ->
             ( model, Cmd.none )
 
