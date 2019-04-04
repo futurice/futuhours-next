@@ -58,3 +58,27 @@ stepper min max step val up down =
         , Input.button [ ] { onPress = Just up, label = el [ ] <| faIcon "fa fa-angle-right" }
         ]
 
+
+dropdown = 
+    row 
+        [ Border.width 1
+        , Border.rounded 5
+        , padding 10
+        , width (shrink |> minimum 200)
+        ] 
+        [ html dropdownRaw ]
+
+
+dropdownRaw =
+    Html.select 
+        [ HA.class "dropdown" ]
+        [ Html.optgroup [ HA.attribute "label" "Most Frequent"] 
+            [ Html.option [] [ Html.text "IT" ]
+            ] 
+        , Html.optgroup [ HA.attribute "label" "All" ]
+            [ Html.option [] [ Html.text "IT" ]
+            , Html.option [] [ Html.text "Marketing" ]
+            , Html.option [] [ Html.text "Sales" ]
+            ]
+        ]
+        

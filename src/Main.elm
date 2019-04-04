@@ -499,6 +499,16 @@ entryColumn model entries =
         (List.map (entryRow model) entries)
 
 
+editEntry : Model -> T.Day -> T.Entry -> Element Msg
+editEntry model day entry =
+    row 
+        [ width fill ] 
+        [ Ui.stepper 0.5 18 0.5 7.5 NoOp NoOp
+        , Ui.dropdown
+        , Ui.dropdown 
+        ]
+
+
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
     let
@@ -548,9 +558,7 @@ dayEdit model day hoursDay =
             , padding 30
             , spacing 20
             ]
-            [ row [ width fill ] [ Ui.stepper 0.5 18 0.5 7.5 NoOp NoOp ]
-            , editingControls
-            ]
+            (List.map (editEntry model day) hoursDay.entries ++ [ editingControls ])
         ]
 
 

@@ -28,3 +28,28 @@ img {
 .clip-circle {
   clip-path: circle(20px at center);
 }
+
+.dropdown {
+  appearance: none;
+  background: none;
+  border: none;
+  font-family: 'Work Sans';
+  font-size: 16px;
+  font-weight: lighter;
+  width: 100%;
+  background-image: url('/angle-down-solid.svg'), linear-gradient(#ffffff, #ffffff);
+  background-repeat: no-repeat;
+  background-position: right;
+}
+
+.dropdown:focus {
+  outline: none;
+}
+
+.dropdown optgroup {
+  font-weight: lighter;
+}
+
+.dropdown option {
+  font-weight: 300;
+}
