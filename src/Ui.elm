@@ -8,6 +8,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes as HA
+import Types as T
 
 
 colors =
@@ -45,17 +46,24 @@ roundButton bkgColor txtColor msg label =
         }
 
 
-stepper : Float -> msg -> msg -> Element msg
-stepper val up down =
+stepper : T.Entry -> (T.Day -> T.Entry -> msg) -> Element msg
+stepper entry msg =
+    let
+        down =
+            msg entry.day { entry | hours = max 0.5 (entry.hours - 0.5) }
+
+        up =
+            msg entry.day { entry | hours = min 18 (entry.hours + 0.5) }
+    in    
     row
         [ spacing 10
         , Border.width 1
         , Border.rounded 5
         , padding 10
-        , width (px 80)
+        , width (px 100)
         ]
         [ Input.button [ alignLeft ] { onPress = Just down, label = el [ ] <| faIcon "fa fa-angle-left" }
-        , el [ Font.size 16, Font.center ] (text <| String.fromFloat val)
+        , el [ Font.size 16, centerX, Font.center ] (text <| String.fromFloat entry.hours)
         , Input.button [ alignRight ] { onPress = Just up, label = el [ ] <| faIcon "fa fa-angle-right" }
         ]
 

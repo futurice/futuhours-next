@@ -540,7 +540,7 @@ editEntry model day entry =
         [ width fill
         , spacing 10
         ]
-        [ Ui.stepper entry.hours NoOp NoOp
+        [ Ui.stepper entry EditEntry
         , Ui.dropdown
         , Ui.dropdown
         , Input.text
