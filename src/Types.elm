@@ -186,15 +186,26 @@ hoursToTaskDict hours =
             |> Dict.fromList
 
 
-latestEntry : HoursResponse -> Maybe Entry
-latestEntry hours =
+allEntries : HoursResponse -> List Entry
+allEntries hours =
     hours.months
         |> Dict.values
         |> List.concatMap (\m -> m.days |> Dict.values)
         |> List.concatMap .entries
-        |> List.sortBy (\e -> e.day |> Date.toTime |> Result.map Time.posixToMillis |> Result.withDefault 0) 
+        |> List.sortBy (\e -> e.day |> Date.toTime |> Result.map Time.posixToMillis |> Result.withDefault 0)
+
+
+latestEntry : HoursResponse -> Maybe Entry
+latestEntry hours =
+    allEntries hours
         |> List.reverse
-        |> List.head        
+        |> List.head
+
+
+oldestEntry : HoursResponse -> Maybe Entry
+oldestEntry hours =
+    allEntries hours
+        |> List.head
 
 
 type alias HoursMonth =

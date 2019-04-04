@@ -161,17 +161,8 @@ update msg model =
             let
                 latestDate =
                     model.hours
-                        |> Maybe.andThen
-                            (\hours ->
-                                hours.months
-                                    |> Dict.values
-                                    |> List.map .days
-                                    |> List.concatMap Dict.keys
-                                    |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
-                                    |> List.sortBy Time.posixToMillis
-                                    |> List.reverse
-                                    |> List.head
-                            )
+                        |> Maybe.andThen T.latestEntry
+                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe )                            
                         |> Maybe.withDefault model.today
 
                 nextThirtyDays =
@@ -185,16 +176,8 @@ update msg model =
             let
                 oldestDate =
                     model.hours
-                        |> Maybe.andThen
-                            (\hours ->
-                                hours.months
-                                    |> Dict.values
-                                    |> List.map .days
-                                    |> List.concatMap Dict.keys
-                                    |> List.filterMap (\d -> Result.toMaybe <| Date.toTime d)
-                                    |> List.sortBy Time.posixToMillis
-                                    |> List.head
-                            )
+                        |> Maybe.andThen T.oldestEntry
+                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe )
                         |> Maybe.withDefault model.today
 
                 oldestMinus30 =
