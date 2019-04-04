@@ -5,6 +5,8 @@ import EverySet as Set
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Time
+import Iso8601 as Date
 
 
 type alias Identifier =
@@ -182,6 +184,17 @@ hoursToTaskDict hours =
     in
         (reportableTasks ++ markedTasks)
             |> Dict.fromList
+
+
+latestEntry : HoursResponse -> Maybe Entry
+latestEntry hours =
+    hours.months
+        |> Dict.values
+        |> List.concatMap (\m -> m.days |> Dict.values)
+        |> List.concatMap .entries
+        |> List.sortBy (\e -> e.day |> Date.toTime |> Result.map Time.posixToMillis |> Result.withDefault 0) 
+        |> List.reverse
+        |> List.head        
 
 
 type alias HoursMonth =
