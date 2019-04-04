@@ -503,10 +503,25 @@ entryColumn model entries =
 editEntry : Model -> T.Day -> T.Entry -> Element Msg
 editEntry model day entry =
     row 
-        [ width fill ] 
+        [ width fill
+        , spacing 10
+        ] 
         [ Ui.stepper 0.5 18 0.5 entry.hours NoOp NoOp
         , Ui.dropdown
-        , Ui.dropdown 
+        , Ui.dropdown
+        , Input.text 
+            [ Border.width 1
+            , Border.rounded 5
+            , Border.color colors.black
+            , Font.size 16
+            , padding 10
+            ] 
+            { onChange = (\_ -> NoOp)
+            , text = entry.description
+            , placeholder = Nothing
+            , label = Input.labelHidden "description" 
+            }
+        , Ui.roundButton colors.white colors.black NoOp "-"
         ]
 
 

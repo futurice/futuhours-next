@@ -48,10 +48,11 @@ roundButton bkgColor txtColor msg label =
 stepper : Float -> Float -> Float -> Float -> msg -> msg -> Element msg
 stepper min max step val up down =
     row
-        [ spacing 15
+        [ spacing 10
         , Border.width 1
         , Border.rounded 5
         , padding 10
+        , width (px 80)
         ]
         [ Input.button [ ] { onPress = Just down, label = el [ ] <| faIcon "fa fa-angle-left" }
         , el [ Font.size 16 ] (text <| String.fromFloat val)
