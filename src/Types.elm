@@ -17,7 +17,9 @@ type Msg
     | LoadMoreNext
     | LoadMorePrevious
     | OpenDay Day HoursDay
+    | AddEntry Day
     | EditEntry Day Entry
+    | DeleteEntry Day Identifier
     | CloseDay Day
     | UserResponse (Result Http.Error User)
     | HandleHoursResponse (Result Http.Error HoursResponse)

@@ -74,3 +74,13 @@ formatDate day =
                 ++ "."
         Err debug ->
             Parser.deadEndsToString debug
+
+
+maybeOr : Maybe a -> Maybe a -> Maybe a
+maybeOr l r =
+    case l of
+        Just _ ->
+            l
+    
+        Nothing ->
+            r

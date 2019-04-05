@@ -198,6 +198,30 @@ update msg model =
             , Cmd.none
             )
 
+        AddEntry date ->
+            let
+                mostRecentEdit =
+                    model.editingHours
+                        |> Dict.get date
+                        |> Maybe.map .entries
+                        |> Maybe.map (List.sortBy .id)
+                        |> Maybe.andThen List.head
+
+                newEntry =
+                    Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEntry model.hours)
+                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date })
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                insertNew =
+                    model.editingHours
+                        |> Dict.update date 
+                            (Maybe.map (\hd -> { hd | entries = hd.entries ++ newEntry } ))
+            in
+                ( { model | editingHours = insertNew } 
+                , Cmd.none
+                )
+
         EditEntry date newEntry ->
             let
                 updateEntries : Maybe T.HoursDay -> Maybe T.HoursDay
@@ -549,7 +573,7 @@ editEntry model day entry =
             , placeholder = Nothing
             , label = Input.labelHidden "description"
             }
-        , Ui.roundButton colors.white colors.black NoOp "-"
+        , Ui.roundButton colors.white colors.black (DeleteEntry day entry.id) "-"
         ]
 
 
@@ -567,7 +591,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ]
-                [ Ui.roundButton colors.white colors.black NoOp "+"
+                [ Ui.roundButton colors.white colors.black (AddEntry day) "+"
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
