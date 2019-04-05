@@ -10,7 +10,7 @@ import Element.Events as Event
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
-import Html.Attributes exposing (class, style)
+import Html.Attributes as HA exposing (class, style)
 import Http
 import Iso8601 as Date
 import Task
@@ -560,35 +560,62 @@ editEntry model day entry =
             Maybe.andThen T.latestEntry model.hours
                 |> Maybe.withDefault entry
 
-        projectNames = Maybe.withDefault Dict.empty model.projectNames
-        taskNames = Maybe.withDefault Dict.empty model.taskNames
+        reportableProjects =
+            model.hours
+                |> Maybe.map .reportableProjects
+                |> Maybe.withDefault []
+
+        reportableProjectNames = 
+            reportableProjects
+                |> List.map (\p -> (p.id, p.name) )
+                |> Dict.fromList
+
+        allProjectNames = Maybe.withDefault Dict.empty model.projectNames
+
+        reportableTaskNames = 
+            reportableProjects
+                |> List.filter (\p -> p.id == entry.projectId)
+                |> List.concatMap .tasks
+                |> List.map (\t -> (t.id, t.name))
+                |> Dict.fromList
+
+        allTaskNames = Maybe.withDefault Dict.empty model.taskNames
+
+        disabled = not <| List.member entry.projectId <| List.map .id reportableProjects
+
+        projectNames = if disabled then allProjectNames else reportableProjectNames
+        taskNames = if disabled then allTaskNames else reportableTaskNames
 
         updateProject i =
             EditEntry day { entry | projectId = i }
 
         updateTask i =
             EditEntry day { entry | taskId = i }
+
+        latestProjectId = if disabled then entry.projectId else latestEntry.projectId
+        latestTaskId = if disabled then entry.taskId else latestEntry.taskId
     in    
     row
         [ width fill
         , spacing 10
         ]
-        [ Ui.stepper entry
-        , Ui.dropdown updateProject latestEntry.projectId entry.projectId projectNames
-        , Ui.dropdown updateTask latestEntry.taskId entry.taskId taskNames
+        [ Ui.stepper disabled entry
+        , Ui.dropdown disabled updateProject latestProjectId entry.projectId projectNames
+        , Ui.dropdown disabled updateTask latestTaskId entry.taskId taskNames
         , Input.text
             [ Border.width 1
             , Border.rounded 5
-            , Border.color colors.black
+            , Border.color (if disabled then colors.lightGray else colors.black)
             , Font.size 16
             , padding 10
+            , htmlAttribute <| HA.disabled disabled
             ]
             { onChange = \t -> EditEntry day { entry | description = t }
             , text = entry.description
             , placeholder = Nothing
             , label = Input.labelHidden "description"
             }
-        , Ui.roundButton colors.white colors.black (DeleteEntry day entry.id) "-"
+        , Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) "-"
         ]
 
 
@@ -606,7 +633,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ]
-                [ Ui.roundButton colors.white colors.black (AddEntry day) "+"
+                [ Ui.roundButton False colors.white colors.black (AddEntry day) "+"
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
@@ -674,6 +701,7 @@ dayRow model day hoursDay =
 
         openButton =
             Ui.roundButton
+                False
                 colors.topBarBackground
                 colors.white
                 (OpenDay day hoursDay)

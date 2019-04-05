@@ -187,7 +187,6 @@ hoursToProjectDict hours =
     let
         toDict projects =
             projects
-                |> List.filter (not << .closed)
                 |> List.map (\t -> (t.id, t.name)) 
                 |> Dict.fromList
         

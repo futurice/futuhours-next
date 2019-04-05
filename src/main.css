@@ -45,6 +45,10 @@ img {
   background-position: right 10px center;
 }
 
+.dropdown:disabled {
+  border-color: rgb(191, 191, 191);
+}
+
 .dropdown:focus {
   outline: none;
 }

@@ -33,11 +33,11 @@ faIcon c =
     html <| Html.i [ HA.class c ] []
 
 
-roundButton : Element.Color -> Element.Color -> Msg -> String -> Element Msg
-roundButton bkgColor txtColor msg label =
+roundButton : Bool -> Element.Color -> Element.Color -> Msg -> String -> Element Msg
+roundButton disabled bkgColor txtColor msg label =
     Input.button
-        [ Background.color bkgColor
-        , Font.color txtColor
+        [ Background.color (if disabled then colors.lightGray else bkgColor)
+        , Font.color (if disabled then colors.gray else txtColor)
         , Font.size 30
         , Font.extraLight
         , width <| px 35
@@ -45,46 +45,49 @@ roundButton bkgColor txtColor msg label =
         , Border.rounded 50
         , Border.width 1
         ]
-        { onPress = Just msg
+        { onPress = if disabled then Nothing else Just msg
         , label = el [ centerX, centerY ] (text label)
         }
 
 
-stepper : T.Entry -> Element Msg
-stepper entry =
+stepper : Bool -> T.Entry -> Element Msg
+stepper disabled entry =
     let
         down =
-            EditEntry entry.day { entry | hours = max 0.5 (entry.hours - 0.5) }
+           if disabled then Nothing else Just <| EditEntry entry.day { entry | hours = max 0.5 (entry.hours - 0.5) }
 
         up =
-            EditEntry entry.day { entry | hours = min 18 (entry.hours + 0.5) }
+            if disabled then Nothing else Just <| EditEntry entry.day { entry | hours = min 18 (entry.hours + 0.5) } 
     in    
     row
         [ spacing 10
         , Border.width 1
         , Border.rounded 5
+        , Border.color (if disabled then colors.lightGray else colors.black)
         , padding 10
         , width (px 100)
+        , Font.color (if disabled then colors.gray else colors.black)
         ]
-        [ Input.button [ alignLeft ] { onPress = Just down, label = el [ ] <| faIcon "fa fa-angle-left" }
+        [ Input.button [ alignLeft ] { onPress = down, label = el [ ] <| faIcon "fa fa-angle-left" }
         , el [ Font.size 16, centerX, Font.center ] (text <| String.fromFloat entry.hours)
-        , Input.button [ alignRight ] { onPress = Just up, label = el [ ] <| faIcon "fa fa-angle-right" }
+        , Input.button [ alignRight ] { onPress = up, label = el [ ] <| faIcon "fa fa-angle-right" }
         ]
 
 
-dropdown : (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
-dropdown handler latest value options = 
+dropdown : Bool -> (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
+dropdown disabled handler latest value options = 
     row 
         [ width (shrink |> minimum 200)
         ] 
-        [ html <| dropdownRaw handler latest value options ]
+        [ html <| dropdownRaw disabled handler latest value options ]
 
 
-dropdownRaw : (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
-dropdownRaw handler latest value options =
+dropdownRaw : Bool -> (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
+dropdownRaw disabled handler latest value options =
     Html.select 
         [ HA.class "dropdown"
         , HE.on "change" <| Json.map handler HEX.targetValueIntParse
+        , HA.disabled disabled
         ]
         [ Html.optgroup [ HA.attribute "label" "Most Recent"] 
             [ Html.option [ HA.value <| String.fromInt latest ] [ Html.text <| Maybe.withDefault "" <| Dict.get latest options ]
