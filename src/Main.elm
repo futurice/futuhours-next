@@ -233,7 +233,7 @@ update msg model =
             let
                 latest =
                     Maybe.andThen T.latestEntry model.hours
-                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date })
+                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
 
                 addEntryIfEmpty =
                     if List.isEmpty hoursDay.entries then
@@ -363,7 +363,12 @@ update msg model =
         HandleEntryUpdateResponse result ->
             case result of
                 Ok resp ->
-                    ( { model | hours = Just resp.hours, user = Just resp.user }, Cmd.none )
+                    let
+                        newHours =
+                            model.hours
+                                |> Maybe.map (\oldHours -> T.mergeHoursResponse resp.hours oldHours)  
+                    in                    
+                    ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
             
                 Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
@@ -711,7 +716,7 @@ dayEdit model day hoursDay =
                         "Cancel"
                     , scButton
                         [ Background.color colors.topBarBackground, Font.color colors.white ]
-                        NoOp
+                        (SaveDay day hoursDay)
                         "Save"
                     ]
                 ]
