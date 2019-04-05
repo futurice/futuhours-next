@@ -49,10 +49,6 @@ img {
   border-color: rgb(191, 191, 191);
 }
 
-.dropdown:focus {
-  outline: none;
-}
-
 .dropdown optgroup {
   font-weight: lighter;
 }

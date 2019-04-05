@@ -366,7 +366,7 @@ update msg model =
                     let
                         newHours =
                             model.hours
-                                |> Maybe.map (\oldHours -> T.mergeHoursResponse resp.hours oldHours)  
+                                |> Maybe.map (T.mergeHoursResponse resp.hours)  
                     in                    
                     ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
             
