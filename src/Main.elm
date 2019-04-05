@@ -205,6 +205,7 @@ update msg model =
                         |> Dict.get date
                         |> Maybe.map .entries
                         |> Maybe.map (List.sortBy .id)
+                        |> Maybe.map List.reverse
                         |> Maybe.andThen List.head
 
                 newEntry =
@@ -247,6 +248,20 @@ update msg model =
               }
             , Cmd.none
             )
+
+        DeleteEntry date id ->
+            let
+                removeByID xs =
+                    List.filter (\x -> not <| x.id == id) xs
+
+                filteredEntries =
+                    model.editingHours
+                        |> Dict.update date (Maybe.map (\hd -> { hd | entries = removeByID hd.entries }))
+                        
+            in
+                ( { model | editingHours = filteredEntries }
+                , Cmd.none
+                )
 
         CloseDay date ->
             ( { model | editingHours = Dict.remove date model.editingHours }
