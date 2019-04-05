@@ -48,7 +48,6 @@ fetchHours start end =
         }
 
 
-
 ---- SUBSCRIPTIONS ----
 
 
@@ -211,7 +210,7 @@ update msg model =
 
                 newEntry =
                     Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEntry model.hours)
-                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date })
+                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
@@ -253,7 +252,7 @@ update msg model =
         DeleteEntry date id ->
             let
                 removeByID xs =
-                    List.filter (\x -> not <| x.id == id) xs
+                    List.map (\x -> if x.id == id then T.markDeletedEntry x else x ) xs
 
                 filteredEntries =
                     model.editingHours
@@ -647,6 +646,10 @@ dayEdit model day hoursDay =
                         "Save"
                     ]
                 ]
+
+        filteredEntries =
+            hoursDay.entries
+                |> List.filter (not << T.isEntryDeleted)
     in
     column
         [ width fill
@@ -671,7 +674,7 @@ dayEdit model day hoursDay =
             , padding 30
             , spacing 20
             ]
-            (List.map (editEntry model day) hoursDay.entries ++ [ editingControls ])
+            (List.map (editEntry model day) filteredEntries ++ [ editingControls ])
         ]
 
 

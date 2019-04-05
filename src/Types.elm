@@ -281,6 +281,13 @@ dayTypeDecoder =
         ]
 
 
+type EntryAge
+    = Old
+    | New
+    | Deleted
+    | DeletedNew
+
+
 type alias Entry =
     { id : Identifier
     , projectId : Identifier
@@ -290,6 +297,7 @@ type alias Entry =
     , closed : Bool
     , hours : NDTh
     , billable : EntryType
+    , age : EntryAge
     }
 
 
@@ -304,6 +312,32 @@ entryDecoder =
         |> required "closed" bool
         |> required "hours" float
         |> required "billable" entryTypeDecoder
+        |> hardcoded Old
+
+
+isEntryDeleted : Entry -> Bool
+isEntryDeleted e =
+    case e.age of
+        Deleted ->
+            True
+    
+        DeletedNew ->
+            True
+
+        _ -> 
+            False
+
+markDeletedEntry : Entry -> Entry
+markDeletedEntry e =
+    case e.age of
+        New ->
+            { e | age = DeletedNew}
+    
+        Old ->
+            { e | age = Deleted }
+
+        _ ->
+            e
 
 
 type EntryType
