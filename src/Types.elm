@@ -186,7 +186,9 @@ hoursToProjectDict : HoursResponse -> Dict Identifier String
 hoursToProjectDict hours =
     let
         toDict projects =
-            List.map (\t -> (t.id, t.name)) projects
+            projects
+                |> List.filter (not << .closed)
+                |> List.map (\t -> (t.id, t.name)) 
                 |> Dict.fromList
         
         reportable = toDict hours.reportableProjects
