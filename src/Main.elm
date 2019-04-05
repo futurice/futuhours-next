@@ -204,6 +204,7 @@ update msg model =
                     model.editingHours
                         |> Dict.get date
                         |> Maybe.map .entries
+                        |> Maybe.map (List.filter (not << .closed))
                         |> Maybe.map (List.sortBy .id)
                         |> Maybe.map List.reverse
                         |> Maybe.andThen List.head
