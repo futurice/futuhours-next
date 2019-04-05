@@ -21,8 +21,10 @@ type Msg
     | EditEntry Day Entry
     | DeleteEntry Day Identifier
     | CloseDay Day
+    | SaveDay Day HoursDay
     | UserResponse (Result Http.Error User)
     | HandleHoursResponse (Result Http.Error HoursResponse)
+    | HandleEntryUpdateResponse (Result Http.Error EntryUpdateResponse)
     | WindowResize Int Int
     | ToggleMenu
 
@@ -395,3 +397,19 @@ entryUpdateEncoder eu =
         , ("hours", Encode.float eu.hours)
         , ("closed", Encode.bool eu.closed) 
         ]
+
+entryToUpdate : Entry -> EntryUpdate
+entryToUpdate e =
+    { taskId = e.taskId
+    , projectId = e.projectId
+    , description = e.description
+    , date = e.day
+    , hours = e.hours
+    , closed = e.closed
+    }
+
+
+entryToJsonBody : Entry -> Encode.Value
+entryToJsonBody e =
+    entryToUpdate e
+        |> entryUpdateEncoder

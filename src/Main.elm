@@ -48,6 +48,62 @@ fetchHours start end =
         }
 
 
+postNewEntry : T.Entry -> Cmd Msg
+postNewEntry e =
+    Http.post
+        { url = "/api/v1/entry"
+        , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
+        , body = Http.jsonBody <| T.entryToJsonBody e
+        }
+
+
+putEntryUpdate : T.Entry -> Cmd Msg
+putEntryUpdate e =
+    Http.request
+        { method = "PUT"
+        , headers = []
+        , url = "/api/v1/entry/" ++ (String.fromInt e.id)
+        , body = Http.jsonBody <| T.entryToJsonBody e 
+        , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+deleteEntry : T.Entry -> Cmd Msg
+deleteEntry e =
+    Http.request
+        { method = "DELETE"
+        , headers = []
+        , url = "/api/v1/entry/" ++ (String.fromInt e.id)
+        , body = Http.emptyBody
+        , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+updateHoursDay : T.HoursDay -> Cmd Msg
+updateHoursDay hoursDay =
+    let
+        whichCmd e =
+            case e.age of
+                T.New ->
+                    postNewEntry e
+                
+                T.Old ->
+                    putEntryUpdate e
+
+                T.Deleted ->
+                    deleteEntry e
+
+                T.DeletedNew ->
+                    Cmd.none
+    in
+        List.map whichCmd hoursDay.entries
+            |> Cmd.batch
+
+
 ---- SUBSCRIPTIONS ----
 
 
@@ -268,6 +324,11 @@ update msg model =
             , Cmd.none
             )
 
+        SaveDay day hoursDay ->
+            ( { model | editingHours = Dict.remove day model.editingHours }
+            , updateHoursDay hoursDay
+            )
+
         UserResponse result ->
             case result of
                 Ok user ->
@@ -296,6 +357,14 @@ update msg model =
                     , Cmd.none
                     )
 
+                Err err ->
+                    ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+        HandleEntryUpdateResponse result ->
+            case result of
+                Ok resp ->
+                    ( { model | hours = Just resp.hours, user = Just resp.user }, Cmd.none )
+            
                 Err err ->
                     ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
 
