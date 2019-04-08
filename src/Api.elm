@@ -10,7 +10,7 @@ import Iso8601 as Date
 
 
 rootUrl : String
-rootUrl = "/v1"
+rootUrl = "/api/v1"
 
 
 fetchUser : Cmd Msg
