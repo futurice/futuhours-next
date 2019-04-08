@@ -62,8 +62,8 @@ putEntryUpdate e =
     Http.request
         { method = "PUT"
         , headers = []
-        , url = "/api/v1/entry/" ++ (String.fromInt e.id)
-        , body = Http.jsonBody <| T.entryToJsonBody e 
+        , url = "/api/v1/entry/" ++ String.fromInt e.id
+        , body = Http.jsonBody <| T.entryToJsonBody e
         , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
         , timeout = Nothing
         , tracker = Nothing
@@ -75,7 +75,7 @@ deleteEntry e =
     Http.request
         { method = "DELETE"
         , headers = []
-        , url = "/api/v1/entry/" ++ (String.fromInt e.id)
+        , url = "/api/v1/entry/" ++ String.fromInt e.id
         , body = Http.emptyBody
         , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
         , timeout = Nothing
@@ -90,7 +90,7 @@ updateHoursDay hoursDay =
             case e.age of
                 T.New ->
                     postNewEntry e
-                
+
                 T.Old ->
                     putEntryUpdate e
 
@@ -100,8 +100,8 @@ updateHoursDay hoursDay =
                 T.DeletedNew ->
                     Cmd.none
     in
-        List.map whichCmd hoursDay.entries
-            
+    List.map whichCmd hoursDay.entries
+
 
 
 ---- SUBSCRIPTIONS ----
@@ -195,10 +195,10 @@ init flags =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case model.saveQueue of
-        x::xs ->
+        x :: xs ->
             ( { model | saveQueue = xs }, x )
-    
-        [] ->         
+
+        [] ->
             case msg of
                 CloseError ->
                     ( { model | hasError = Nothing }, Cmd.none )
@@ -279,12 +279,12 @@ update msg model =
 
                         insertNew =
                             model.editingHours
-                                |> Dict.update date 
-                                    (Maybe.map (\hd -> { hd | entries = hd.entries ++ newEntry } ))
+                                |> Dict.update date
+                                    (Maybe.map (\hd -> { hd | entries = hd.entries ++ newEntry }))
                     in
-                        ( { model | editingHours = insertNew } 
-                        , Cmd.none
-                        )
+                    ( { model | editingHours = insertNew }
+                    , Cmd.none
+                    )
 
                 EditEntry date newEntry ->
                     let
@@ -308,23 +308,30 @@ update msg model =
                     in
                     ( { model
                         | editingHours = Dict.update date updateEntries model.editingHours
-                    }
+                      }
                     , Cmd.none
                     )
 
                 DeleteEntry date id ->
                     let
                         removeByID xs =
-                            List.map (\x -> if x.id == id then T.markDeletedEntry x else x ) xs
+                            List.map
+                                (\x ->
+                                    if x.id == id then
+                                        T.markDeletedEntry x
+
+                                    else
+                                        x
+                                )
+                                xs
 
                         filteredEntries =
                             model.editingHours
                                 |> Dict.update date (Maybe.map (\hd -> { hd | entries = removeByID hd.entries }))
-                                
                     in
-                        ( { model | editingHours = filteredEntries }
-                        , Cmd.none
-                        )
+                    ( { model | editingHours = filteredEntries }
+                    , Cmd.none
+                    )
 
                 CloseDay date ->
                     ( { model | editingHours = Dict.remove date model.editingHours }
@@ -334,13 +341,13 @@ update msg model =
                 SaveDay day hoursDay ->
                     case updateHoursDay hoursDay of
                         [] ->
-                            ( { model | hasError = Just "Saved day had no hours entries" }, Cmd.none )   
-                    
-                        s::saves ->
-                            ( { model 
-                            | editingHours = Dict.remove day model.editingHours 
-                            , saveQueue = saves
-                            }
+                            ( { model | hasError = Just "Saved day had no hours entries" }, Cmd.none )
+
+                        s :: saves ->
+                            ( { model
+                                | editingHours = Dict.remove day model.editingHours
+                                , saveQueue = saves
+                              }
                             , s
                             )
 
@@ -350,7 +357,7 @@ update msg model =
                             ( { model | user = Just user }, Cmd.none )
 
                         Err err ->
-                            ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+                            ( { model | hasError = Just <| Util.httpErrToString err }, Cmd.none )
 
                 HandleHoursResponse result ->
                     case result of
@@ -368,12 +375,12 @@ update msg model =
                                 | hours = Just newHours
                                 , projectNames = Just <| T.hoursToProjectDict newHours
                                 , taskNames = Just <| T.hoursToTaskDict newHours
-                            }
+                              }
                             , Cmd.none
                             )
 
                         Err err ->
-                            ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+                            ( { model | hasError = Just <| Util.httpErrToString err }, Cmd.none )
 
                 HandleEntryUpdateResponse result ->
                     case result of
@@ -381,12 +388,12 @@ update msg model =
                             let
                                 newHours =
                                     model.hours
-                                        |> Maybe.map (T.mergeHoursResponse resp.hours)  
-                            in                    
+                                        |> Maybe.map (T.mergeHoursResponse resp.hours)
+                            in
                             ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
-                    
+
                         Err err ->
-                            ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+                            ( { model | hasError = Just <| Util.httpErrToString err }, Cmd.none )
 
                 WindowResize width height ->
                     let
@@ -654,26 +661,40 @@ editEntry model day entry =
                 |> Maybe.map .reportableProjects
                 |> Maybe.withDefault []
 
-        reportableProjectNames = 
+        reportableProjectNames =
             reportableProjects
-                |> List.map (\p -> (p.id, p.name) )
+                |> List.map (\p -> ( p.id, p.name ))
                 |> Dict.fromList
 
-        allProjectNames = Maybe.withDefault Dict.empty model.projectNames
+        allProjectNames =
+            Maybe.withDefault Dict.empty model.projectNames
 
-        reportableTaskNames = 
+        reportableTaskNames =
             reportableProjects
                 |> List.filter (\p -> p.id == entry.projectId)
                 |> List.concatMap .tasks
-                |> List.map (\t -> (t.id, t.name))
+                |> List.map (\t -> ( t.id, t.name ))
                 |> Dict.fromList
 
-        allTaskNames = Maybe.withDefault Dict.empty model.taskNames
+        allTaskNames =
+            Maybe.withDefault Dict.empty model.taskNames
 
-        disabled = not <| List.member entry.projectId <| List.map .id reportableProjects
+        disabled =
+            not <| List.member entry.projectId <| List.map .id reportableProjects
 
-        projectNames = if disabled then allProjectNames else reportableProjectNames
-        taskNames = if disabled then allTaskNames else reportableTaskNames
+        projectNames =
+            if disabled then
+                allProjectNames
+
+            else
+                reportableProjectNames
+
+        taskNames =
+            if disabled then
+                allTaskNames
+
+            else
+                reportableTaskNames
 
         updateProject i =
             EditEntry day { entry | projectId = i }
@@ -681,9 +702,20 @@ editEntry model day entry =
         updateTask i =
             EditEntry day { entry | taskId = i }
 
-        latestProjectId = if disabled then entry.projectId else latestEntry.projectId
-        latestTaskId = if disabled then entry.taskId else latestEntry.taskId
-    in    
+        latestProjectId =
+            if disabled then
+                entry.projectId
+
+            else
+                latestEntry.projectId
+
+        latestTaskId =
+            if disabled then
+                entry.taskId
+
+            else
+                latestEntry.taskId
+    in
     row
         [ width fill
         , spacing 10
@@ -694,7 +726,13 @@ editEntry model day entry =
         , Input.text
             [ Border.width 1
             , Border.rounded 5
-            , Border.color (if disabled then colors.lightGray else colors.black)
+            , Border.color
+                (if disabled then
+                    colors.lightGray
+
+                 else
+                    colors.black
+                )
             , Font.size 16
             , padding 10
             , htmlAttribute <| HA.disabled disabled
@@ -952,11 +990,11 @@ errorMsg error =
 
 waiting : Element Msg
 waiting =
-    el 
-        [ centerX 
+    el
+        [ centerX
         , centerY
         , padding 20
-        , Border.solid 
+        , Border.solid
         , Border.width 2
         , Border.rounded 10
         , Border.shadow { offset = ( 4, 4 ), size = 1, blur = 5, color = colors.gray }
@@ -974,7 +1012,11 @@ mainLayout model =
                     errorMsg err
 
                 Nothing ->
-                    if List.isEmpty model.saveQueue then none else waiting
+                    if List.isEmpty model.saveQueue then
+                        none
+
+                    else
+                        waiting
     in
     column
         [ Background.color colors.bodyBackground

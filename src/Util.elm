@@ -4,6 +4,7 @@ import Time exposing (Month(..), Weekday(..))
 import Iso8601 as Date
 import Types as T
 import Parser
+import Http exposing (Error(..))
 
 toEnglishMonth : Time.Month -> String
 toEnglishMonth month =
@@ -84,3 +85,22 @@ maybeOr l r =
     
         Nothing ->
             r
+
+
+httpErrToString : Http.Error -> String
+httpErrToString err =
+    case err of
+        BadUrl str ->
+            "Bad URL: " ++ str
+    
+        Timeout ->
+            "The request timed out"
+
+        NetworkError -> 
+            "Network error"
+
+        BadStatus int ->
+            "Request returned bad status: " ++ (String.fromInt int)
+
+        BadBody str ->
+            "Error parsing request body: " ++ str
