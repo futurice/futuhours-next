@@ -7,14 +7,19 @@ const path = require('path');
 const PORT = 8000;
 const HOST = '0.0.0.0';
 
-const API_URL = process.env.API_HOST + "/api";
+const API_URL = process.env.API_HOST;
 console.log(`API proxy set to ${API_URL}`);
 
 const app = express();
 
 // API proxy
 app.use('/api', proxy(API_URL, {
+    proxyReqPathResolver: function(req) {
+        console.log(`Proxy request from: ${req.url}`);
+        return req.url;
+    },
     proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+        console.log(`Proxy request to: ${srcReq.url}`);
         proxyReqOpts.headers['X-Forwarded-Proto'] = srcReq.protocol;
         proxyReqOpts.headers['X-Real-IP'] = srcReq.ip;
         return proxyReqOpts;
