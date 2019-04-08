@@ -18,6 +18,10 @@ app.use('/api', proxy(API_URL, {
         proxyReqOpts.headers['X-Forwarded-Proto'] = srcReq.protocol;
         proxyReqOpts.headers['X-Real-IP'] = srcReq.ip;
         return proxyReqOpts;
+    },
+    proxyErrorHandler: function(err, res, next) {
+        console.log(`API Proxy encountered error: ${err.code} - ${res}`);
+        next(err);
     }
 }));
 
