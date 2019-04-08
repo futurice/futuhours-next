@@ -13,7 +13,13 @@ console.log(`API proxy set to ${API_URL}`);
 const app = express();
 
 // API proxy
-app.use('/api', proxy(API_URL));
+app.use('/api', proxy(API_URL, {
+    proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+        proxyReqOpts.headers['X-Forwarded-Proto'] = srcReq.protocol;
+        proxyReqOpts.headers['X-Real-IP'] = srcReq.ip;
+        return proxyReqOpts;
+    }
+}));
 
 // Static resources
 app.use(express.static(path.join(__dirname + "/build", '/')));
