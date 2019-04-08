@@ -7,7 +7,7 @@ const path = require('path');
 const PORT = 8000;
 const HOST = '0.0.0.0';
 
-const API_URL = process.env.API_HOST;
+const API_URL = process.env.API_HOST + "/api";
 console.log(`API proxy set to ${API_URL}`);
 
 const app = express();
