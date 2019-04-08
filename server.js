@@ -16,7 +16,10 @@ const app = express();
 app.use('/api', proxy(API_URL, {
     proxyReqPathResolver: function(req) {
         console.log(`Proxy request from: ${req.url}`);
-        return req.url;
+        var parts = req.url.split('?');
+        var queryString = parts[1];
+        var updatedPath = parts[0].replace(/v1/, 'api/v1');
+        return updatedPath + (queryString ? '?' + queryString : '');
     },
     proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
         console.log(`Proxy request to: ${proxyReqOpts.path}`);
