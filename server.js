@@ -11,11 +11,11 @@ const API_URL = process.env.API_URL;
 
 const app = express();
 
-// Static resources
-app.use(express.static(path.join(__dirname + "/build", '/')));
-
 // API proxy
 app.use('/api', proxy(API_URL));
+
+// Static resources
+app.use(express.static(path.join(__dirname + "/build", '/')));
 
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
