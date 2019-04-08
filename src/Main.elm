@@ -921,7 +921,7 @@ hoursList model =
             ]
             (case months of
                 [] ->
-                    [ none ]
+                    [ waiting ]
 
                 _ ->
                     loadMoreButton LoadMoreNext
@@ -950,8 +950,8 @@ errorMsg error =
         (paragraph [] [ text "FutuHours encountered an error: ", text error ])
 
 
-loading : Element Msg
-loading =
+waiting : Element Msg
+waiting =
     el 
         [ centerX 
         , centerY
@@ -962,7 +962,7 @@ loading =
         , Border.shadow { offset = ( 4, 4 ), size = 1, blur = 5, color = colors.gray }
         , Background.color colors.white
         ]
-        (text "Saving ...")
+        (text "Waiting ...")
 
 
 mainLayout : Model -> Element Msg
@@ -974,7 +974,7 @@ mainLayout model =
                     errorMsg err
 
                 Nothing ->
-                    if List.isEmpty model.saveQueue then none else loading
+                    if List.isEmpty model.saveQueue then none else waiting
     in
     column
         [ Background.color colors.bodyBackground
