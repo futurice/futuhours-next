@@ -83,7 +83,7 @@ deleteEntry e =
         }
 
 
-updateHoursDay : T.HoursDay -> Cmd Msg
+updateHoursDay : T.HoursDay -> List (Cmd Msg)
 updateHoursDay hoursDay =
     let
         whichCmd e =
@@ -101,7 +101,7 @@ updateHoursDay hoursDay =
                     Cmd.none
     in
         List.map whichCmd hoursDay.entries
-            |> Cmd.batch
+            
 
 
 ---- SUBSCRIPTIONS ----
@@ -155,6 +155,7 @@ type alias Model =
     , today : Time.Posix
     , window : Window
     , editingHours : Dict T.Day T.HoursDay
+    , saveQueue : List (Cmd Msg)
     }
 
 
@@ -178,6 +179,7 @@ init flags =
       , today = today
       , window = { width = flags.width, height = flags.height, device = classifyDevice flags }
       , editingHours = Dict.empty
+      , saveQueue = []
       }
     , Cmd.batch
         [ fetchUser
@@ -192,199 +194,212 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        CloseError ->
-            ( { model | hasError = Nothing }, Cmd.none )
+    case model.saveQueue of
+        x::xs ->
+            ( { model | saveQueue = xs }, x )
+    
+        [] ->         
+            case msg of
+                CloseError ->
+                    ( { model | hasError = Nothing }, Cmd.none )
 
-        ToggleMenu ->
-            ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
+                ToggleMenu ->
+                    ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
 
-        LoadMoreNext ->
-            let
-                latestDate =
-                    model.hours
-                        |> Maybe.andThen T.latestEntry
-                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
-                        |> Maybe.withDefault model.today
-
-                nextThirtyDays =
-                    TE.add TE.Day 30 Time.utc latestDate
-            in
-            ( model
-            , fetchHours model.today nextThirtyDays
-            )
-
-        LoadMorePrevious ->
-            let
-                oldestDate =
-                    model.hours
-                        |> Maybe.andThen T.oldestEntry
-                        |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
-                        |> Maybe.withDefault model.today
-
-                oldestMinus30 =
-                    TE.add TE.Day -30 Time.utc oldestDate
-            in
-            ( model
-            , fetchHours oldestMinus30 oldestDate
-            )
-
-        OpenDay date hoursDay ->
-            let
-                latest =
-                    Maybe.andThen T.latestEntry model.hours
-                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
-
-                addEntryIfEmpty =
-                    if List.isEmpty hoursDay.entries then
-                        { hoursDay
-                            | entries =
-                                Maybe.map List.singleton latest
-                                    |> Maybe.withDefault []
-                            , hours =
-                                Maybe.map .hours latest
-                                    |> Maybe.withDefault 0
-                        }
-
-                    else
-                        hoursDay
-            in
-            ( { model | editingHours = Dict.insert date addEntryIfEmpty model.editingHours }
-            , Cmd.none
-            )
-
-        AddEntry date ->
-            let
-                mostRecentEdit =
-                    model.editingHours
-                        |> Dict.get date
-                        |> Maybe.map .entries
-                        |> Maybe.map (List.filter (not << .closed))
-                        |> Maybe.map (List.sortBy .id)
-                        |> Maybe.map List.reverse
-                        |> Maybe.andThen List.head
-
-                newEntry =
-                    Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEntry model.hours)
-                        |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                insertNew =
-                    model.editingHours
-                        |> Dict.update date 
-                            (Maybe.map (\hd -> { hd | entries = hd.entries ++ newEntry } ))
-            in
-                ( { model | editingHours = insertNew } 
-                , Cmd.none
-                )
-
-        EditEntry date newEntry ->
-            let
-                updateEntries : Maybe T.HoursDay -> Maybe T.HoursDay
-                updateEntries =
-                    Maybe.map
-                        (\hd ->
-                            { hd
-                                | entries =
-                                    List.map
-                                        (\e ->
-                                            if e.id == newEntry.id then
-                                                newEntry
-
-                                            else
-                                                e
-                                        )
-                                        hd.entries
-                            }
-                        )
-            in
-            ( { model
-                | editingHours = Dict.update date updateEntries model.editingHours
-              }
-            , Cmd.none
-            )
-
-        DeleteEntry date id ->
-            let
-                removeByID xs =
-                    List.map (\x -> if x.id == id then T.markDeletedEntry x else x ) xs
-
-                filteredEntries =
-                    model.editingHours
-                        |> Dict.update date (Maybe.map (\hd -> { hd | entries = removeByID hd.entries }))
-                        
-            in
-                ( { model | editingHours = filteredEntries }
-                , Cmd.none
-                )
-
-        CloseDay date ->
-            ( { model | editingHours = Dict.remove date model.editingHours }
-            , Cmd.none
-            )
-
-        SaveDay day hoursDay ->
-            ( { model | editingHours = Dict.remove day model.editingHours }
-            , updateHoursDay hoursDay
-            )
-
-        UserResponse result ->
-            case result of
-                Ok user ->
-                    ( { model | user = Just user }, Cmd.none )
-
-                Err err ->
-                    ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
-
-        HandleHoursResponse result ->
-            case result of
-                Ok hoursResponse ->
+                LoadMoreNext ->
                     let
-                        newHours =
-                            case model.hours of
-                                Just oldHours ->
-                                    T.mergeHoursResponse oldHours hoursResponse
+                        latestDate =
+                            model.hours
+                                |> Maybe.andThen T.latestEntry
+                                |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
+                                |> Maybe.withDefault model.today
 
-                                Nothing ->
-                                    hoursResponse
+                        nextThirtyDays =
+                            TE.add TE.Day 30 Time.utc latestDate
                     in
-                    ( { model
-                        | hours = Just newHours
-                        , projectNames = Just <| T.hoursToProjectDict newHours
-                        , taskNames = Just <| T.hoursToTaskDict newHours
-                      }
+                    ( model
+                    , fetchHours model.today nextThirtyDays
+                    )
+
+                LoadMorePrevious ->
+                    let
+                        oldestDate =
+                            model.hours
+                                |> Maybe.andThen T.oldestEntry
+                                |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
+                                |> Maybe.withDefault model.today
+
+                        oldestMinus30 =
+                            TE.add TE.Day -30 Time.utc oldestDate
+                    in
+                    ( model
+                    , fetchHours oldestMinus30 oldestDate
+                    )
+
+                OpenDay date hoursDay ->
+                    let
+                        latest =
+                            Maybe.andThen T.latestEntry model.hours
+                                |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
+
+                        addEntryIfEmpty =
+                            if List.isEmpty hoursDay.entries then
+                                { hoursDay
+                                    | entries =
+                                        Maybe.map List.singleton latest
+                                            |> Maybe.withDefault []
+                                    , hours =
+                                        Maybe.map .hours latest
+                                            |> Maybe.withDefault 0
+                                }
+
+                            else
+                                hoursDay
+                    in
+                    ( { model | editingHours = Dict.insert date addEntryIfEmpty model.editingHours }
                     , Cmd.none
                     )
 
-                Err err ->
-                    ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
-
-        HandleEntryUpdateResponse result ->
-            case result of
-                Ok resp ->
+                AddEntry date ->
                     let
-                        newHours =
-                            model.hours
-                                |> Maybe.map (T.mergeHoursResponse resp.hours)  
-                    in                    
-                    ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
-            
-                Err err ->
-                    ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+                        mostRecentEdit =
+                            model.editingHours
+                                |> Dict.get date
+                                |> Maybe.map .entries
+                                |> Maybe.map (List.filter (not << .closed))
+                                |> Maybe.map (List.sortBy .id)
+                                |> Maybe.map List.reverse
+                                |> Maybe.andThen List.head
 
-        WindowResize width height ->
-            let
-                newWindow =
-                    { height = height
-                    , width = width
-                    , device = classifyDevice { height = height, width = width }
+                        newEntry =
+                            Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEntry model.hours)
+                                |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
+                                |> Maybe.map List.singleton
+                                |> Maybe.withDefault []
+
+                        insertNew =
+                            model.editingHours
+                                |> Dict.update date 
+                                    (Maybe.map (\hd -> { hd | entries = hd.entries ++ newEntry } ))
+                    in
+                        ( { model | editingHours = insertNew } 
+                        , Cmd.none
+                        )
+
+                EditEntry date newEntry ->
+                    let
+                        updateEntries : Maybe T.HoursDay -> Maybe T.HoursDay
+                        updateEntries =
+                            Maybe.map
+                                (\hd ->
+                                    { hd
+                                        | entries =
+                                            List.map
+                                                (\e ->
+                                                    if e.id == newEntry.id then
+                                                        newEntry
+
+                                                    else
+                                                        e
+                                                )
+                                                hd.entries
+                                    }
+                                )
+                    in
+                    ( { model
+                        | editingHours = Dict.update date updateEntries model.editingHours
                     }
-            in
-            ( { model | window = newWindow }, Cmd.none )
+                    , Cmd.none
+                    )
 
-        _ ->
-            ( model, Cmd.none )
+                DeleteEntry date id ->
+                    let
+                        removeByID xs =
+                            List.map (\x -> if x.id == id then T.markDeletedEntry x else x ) xs
+
+                        filteredEntries =
+                            model.editingHours
+                                |> Dict.update date (Maybe.map (\hd -> { hd | entries = removeByID hd.entries }))
+                                
+                    in
+                        ( { model | editingHours = filteredEntries }
+                        , Cmd.none
+                        )
+
+                CloseDay date ->
+                    ( { model | editingHours = Dict.remove date model.editingHours }
+                    , Cmd.none
+                    )
+
+                SaveDay day hoursDay ->
+                    case updateHoursDay hoursDay of
+                        [] ->
+                            ( { model | hasError = Just "Saved day had no hours entries" }, Cmd.none )   
+                    
+                        s::saves ->
+                            ( { model 
+                            | editingHours = Dict.remove day model.editingHours 
+                            , saveQueue = saves
+                            }
+                            , s
+                            )
+
+                UserResponse result ->
+                    case result of
+                        Ok user ->
+                            ( { model | user = Just user }, Cmd.none )
+
+                        Err err ->
+                            ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+                HandleHoursResponse result ->
+                    case result of
+                        Ok hoursResponse ->
+                            let
+                                newHours =
+                                    case model.hours of
+                                        Just oldHours ->
+                                            T.mergeHoursResponse oldHours hoursResponse
+
+                                        Nothing ->
+                                            hoursResponse
+                            in
+                            ( { model
+                                | hours = Just newHours
+                                , projectNames = Just <| T.hoursToProjectDict newHours
+                                , taskNames = Just <| T.hoursToTaskDict newHours
+                            }
+                            , Cmd.none
+                            )
+
+                        Err err ->
+                            ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+                HandleEntryUpdateResponse result ->
+                    case result of
+                        Ok resp ->
+                            let
+                                newHours =
+                                    model.hours
+                                        |> Maybe.map (T.mergeHoursResponse resp.hours)  
+                            in                    
+                            ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
+                    
+                        Err err ->
+                            ( { model | hasError = Just <| Debug.toString err }, Cmd.none )
+
+                WindowResize width height ->
+                    let
+                        newWindow =
+                            { height = height
+                            , width = width
+                            , device = classifyDevice { height = height, width = width }
+                            }
+                    in
+                    ( { model | window = newWindow }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 
@@ -935,6 +950,21 @@ errorMsg error =
         (paragraph [] [ text "FutuHours encountered an error: ", text error ])
 
 
+loading : Element Msg
+loading =
+    el 
+        [ centerX 
+        , centerY
+        , padding 20
+        , Border.solid 
+        , Border.width 2
+        , Border.rounded 10
+        , Border.shadow { offset = ( 4, 4 ), size = 1, blur = 5, color = colors.gray }
+        , Background.color colors.white
+        ]
+        (text "Saving ...")
+
+
 mainLayout : Model -> Element Msg
 mainLayout model =
     let
@@ -944,7 +974,7 @@ mainLayout model =
                     errorMsg err
 
                 Nothing ->
-                    none
+                    if List.isEmpty model.saveQueue then none else loading
     in
     column
         [ Background.color colors.bodyBackground
