@@ -3,6 +3,8 @@ FutuHours-next
 
 Application for updating and editing employee hours, all new and re-written in Elm and elm-ui.
 
+Currently in Beta and deployed at [betahours](https://betahours.app.futurice.com).
+
 **Requirements** 
 
 - npm
@@ -23,9 +25,9 @@ $ elm-app start
 To deploy:
 
 ``` 
-$ docker build -t futurice/hours-ui:$(git log --pretty=format:'%h' -n 1) .
-$ appswarm image:push -i futurice/hours-ui -t $(git log --pretty=format:'%h' -n 1)
-$ appswarm app:deploy -i futurice/hours-ui -t $(git log --pretty=format:'%h' -n 1) -n http-hello
+$ docker build -t futurice/futuhours-next:$(git log --pretty=format:'%h' -n 1) .
+$ appswarm image:push -i futurice/futuhours-next -t $(git log --pretty=format:'%h' -n 1)
+$ appswarm app:deploy -i futurice/futuhours-next -t $(git log --pretty=format:'%h' -n 1) -n betahours
 ```
 
 **License**
