@@ -446,12 +446,11 @@ profileDropdown model =
         ([ itemElement [ Font.color colors.darkText ] (text name)
          , el [ Border.widthEach { top = 0, left = 0, right = 0, bottom = 1 }, width fill ] none
          ]
-            ++ List.map (itemElement [])
-                [ newTabLink [] { url = "https://online.planmill.com/futurice/", label = text "Planmill" }
-                , newTabLink [] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = text "Help" }
-                , newTabLink [] { url = "https://hours-api.app.futurice.com/debug/users", label = text "Debug: users" }
-                , link [] { url = "https://login.futurice.com/?logout=true", label = text "Logout" }
-                ]
+            ++ [ newTabLink [ paddingXY 40 0 ] { url = "https://online.planmill.com/futurice/", label = text "Planmill" }
+               , newTabLink [ paddingXY 40 0 ] { url = "https://confluence.futurice.com/pages/viewpage.action?pageId=43321030", label = text "Help" }
+               , newTabLink [ paddingXY 40 0 ] { url = "https://hours-api.app.futurice.com/debug/users", label = text "Debug: users" }
+               , link [ paddingXY 40 0 ] { url = "https://login.futurice.com/?logout=true", label = text "Logout" }
+               ]
         )
 
 
@@ -531,10 +530,10 @@ entryRow model entry =
                 el
 
         textElem t =
-            el 
+            el
                 [ width (px 180)
-                ] 
-                (html <| Html.div [ HA.class "truncate" ] [ Html.text t])
+                ]
+                (html <| Html.div [ HA.class "truncate" ] [ Html.text t ])
     in
     row
         [ spacing
