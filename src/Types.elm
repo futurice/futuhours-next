@@ -229,6 +229,14 @@ latestEntry hours =
         |> List.head
 
 
+latestEditableEntry : HoursResponse -> Maybe Entry
+latestEditableEntry hours =
+    allEntries hours
+        |> List.filter (not << .closed)
+        |> List.reverse
+        |> List.head
+
+
 oldestEntry : HoursResponse -> Maybe Entry
 oldestEntry hours =
     allEntries hours
