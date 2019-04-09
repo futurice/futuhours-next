@@ -883,7 +883,7 @@ hoursList model =
                 _ ->
                     loadMoreButton LoadMoreNext
                         :: List.map (\( m, hm ) -> monthColumn model m hm) months
-                        ++ [ loadMoreButton LoadMorePrevious ]
+                        ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
             )
 
 
