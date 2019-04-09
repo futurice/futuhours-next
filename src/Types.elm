@@ -229,10 +229,23 @@ latestEntry hours =
         |> List.head
 
 
+entryEditable : Entry -> Bool
+entryEditable e =
+    case e.billable of
+        Absence ->
+            False
+
+        Unknown ->
+            False
+    
+        _ ->
+            not e.closed
+
+
 latestEditableEntry : HoursResponse -> Maybe Entry
 latestEditableEntry hours =
     allEntries hours
-        |> List.filter (not << .closed)
+        |> List.filter entryEditable
         |> List.reverse
         |> List.head
 
