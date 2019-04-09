@@ -517,13 +517,6 @@ entryRow model entry =
             model.projectNames
                 |> Maybe.andThen (\names -> Dict.get entry.projectId names)
                 |> Maybe.withDefault "PROJECT NOT FOUND"
-                |> (\n ->
-                        if isMobile model.window then
-                            String.slice 0 18 n ++ "..."
-
-                        else
-                            n
-                   )
 
         taskName =
             model.taskNames
@@ -538,7 +531,10 @@ entryRow model entry =
                 el
 
         textElem t =
-            el [ width (px 180) ] (text t)
+            el 
+                [ width (px 180)
+                ] 
+                (html <| Html.div [ HA.class "truncate" ] [ Html.text t])
     in
     row
         [ spacing

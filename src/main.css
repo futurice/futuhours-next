@@ -56,3 +56,10 @@ img {
 .dropdown option {
   font-weight: 300;
 }
+
+.truncate {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
