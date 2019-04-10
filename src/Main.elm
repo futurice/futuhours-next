@@ -3,6 +3,7 @@ module Main exposing (main)
 import Api exposing (..)
 import Browser
 import Browser.Events
+import Date
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
@@ -14,7 +15,6 @@ import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Http
 import Iso8601 as Iso
-import Date
 import Task
 import Time
 import Time.Extra as TE
@@ -634,12 +634,30 @@ editEntry model day entry =
         minusButton =
             Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) "-"
     in
-    (if isMobile model.window then column else row)
+    (if isMobile model.window then
+        column
+
+     else
+        row
+    )
         [ width fill
         , spacing 10
         ]
-        [ if isMobile model.window then el [ alignRight ] minusButton else none
-        , el [ width (if isMobile model.window then fill else px 75) ] (Ui.numberDropdown disabled entry)
+        [ if isMobile model.window then
+            el [ alignRight ] minusButton
+
+          else
+            none
+        , el
+            [ width
+                (if isMobile model.window then
+                    fill
+
+                 else
+                    px 75
+                )
+            ]
+            (Ui.numberDropdown disabled entry)
         , Ui.dropdown disabled updateProject latestProjectId entry.projectId projectNames
         , Ui.dropdown disabled updateTask latestTaskId entry.taskId taskNames
         , Input.text
@@ -661,8 +679,16 @@ editEntry model day entry =
             , placeholder = Nothing
             , label = Input.labelHidden "description"
             }
-        , if isMobile model.window then none else minusButton
-        , if isMobile model.window then html <| Html.hr [ HA.style "width" "100%" ] [] else none
+        , if isMobile model.window then
+            none
+
+          else
+            minusButton
+        , if isMobile model.window then
+            html <| Html.hr [ HA.style "width" "100%" ] []
+
+          else
+            none
         ]
 
 
@@ -835,8 +861,19 @@ monthColumn model month hoursMonth =
                 |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
                 |> List.reverse
 
+        daysForWeek wk =
+            days
+                |> List.filter (\( d, _ ) -> wk == (Date.fromIsoString d |> Result.map Date.weekNumber |> Result.withDefault 0))
+                |> List.map Tuple.second
+
         weekHeader wk =
-            text <| "Week " ++ (String.fromInt wk)
+            row [ width fill, paddingXY 20 0 ]
+                [ el [] (text <| "Week " ++ String.fromInt wk)
+                , row [ alignRight ]
+                    [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours <| daysForWeek wk
+                    , text " h"
+                    ]
+                ]
 
         getWeekNumber d =
             Date.fromIsoString d
@@ -844,19 +881,28 @@ monthColumn model month hoursMonth =
                 |> Result.withDefault 0
 
         dayElems =
-            List.map (\t -> (getWeekNumber <| Tuple.first t, t)) days
-                |> List.foldl (\(w, el) dict -> if Dict.member w dict then Dict.update w (Maybe.map ((++) [el])) dict else Dict.insert w [el] dict) Dict.empty
-                |> Dict.map (\k ds -> List.map (\(d, hd) -> (d, dayRow model d hd)) ds)
+            List.map (\t -> ( getWeekNumber <| Tuple.first t, t )) days
+                |> List.foldl
+                    (\( w, el ) dict ->
+                        if Dict.member w dict then
+                            Dict.update w (Maybe.map ((++) [ el ])) dict
+
+                        else
+                            Dict.insert w [ el ] dict
+                    )
+                    Dict.empty
+                |> Dict.map (\k ds -> List.map (\( d, hd ) -> ( d, dayRow model d hd )) ds)
                 |> Dict.toList
                 |> List.sortBy Tuple.first
                 |> List.reverse
-                |> List.concatMap (\(w, ds) -> 
-                    weekHeader w :: 
-                        (ds 
-                            |> List.sortBy (\(d, _) -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0) 
-                            |> List.reverse
-                            |> List.map Tuple.second
-                        )
+                |> List.concatMap
+                    (\( w, ds ) ->
+                        weekHeader w
+                            :: (ds
+                                    |> List.sortBy (\( d, _ ) -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+                                    |> List.reverse
+                                    |> List.map Tuple.second
+                               )
                     )
     in
     column
@@ -893,7 +939,13 @@ hoursList model =
     el [ scrollbarY, width fill, height fill ] <|
         column
             [ centerX
-            , width (if isMobile model.window then fill else fill |> maximum 900)
+            , width
+                (if isMobile model.window then
+                    fill
+
+                 else
+                    fill |> maximum 900
+                )
             , height fill
             , if isMobile model.window then
                 paddingXY 0 0
