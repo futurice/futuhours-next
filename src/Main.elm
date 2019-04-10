@@ -868,7 +868,7 @@ hoursList model =
     el [ scrollbarY, width fill, height fill ] <|
         column
             [ centerX
-            , width (fill |> maximum 900)
+            , width (if isMobile model.window then fill else fill |> maximum 900)
             , height fill
             , if isMobile model.window then
                 paddingXY 0 0
