@@ -13,7 +13,8 @@ import Element.Input as Input
 import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Http
-import Iso8601 as Date
+import Iso8601 as Iso
+import Date
 import Task
 import Time
 import Time.Extra as TE
@@ -130,7 +131,7 @@ update msg model =
                         latestDate =
                             model.hours
                                 |> Maybe.andThen T.latestDay
-                                |> Maybe.andThen (Date.toTime >> Result.toMaybe)
+                                |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
                                 |> Maybe.withDefault model.today
 
                         nextThirtyDays =
@@ -145,7 +146,7 @@ update msg model =
                         oldestDate =
                             model.hours
                                 |> Maybe.andThen T.oldestDay
-                                |> Maybe.andThen (Date.toTime >> Result.toMaybe)
+                                |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
                                 |> Maybe.withDefault model.today
 
                         oldestMinus30 =
@@ -831,15 +832,39 @@ monthColumn model month hoursMonth =
         days =
             hoursMonth.days
                 |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
+                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
                 |> List.reverse
+
+        weekHeader wk =
+            text <| "Week " ++ (String.fromInt wk)
+
+        getWeekNumber d =
+            Date.fromIsoString d
+                |> Result.map Date.weekNumber
+                |> Result.withDefault 0
+
+        dayElems =
+            List.map (\t -> (getWeekNumber <| Tuple.first t, t)) days
+                |> List.foldl (\(w, el) dict -> if Dict.member w dict then Dict.update w (Maybe.map ((++) [el])) dict else Dict.insert w [el] dict) Dict.empty
+                |> Dict.map (\k ds -> List.map (\(d, hd) -> (d, dayRow model d hd)) ds)
+                |> Dict.toList
+                |> List.sortBy Tuple.first
+                |> List.reverse
+                |> List.concatMap (\(w, ds) -> 
+                    weekHeader w :: 
+                        (ds 
+                            |> List.sortBy (\(d, _) -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0) 
+                            |> List.reverse
+                            |> List.map Tuple.second
+                        )
+                    )
     in
     column
         [ width fill
         , spacing 15
         ]
         ([ monthHeader model month hoursMonth ]
-            ++ List.map (\( d, hd ) -> dayRow model d hd) days
+            ++ dayElems
         )
 
 
@@ -851,7 +876,7 @@ hoursList model =
                 |> Maybe.map .months
                 |> Maybe.withDefault Dict.empty
                 |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
+                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
                 |> List.reverse
 
         loadMoreButton msg =
