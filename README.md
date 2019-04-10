@@ -30,6 +30,13 @@ $ appswarm image:push -i futurice/futuhours-next -t $(git log --pretty=format:'%
 $ appswarm app:deploy -i futurice/futuhours-next -t $(git log --pretty=format:'%h' -n 1) -n betahours
 ```
 
+Alternately, a simple bash script is provided to save you typing:
+
+```
+./deploy.sh
+```
+
+
 **License**
 
 [Apache License 2.0](LICENSE)
