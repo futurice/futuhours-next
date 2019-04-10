@@ -629,12 +629,16 @@ editEntry model day entry =
 
             else
                 latestEntry.taskId
+
+        minusButton =
+            Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) "-"
     in
-    row
+    (if isMobile model.window then column else row)
         [ width fill
         , spacing 10
         ]
-        [ Ui.numberDropdown disabled entry
+        [ if isMobile model.window then el [ alignRight ] minusButton else none
+        , el [ width (if isMobile model.window then fill else px 75) ] (Ui.numberDropdown disabled entry)
         , Ui.dropdown disabled updateProject latestProjectId entry.projectId projectNames
         , Ui.dropdown disabled updateTask latestTaskId entry.taskId taskNames
         , Input.text
@@ -656,7 +660,8 @@ editEntry model day entry =
             , placeholder = Nothing
             , label = Input.labelHidden "description"
             }
-        , Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) "-"
+        , if isMobile model.window then none else minusButton
+        , if isMobile model.window then html <| Html.hr [ HA.style "width" "100%" ] [] else none
         ]
 
 

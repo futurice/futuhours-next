@@ -77,7 +77,7 @@ stepper disabled entry =
 dropdown : Bool -> (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
 dropdown disabled handler latest value options = 
     row 
-        [ width (shrink |> minimum 200)
+        [ width fill
         ] 
         [ html <| dropdownRaw disabled handler latest value options ]
 
@@ -100,7 +100,7 @@ dropdownRaw disabled handler latest value options =
 numberDropdown : Bool -> T.Entry -> Element Msg
 numberDropdown disabled entry =
     el 
-        [ width (shrink |> minimum 75) ]
+        [ width fill ]
         (html <| numberDropdownRaw disabled entry)
 
 
