@@ -69,7 +69,7 @@ stepper disabled entry =
         , Font.color (if disabled then colors.gray else colors.black)
         ]
         [ Input.button [ alignLeft ] { onPress = down, label = el [ ] <| faIcon "fa fa-angle-left" }
-        , el [ Font.size 16, centerX, Font.center ] (text <| String.fromFloat entry.hours)
+        , numberDropdown disabled entry
         , Input.button [ alignRight ] { onPress = up, label = el [ ] <| faIcon "fa fa-angle-right" }
         ]
 
@@ -96,4 +96,31 @@ dropdownRaw disabled handler latest value options =
             (Dict.map (\id name -> Html.option [ HA.value <| String.fromInt id ] [ Html.text name ] ) options
                 |> Dict.values)
         ]
-        
+
+numberDropdown : Bool -> T.Entry -> Element Msg
+numberDropdown disabled entry =
+    el 
+        [ width (shrink |> minimum 75) ]
+        (html <| numberDropdownRaw disabled entry)
+
+
+numberDropdownRaw : Bool -> T.Entry -> Html Msg
+numberDropdownRaw disabled entry =
+    let
+        options =
+            List.range 1 36
+                |> List.map toFloat
+                |> List.map (\x -> x * 0.5)
+
+        handler val =
+            EditEntry entry.day { entry | hours = val }
+
+        optEl opt =
+            Html.option [ HA.value <| String.fromFloat opt, HA.selected (entry.hours == opt) ] [ Html.text <| String.fromFloat opt ]
+    in    
+    Html.select
+        [ HA.class "dropdown"
+        , HE.on "change" <| Json.map handler HEX.targetValueFloatParse 
+        , HA.disabled disabled
+        ]
+        (List.map optEl options)

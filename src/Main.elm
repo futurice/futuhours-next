@@ -634,7 +634,7 @@ editEntry model day entry =
         [ width fill
         , spacing 10
         ]
-        [ Ui.stepper disabled entry
+        [ Ui.numberDropdown disabled entry
         , Ui.dropdown disabled updateProject latestProjectId entry.projectId projectNames
         , Ui.dropdown disabled updateTask latestTaskId entry.taskId taskNames
         , Input.text
