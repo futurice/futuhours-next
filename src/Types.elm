@@ -256,6 +256,29 @@ oldestEntry hours =
         |> List.head
 
 
+allDays : HoursResponse -> List Day
+allDays hours =
+    hours.months
+        |> Dict.values
+        |> List.map .days
+        |> List.concatMap Dict.keys
+
+
+latestDay : HoursResponse -> Maybe Day
+latestDay hours =
+    allDays hours
+        |> List.sortBy (\d -> Date.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.reverse
+        |> List.head
+
+
+oldestDay : HoursResponse -> Maybe Day
+oldestDay hours =
+    allDays hours
+        |> List.sortBy (\d -> Date.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.head
+
+
 type alias HoursMonth =
     { hours : NDTh
     , capacity : NDTh

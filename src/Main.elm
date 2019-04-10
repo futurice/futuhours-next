@@ -129,8 +129,8 @@ update msg model =
                     let
                         latestDate =
                             model.hours
-                                |> Maybe.andThen T.latestEntry
-                                |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
+                                |> Maybe.andThen T.latestDay
+                                |> Maybe.andThen (Date.toTime >> Result.toMaybe)
                                 |> Maybe.withDefault model.today
 
                         nextThirtyDays =
@@ -144,8 +144,8 @@ update msg model =
                     let
                         oldestDate =
                             model.hours
-                                |> Maybe.andThen T.oldestEntry
-                                |> Maybe.andThen (\e -> e.day |> Date.toTime |> Result.toMaybe)
+                                |> Maybe.andThen T.oldestDay
+                                |> Maybe.andThen (Date.toTime >> Result.toMaybe)
                                 |> Maybe.withDefault model.today
 
                         oldestMinus30 =
