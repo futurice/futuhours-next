@@ -15,6 +15,7 @@ import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Http
 import Iso8601 as Iso
+import Model exposing (Model, Flags, isMobile)
 import Task
 import Time
 import Time.Extra as TE
@@ -31,83 +32,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Browser.Events.onResize WindowResize ]
-
-
-
----- MODEL ----
-
-
-type alias Flags =
-    { now : Int
-    , width : Int
-    , height : Int
-    }
-
-
-type alias Window =
-    { width : Int
-    , height : Int
-    , device : Device
-    }
-
-
-isMobile : Window -> Bool
-isMobile win =
-    let
-        device =
-            win.device
-    in
-    case device.class of
-        Phone ->
-            True
-
-        _ ->
-            False
-
-
-type alias Model =
-    { isMenuOpen : Bool
-    , user : Maybe T.User
-    , hours : Maybe T.HoursResponse
-    , projectNames : Maybe (Dict T.Identifier String)
-    , taskNames : Maybe (Dict T.Identifier String)
-    , hasError : Maybe String
-    , today : Time.Posix
-    , window : Window
-    , editingHours : Dict T.Day T.HoursDay
-    , allDays : Dict T.Day T.HoursDay
-    , saveQueue : List (Cmd Msg)
-    }
-
-
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    let
-        today =
-            Time.millisToPosix flags.now
-
-        thirtyDaysAgo =
-            flags.now
-                |> Time.millisToPosix
-                |> TE.add TE.Day -30 Time.utc
-    in
-    ( { isMenuOpen = False
-      , user = Nothing
-      , hours = Nothing
-      , projectNames = Nothing
-      , taskNames = Nothing
-      , hasError = Nothing
-      , today = today
-      , window = { width = flags.width, height = flags.height, device = classifyDevice flags }
-      , editingHours = Dict.empty
-      , allDays = Dict.empty
-      , saveQueue = []
-      }
-    , Cmd.batch
-        [ fetchUser
-        , fetchHours thirtyDaysAgo today
-        ]
-    )
 
 
 
@@ -861,31 +785,16 @@ monthHeader model month hoursMonth =
 
 dayElements : Model -> List (Element Msg)
 dayElements model =
-    let
-        getWeekNumber d =
-            Date.fromIsoString d
-                |> Result.map Date.weekNumber
-                |> Result.withDefault 0
-
-        getMonth d =
-            Date.fromIsoString d
-                |> Result.map Date.monthNumber
-                |> Result.withDefault 0
-
-        getDay d =
-            Date.fromIsoString d
-                |> Result.map Date.day
-                |> Result.withDefault 0
-
+    let      
         days =
             model.allDays
                 |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
+                |> List.sortBy (\( k, _ ) -> T.dayToMillis k)
                 |> List.reverse
 
         daysForWeek wk =
             days
-                |> List.filter (\( d, _ ) -> wk == (Date.fromIsoString d |> Result.map Date.weekNumber |> Result.withDefault 0))
+                |> List.filter (\( d, _ ) -> wk == (T.dayToMillis d))
                 |> List.map Tuple.second
 
         weekHeader wk =
@@ -898,7 +807,7 @@ dayElements model =
                 ]
 
         makeElem ( d, hd ) =
-            { month = getMonth d, week = getWeekNumber d, day = d, elem = dayRow model d hd }
+            { month = T.getMonthNumber d, week = T.getWeekNumber d, day = d, elem = dayRow model d hd }
 
         getHoursMonth e =
             model.hours
@@ -914,55 +823,52 @@ dayElements model =
             getHoursMonth e
                 |> .days
                 |> Dict.keys
-                |> List.sortBy (\d -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+                |> List.sortBy T.dayToMillis
                 |> List.reverse
                 |> List.head
                 |> Maybe.map ((==) e.day)
                 |> Maybe.withDefault False
+    in
+    model.allDays
+        |> Dict.toList
+        |> List.sortBy (\( d, _ ) -> T.dayToMillis d)
+        |> List.reverse
+        |> List.map makeElem
+        |> List.map (\e -> ( e.week, e ))
+        |> List.foldl
+            (\( w, el ) dict ->
+                if Dict.member w dict then
+                    Dict.update w (Maybe.map ((++) [ el ])) dict
 
-        groupByWeekAndMonth =
-            model.allDays
-                |> Dict.toList
-                |> List.sortBy (\( d, _ ) -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
-                |> List.reverse
-                |> List.map makeElem
-                |> List.map (\e -> ( e.week, e ))
-                |> List.foldl
-                    (\( w, el ) dict ->
-                        if Dict.member w dict then
-                            Dict.update w (Maybe.map ((++) [ el ])) dict
+                else
+                    Dict.insert w [ el ] dict
+            )
+            Dict.empty
+        |> Dict.toList
+        |> List.sortBy Tuple.first
+        |> List.reverse
+        |> List.map (\( wk, ds ) -> ( wk, ds |> List.sortBy (\d -> T.dayToMillis d.day) |> List.reverse ))
+        |> List.concatMap
+            (\( wk, ds ) ->
+                let
+                    markMonth d =
+                        if isLastDay d then
+                            [ mkMonthHeader d, d.elem ]
 
                         else
-                            Dict.insert w [ el ] dict
-                    )
-                    Dict.empty
-                |> Dict.toList
-                |> List.sortBy Tuple.first
-                |> List.reverse
-                |> List.map (\( wk, ds ) -> ( wk, ds |> List.sortBy (\d -> Iso.toTime d.day |> Result.map Time.posixToMillis |> Result.withDefault 0) |> List.reverse ))
-                |> List.concatMap
-                    (\( wk, ds ) ->
-                        let
-                            markMonth d =
-                                if isLastDay d then
-                                    [ mkMonthHeader d, d.elem ]
+                            [ d.elem ]
+                in
+                case ds of
+                    [] ->
+                        []
 
-                                else
-                                    [ d.elem ]
-                        in
-                        case ds of
-                            [] ->
-                                []
+                    x :: xs ->
+                        if isLastDay x then
+                            mkMonthHeader x :: weekHeader wk :: List.map .elem (x :: xs)
 
-                            x :: xs ->
-                                if isLastDay x then
-                                    mkMonthHeader x :: weekHeader wk :: List.map .elem (x :: xs)
-
-                                else
-                                    weekHeader wk :: List.concatMap markMonth (x :: xs)
-                    )
-    in
-    groupByWeekAndMonth
+                        else
+                            weekHeader wk :: List.concatMap markMonth (x :: xs)
+            )
 
 
 hoursList : Model -> Element Msg
@@ -973,7 +879,7 @@ hoursList model =
                 |> Maybe.map .months
                 |> Maybe.withDefault Dict.empty
                 |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
+                |> List.sortBy (\( k, _ ) -> T.dayToMillis k)
                 |> List.reverse
 
         loadMoreButton msg =
@@ -1095,7 +1001,7 @@ main : Program Flags Model Msg
 main =
     Browser.element
         { view = view
-        , init = init
+        , init = Model.init
         , update = update
         , subscriptions = subscriptions
         }

@@ -8,7 +8,8 @@ import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool,
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Task
 import Time
-import Iso8601 as Date
+import Iso8601 as Iso
+import Date
 
 
 type Msg
@@ -49,6 +50,34 @@ type alias NDTd =
 
 type alias Day =
     String
+
+
+getWeekNumber : Day -> Int
+getWeekNumber d =
+            Date.fromIsoString d
+                |> Result.map Date.weekNumber
+                |> Result.withDefault 0
+
+
+getMonthNumber : Day -> Int
+getMonthNumber d =
+    Date.fromIsoString d
+        |> Result.map Date.monthNumber
+        |> Result.withDefault 0
+
+
+getDay : Day -> Int
+getDay d =
+    Date.fromIsoString d
+        |> Result.map Date.day
+        |> Result.withDefault 0
+
+
+dayToMillis : Day -> Int
+dayToMillis d =
+    Iso.toTime d
+        |> Result.map Time.posixToMillis
+        |> Result.withDefault 0
 
 
 type alias Month =
@@ -219,7 +248,7 @@ allEntries hours =
         |> Dict.values
         |> List.concatMap (\m -> m.days |> Dict.values)
         |> List.concatMap .entries
-        |> List.sortBy (\e -> e.day |> Date.toTime |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.sortBy (\e -> dayToMillis e.day)
 
 
 allEntriesAsDict : HoursResponse -> Dict Day (List Entry)
@@ -294,7 +323,7 @@ allDaysAsDict hours =
 latestDay : HoursResponse -> Maybe Day
 latestDay hours =
     allDays hours
-        |> List.sortBy (\d -> Date.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.sortBy dayToMillis
         |> List.reverse
         |> List.head
 
@@ -302,7 +331,7 @@ latestDay hours =
 oldestDay : HoursResponse -> Maybe Day
 oldestDay hours =
     allDays hours
-        |> List.sortBy (\d -> Date.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.sortBy dayToMillis
         |> List.head
 
 

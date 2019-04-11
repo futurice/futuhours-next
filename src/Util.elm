@@ -1,7 +1,8 @@
 module Util exposing (..)
 
 import Time exposing (Month(..), Weekday(..))
-import Iso8601 as Date
+import Iso8601 as Iso
+import Date
 import Types as T
 import Parser
 import Http exposing (Error(..))
@@ -42,7 +43,7 @@ monthToInt month =
 
 formatMonth : T.Month -> String
 formatMonth month =
-    case Date.toTime <| month ++ "-01" of
+    case Iso.toTime <| month ++ "-01" of
         Ok posix ->
             (toEnglishMonth <| Time.toMonth Time.utc posix) 
                 ++ " " 
@@ -65,7 +66,7 @@ toEnglishWeekday weekday =
 
 formatDate : T.Day -> String
 formatDate day =
-    case Date.toTime day of
+    case Iso.toTime day of
         Ok posix ->
             (Time.toWeekday Time.utc posix |> toEnglishWeekday) 
                 ++ " " 
