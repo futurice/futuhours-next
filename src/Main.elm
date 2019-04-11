@@ -859,68 +859,6 @@ monthHeader model month hoursMonth =
         ]
 
 
-monthColumn : Model -> T.Month -> T.HoursMonth -> Element Msg
-monthColumn model month hoursMonth =
-    let
-        days =
-            hoursMonth.days
-                |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
-                |> List.reverse
-
-        daysForWeek wk =
-            days
-                |> List.filter (\( d, _ ) -> wk == (Date.fromIsoString d |> Result.map Date.weekNumber |> Result.withDefault 0))
-                |> List.map Tuple.second
-
-        weekHeader wk =
-            row [ width fill, paddingXY 20 0 ]
-                [ el [] (text <| "Week " ++ String.fromInt wk)
-                , row [ alignRight ]
-                    [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours <| daysForWeek wk
-                    , text " h"
-                    ]
-                ]
-
-        getWeekNumber d =
-            Date.fromIsoString d
-                |> Result.map Date.weekNumber
-                |> Result.withDefault 0
-
-        dayElems =
-            List.map (\t -> ( getWeekNumber <| Tuple.first t, t )) days
-                |> List.foldl
-                    (\( w, el ) dict ->
-                        if Dict.member w dict then
-                            Dict.update w (Maybe.map ((++) [ el ])) dict
-
-                        else
-                            Dict.insert w [ el ] dict
-                    )
-                    Dict.empty
-                |> Dict.map (\k ds -> List.map (\( d, hd ) -> ( d, dayRow model d hd )) ds)
-                |> Dict.toList
-                |> List.sortBy Tuple.first
-                |> List.reverse
-                |> List.concatMap
-                    (\( w, ds ) ->
-                        weekHeader w
-                            :: (ds
-                                    |> List.sortBy (\( d, _ ) -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
-                                    |> List.reverse
-                                    |> List.map Tuple.second
-                               )
-                    )
-    in
-    column
-        [ width fill
-        , spacing 15
-        ]
-        ([ monthHeader model month hoursMonth ]
-            ++ dayElems
-        )
-
-
 dayElements : Model -> List (Element Msg)
 dayElements model =
     let
