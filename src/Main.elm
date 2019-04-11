@@ -800,7 +800,7 @@ weekHeader model wk =
 
         daysForWeek =
             days
-                |> List.filter (\( d, _ ) -> wk == T.dayToMillis d)
+                |> List.filter (\( d, _ ) -> wk == T.getWeekNumber d)
                 |> List.map Tuple.second
     in
     row 
