@@ -939,11 +939,22 @@ dayElements model =
                 |> Result.map Date.day
                 |> Result.withDefault 0
 
+        days =
+            model.allDays
+                |> Dict.toList
+                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Iso.toTime k)
+                |> List.reverse
+
+        daysForWeek wk =
+            days
+                |> List.filter (\( d, _ ) -> wk == (Date.fromIsoString d |> Result.map Date.weekNumber |> Result.withDefault 0))
+                |> List.map Tuple.second
+
         weekHeader wk =
             row [ width fill, paddingXY 20 0 ]
                 [ el [] (text <| "Week " ++ String.fromInt wk)
                 , row [ alignRight ]
-                    [ text <| String.fromFloat 0.0
+                    [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours <| daysForWeek wk
                     , text " h"
                     ]
                 ]
@@ -990,26 +1001,27 @@ dayElements model =
                 |> Dict.toList
                 |> List.sortBy Tuple.first
                 |> List.reverse
-                |> List.map (\( wk, days ) -> (wk, (days |> List.sortBy (\d -> Iso.toTime d.day |> Result.map Time.posixToMillis |> Result.withDefault 0) |> List.reverse)))
+                |> List.map (\( wk, ds ) -> ( wk, ds |> List.sortBy (\d -> Iso.toTime d.day |> Result.map Time.posixToMillis |> Result.withDefault 0) |> List.reverse ))
                 |> List.concatMap
-                    (\(wk, days) ->
+                    (\( wk, ds ) ->
                         let
                             markMonth d =
-                                if isLastDay d then 
+                                if isLastDay d then
                                     [ mkMonthHeader d, d.elem ]
+
                                 else
                                     [ d.elem ]
                         in
-                        
-                        case days of
+                        case ds of
                             [] ->
                                 []
-                        
-                            (x::xs) ->
+
+                            x :: xs ->
                                 if isLastDay x then
-                                    mkMonthHeader x :: weekHeader wk :: (List.map .elem (x::xs))
+                                    mkMonthHeader x :: weekHeader wk :: List.map .elem (x :: xs)
+
                                 else
-                                    weekHeader wk :: (List.concatMap markMonth (x::xs))
+                                    weekHeader wk :: List.concatMap markMonth (x :: xs)
                     )
     in
     groupByWeekAndMonth
