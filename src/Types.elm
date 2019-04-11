@@ -23,6 +23,8 @@ type Msg
     | DeleteEntry Day Identifier
     | CloseDay Day
     | SaveDay Day HoursDay
+    | EditWeek Int
+    | CloseWeek
     | UserResponse (Result Http.Error User)
     | HandleHoursResponse (Result Http.Error HoursResponse)
     | HandleEntryUpdateResponse (Result Http.Error EntryUpdateResponse)

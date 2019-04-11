@@ -798,8 +798,9 @@ dayElements model =
                 |> List.map Tuple.second
 
         weekHeader wk =
-            row [ width fill, paddingXY 20 0 ]
+            row [ width fill, paddingXY 20 0, spacing 15 ]
                 [ el [] (text <| "Week " ++ String.fromInt wk)
+                , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| EditWeek wk, label = text "Add a whole week" }
                 , row [ alignRight ]
                     [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours <| daysForWeek wk
                     , text " h"
