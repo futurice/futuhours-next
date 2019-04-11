@@ -15,7 +15,7 @@ import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Http
 import Iso8601 as Iso
-import Model exposing (Model, Flags, isMobile)
+import Model exposing (Flags, Model, isMobile)
 import Task
 import Time
 import Time.Extra as TE
@@ -196,6 +196,12 @@ update msg model =
                               }
                             , s
                             )
+
+                EditWeek wk ->
+                    ( { model | editingWeek = Just { week = wk, entries = [] } }, Cmd.none )
+
+                CloseWeek ->
+                    ( { model | editingWeek = Nothing }, Cmd.none )
 
                 UserResponse result ->
                     case result of
@@ -783,30 +789,34 @@ monthHeader model month hoursMonth =
         ]
 
 
-dayElements : Model -> List (Element Msg)
-dayElements model =
-    let      
+weekHeader : Model -> Int -> Element Msg
+weekHeader model wk =
+    let
         days =
             model.allDays
                 |> Dict.toList
                 |> List.sortBy (\( k, _ ) -> T.dayToMillis k)
                 |> List.reverse
 
-        daysForWeek wk =
+        daysForWeek =
             days
-                |> List.filter (\( d, _ ) -> wk == (T.dayToMillis d))
+                |> List.filter (\( d, _ ) -> wk == T.dayToMillis d)
                 |> List.map Tuple.second
+    in
+    row 
+        [ width fill, paddingXY 20 0, spacing 15 ]
+        [ el [] (text <| "Week " ++ String.fromInt wk)
+        , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| EditWeek wk, label = text "Add a whole week" }
+        , row [ alignRight ]
+            [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours daysForWeek
+            , text " h"
+            ]
+        ]
 
-        weekHeader wk =
-            row [ width fill, paddingXY 20 0, spacing 15 ]
-                [ el [] (text <| "Week " ++ String.fromInt wk)
-                , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| EditWeek wk, label = text "Add a whole week" }
-                , row [ alignRight ]
-                    [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours <| daysForWeek wk
-                    , text " h"
-                    ]
-                ]
 
+dayElements : Model -> List (Element Msg)
+dayElements model =
+    let
         makeElem ( d, hd ) =
             { month = T.getMonthNumber d, week = T.getWeekNumber d, day = d, elem = dayRow model d hd }
 
@@ -865,10 +875,10 @@ dayElements model =
 
                     x :: xs ->
                         if isLastDay x then
-                            mkMonthHeader x :: weekHeader wk :: List.map .elem (x :: xs)
+                            mkMonthHeader x :: weekHeader model wk :: List.map .elem (x :: xs)
 
                         else
-                            weekHeader wk :: List.concatMap markMonth (x :: xs)
+                            weekHeader model wk :: List.concatMap markMonth (x :: xs)
             )
 
 

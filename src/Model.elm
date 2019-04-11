@@ -40,6 +40,12 @@ isMobile win =
             False
 
 
+type alias EditingWeek =
+    { week : Int 
+    , entries : List T.Entry
+    }
+
+
 type alias Model =
     { isMenuOpen : Bool
     , user : Maybe T.User
@@ -50,6 +56,7 @@ type alias Model =
     , today : Time.Posix
     , window : Window
     , editingHours : Dict T.Day T.HoursDay
+    , editingWeek : Maybe EditingWeek
     , allDays : Dict T.Day T.HoursDay
     , saveQueue : List (Cmd Msg)
     }
@@ -75,6 +82,7 @@ init flags =
       , today = today
       , window = { width = flags.width, height = flags.height, device = Element.classifyDevice flags }
       , editingHours = Dict.empty
+      , editingWeek = Nothing
       , allDays = Dict.empty
       , saveQueue = []
       }
