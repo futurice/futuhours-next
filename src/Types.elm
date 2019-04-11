@@ -222,6 +222,25 @@ allEntries hours =
         |> List.sortBy (\e -> e.day |> Date.toTime |> Result.map Time.posixToMillis |> Result.withDefault 0)
 
 
+allEntriesAsDict : HoursResponse -> Dict Day (List Entry)
+allEntriesAsDict hours =
+    let
+        blankDict =
+            hours.months
+                |> Dict.values
+                |> List.concatMap (Dict.keys << .days)
+                |> List.foldl (\d dic -> Dict.insert d [] dic) Dict.empty
+
+        insertOrAdd e dic =
+            if Dict.member e.day dic then
+                Dict.update e.day (Maybe.map ((::) e)) dic
+            else
+                Dict.insert e.day [ e ] dic
+    in    
+    allEntries hours
+        |> List.foldl insertOrAdd blankDict
+
+
 latestEntry : HoursResponse -> Maybe Entry
 latestEntry hours =
     allEntries hours
@@ -262,6 +281,14 @@ allDays hours =
         |> Dict.values
         |> List.map .days
         |> List.concatMap Dict.keys
+
+
+allDaysAsDict : HoursResponse -> Dict Day HoursDay
+allDaysAsDict hours =
+    hours.months
+        |> Dict.values
+        |> List.map .days
+        |> List.foldl Dict.union Dict.empty
 
 
 latestDay : HoursResponse -> Maybe Day

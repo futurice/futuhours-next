@@ -75,6 +75,7 @@ type alias Model =
     , today : Time.Posix
     , window : Window
     , editingHours : Dict T.Day T.HoursDay
+    , allDays : Dict T.Day T.HoursDay
     , saveQueue : List (Cmd Msg)
     }
 
@@ -99,6 +100,7 @@ init flags =
       , today = today
       , window = { width = flags.width, height = flags.height, device = classifyDevice flags }
       , editingHours = Dict.empty
+      , allDays = Dict.empty
       , saveQueue = []
       }
     , Cmd.batch
@@ -295,6 +297,7 @@ update msg model =
                                 | hours = Just newHours
                                 , projectNames = Just <| T.hoursToProjectDict newHours
                                 , taskNames = Just <| T.hoursToTaskDict newHours
+                                , allDays = T.allDaysAsDict newHours
                               }
                             , Cmd.none
                             )
@@ -309,8 +312,12 @@ update msg model =
                                 newHours =
                                     model.hours
                                         |> Maybe.map (T.mergeHoursResponse resp.hours)
+
+                                newDays =
+                                    Maybe.map T.allDaysAsDict newHours
+                                        |> Maybe.withDefault Dict.empty
                             in
-                            ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
+                            ( { model | hours = newHours, user = Just resp.user, allDays = newDays }, Cmd.none )
 
                         Err err ->
                             ( { model | hasError = Just <| Util.httpErrToString err }, Cmd.none )
@@ -914,6 +921,100 @@ monthColumn model month hoursMonth =
         )
 
 
+dayElements : Model -> List (Element Msg)
+dayElements model =
+    let
+        getWeekNumber d =
+            Date.fromIsoString d
+                |> Result.map Date.weekNumber
+                |> Result.withDefault 0
+
+        getMonth d =
+            Date.fromIsoString d
+                |> Result.map Date.monthNumber
+                |> Result.withDefault 0
+
+        getDay d =
+            Date.fromIsoString d
+                |> Result.map Date.day
+                |> Result.withDefault 0
+
+        weekHeader wk =
+            row [ width fill, paddingXY 20 0 ]
+                [ el [] (text <| "Week " ++ String.fromInt wk)
+                , row [ alignRight ]
+                    [ text <| String.fromFloat 0.0
+                    , text " h"
+                    ]
+                ]
+
+        makeElem ( d, hd ) =
+            { month = getMonth d, week = getWeekNumber d, day = d, elem = dayRow model d hd }
+
+        getHoursMonth e =
+            model.hours
+                |> Maybe.map .months
+                |> Maybe.withDefault Dict.empty
+                |> Dict.get (String.left 7 e.day)
+                |> Maybe.withDefault { hours = 0, capacity = 0, utilizationRate = 0.0, days = Dict.empty }
+
+        mkMonthHeader e =
+            monthHeader model (String.left 7 e.day) (getHoursMonth e)
+
+        isLastDay e =
+            getHoursMonth e
+                |> .days
+                |> Dict.keys
+                |> List.sortBy (\d -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+                |> List.reverse
+                |> List.head
+                |> Maybe.map ((==) e.day)
+                |> Maybe.withDefault False
+
+        groupByWeekAndMonth =
+            model.allDays
+                |> Dict.toList
+                |> List.sortBy (\( d, _ ) -> Iso.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+                |> List.reverse
+                |> List.map makeElem
+                |> List.map (\e -> ( e.week, e ))
+                |> List.foldl
+                    (\( w, el ) dict ->
+                        if Dict.member w dict then
+                            Dict.update w (Maybe.map ((++) [ el ])) dict
+
+                        else
+                            Dict.insert w [ el ] dict
+                    )
+                    Dict.empty
+                |> Dict.toList
+                |> List.sortBy Tuple.first
+                |> List.reverse
+                |> List.map (\( wk, days ) -> (wk, (days |> List.sortBy (\d -> Iso.toTime d.day |> Result.map Time.posixToMillis |> Result.withDefault 0) |> List.reverse)))
+                |> List.concatMap
+                    (\(wk, days) ->
+                        let
+                            markMonth d =
+                                if isLastDay d then 
+                                    [ mkMonthHeader d, d.elem ]
+                                else
+                                    [ d.elem ]
+                        in
+                        
+                        case days of
+                            [] ->
+                                []
+                        
+                            (x::xs) ->
+                                if isLastDay x then
+                                    mkMonthHeader x :: weekHeader wk :: (List.map .elem (x::xs))
+                                else
+                                    weekHeader wk :: (List.concatMap markMonth (x::xs))
+                    )
+    in
+    groupByWeekAndMonth
+
+
 hoursList : Model -> Element Msg
 hoursList model =
     let
@@ -947,6 +1048,7 @@ hoursList model =
                     fill |> maximum 900
                 )
             , height fill
+            , spacing 15
             , if isMobile model.window then
                 paddingXY 0 0
 
@@ -959,7 +1061,7 @@ hoursList model =
 
                 _ ->
                     loadMoreButton LoadMoreNext
-                        :: List.map (\( m, hm ) -> monthColumn model m hm) months
+                        :: dayElements model
                         ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
             )
 
