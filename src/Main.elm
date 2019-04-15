@@ -200,12 +200,39 @@ update msg model =
 
                 OpenWeek wk -> 
                     let
-                        days = AnySet.fromList [Mon, Tue, Wed, Thu, Fri]  
+                        days = AnySet.fromList [Mon, Tue, Wed, Thu, Fri]
+
+                        latest =
+                            Maybe.andThen T.latestEditableEntry model.hours
+                                |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New })
+                                |> Maybe.map List.singleton
+                                |> Maybe.withDefault []
                     in                                   
-                    ( { model | editingWeek = Just <| T.EditingWeek wk days [] }, Cmd.none )
+                    ( { model | editingWeek = Just <| T.EditingWeek wk days latest }, Cmd.none )
 
                 EditWeek ewk ->
                     ( { model | editingWeek = Just ewk }, Cmd.none )
+
+                AddWeekEntry ->
+                    let
+                        latest =
+                            Maybe.andThen T.latestEditableEntry model.hours                                
+
+                        newEntry = 
+                            model.editingWeek
+                                |> Maybe.map .entries
+                                |> Maybe.map List.reverse
+                                |> Maybe.andThen List.head
+                                |> (\e -> Util.maybeOr e latest)
+                                |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New })
+                                |> Maybe.map List.singleton
+                                |> Maybe.withDefault []
+
+                        newWeek =
+                            model.editingWeek
+                                |> Maybe.map (\ewk -> { ewk | entries = ewk.entries ++ newEntry })
+                    in
+                        ( { model | editingWeek = newWeek }, Cmd.none )
 
                 CloseWeek ->
                     ( { model | editingWeek = Nothing }, Cmd.none )
@@ -842,10 +869,10 @@ weekEdit model ewk =
                 ]
             ]
         , dayButtons
-        , column [] [ text "entries go here" ]
+        , column [] <| List.map (text << Debug.toString) ewk.entries
         , row 
             [ width fill, padding 25, spacing 15, Font.size 16 ] 
-            [ Ui.roundButton False colors.white colors.black NoOp (text "+")
+            [ Ui.roundButton False colors.white colors.black AddWeekEntry (text "+")
             , text "Add row" 
             ]
         ]

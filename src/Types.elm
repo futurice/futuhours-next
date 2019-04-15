@@ -25,6 +25,7 @@ type Msg
     | CloseDay Day
     | SaveDay Day HoursDay
     | OpenWeek Int
+    | AddWeekEntry
     | EditWeek EditingWeek
     | CloseWeek
     | UserResponse (Result Http.Error User)
