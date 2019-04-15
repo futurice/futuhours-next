@@ -837,6 +837,17 @@ monthHeader model month hoursMonth =
         ]
 
 
+editEntryForWeek : Model -> T.Entry -> Element Msg
+editEntryForWeek model entry =
+    editEntry model entry
+        { hours = \hrs -> EditWeekEntry entry.id { entry | hours = hrs }
+        , project = \id -> EditWeekEntry entry.id { entry | projectId = id }
+        , task = \id -> EditWeekEntry entry.id { entry | taskId = id }
+        , desc = \desc -> EditWeekEntry entry.id { entry | description = desc }
+        , delete = DeleteWeekEntry entry.id
+        }
+
+
 weekEdit : Model -> T.EditingWeek -> Element Msg
 weekEdit model ewk =
     let
@@ -883,7 +894,7 @@ weekEdit model ewk =
                 ]
             ]
         , dayButtons
-        , column [] <| List.map (text << Debug.toString) ewk.entries
+        , column [ width fill, paddingXY 25 0 ] <| List.map (editEntryForWeek model) ewk.entries
         , row 
             [ width fill, padding 25, spacing 15, Font.size 16 ] 
             [ Ui.roundButton False colors.white colors.black AddWeekEntry (text "+")
