@@ -796,6 +796,7 @@ weekEdit : Model -> T.EditingWeek -> Element Msg
 weekEdit model ewk =
     column
         [ width fill 
+        , Background.color colors.white
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         ]
         [ row 
@@ -821,6 +822,13 @@ weekEdit model ewk =
                     NoOp
                     "Apply"
                 ]
+            ]
+        , row [] [ text "daybuttons go here" ]
+        , column [] [ text "entries go here" ]
+        , row 
+            [ width fill, padding 25, spacing 15, Font.size 16 ] 
+            [ Ui.roundButton False colors.white colors.black NoOp "+"
+            , text "Add row" 
             ]
         ]
 
