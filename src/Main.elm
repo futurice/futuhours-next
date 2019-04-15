@@ -535,8 +535,17 @@ entryColumn model entries =
         (List.map (entryRow model) entries)
 
 
-editEntry : Model -> T.Day -> T.Entry -> Element Msg
-editEntry model day entry =
+type alias EntryHandlers =
+    { hours : Float -> Msg
+    , project : Int -> Msg 
+    , task : Int -> Msg 
+    , desc : String -> Msg 
+    , delete : Msg
+    }
+
+
+editEntry : Model -> T.Entry -> EntryHandlers -> Element Msg
+editEntry model entry handlers =
     let
         latestEntry =
             Maybe.andThen T.latestEditableEntry model.hours
@@ -582,12 +591,6 @@ editEntry model day entry =
             else
                 reportableTaskNames
 
-        updateProject i =
-            EditEntry day { entry | projectId = i }
-
-        updateTask i =
-            EditEntry day { entry | taskId = i }
-
         latestProjectId =
             if disabled then
                 entry.projectId
@@ -603,7 +606,7 @@ editEntry model day entry =
                 latestEntry.taskId
 
         minusButton =
-            Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) (text "-")
+            Ui.roundButton disabled colors.white colors.black handlers.delete (text "-")
     in
     (if isMobile model.window then
         column
@@ -628,9 +631,9 @@ editEntry model day entry =
                     px 75
                 )
             ]
-            (Ui.numberDropdown disabled entry)
-        , Ui.dropdown disabled updateProject latestProjectId entry.projectId projectNames
-        , Ui.dropdown disabled updateTask latestTaskId entry.taskId taskNames
+            (Ui.numberDropdown disabled handlers.hours entry)
+        , Ui.dropdown disabled handlers.project latestProjectId entry.projectId projectNames
+        , Ui.dropdown disabled handlers.task latestTaskId entry.taskId taskNames
         , Input.text
             [ Border.width 1
             , Border.rounded 5
@@ -645,7 +648,7 @@ editEntry model day entry =
             , padding 10
             , htmlAttribute <| HA.disabled disabled
             ]
-            { onChange = \t -> EditEntry day { entry | description = t }
+            { onChange = handlers.desc
             , text = entry.description
             , placeholder = Nothing
             , label = Input.labelHidden "description"
@@ -661,6 +664,17 @@ editEntry model day entry =
           else
             none
         ]
+
+
+editEntryForDay : Model -> T.Day -> T.Entry -> Element Msg
+editEntryForDay model day entry =
+    editEntry model entry
+        { hours = \val -> EditEntry entry.day { entry | hours = val }
+        , project = \i -> EditEntry day { entry | projectId = i }
+        , task = \i -> EditEntry day { entry | taskId = i }
+        , desc = \t -> EditEntry day { entry | description = t }
+        , delete = DeleteEntry day entry.id
+        }
 
 
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
@@ -718,7 +732,7 @@ dayEdit model day hoursDay =
             , padding 30
             , spacing 20
             ]
-            (List.map (editEntry model day) filteredEntries ++ [ editingControls ])
+            (List.map (editEntryForDay model day) filteredEntries ++ [ editingControls ])
         ]
 
 

@@ -57,30 +57,6 @@ roundButton disabled bkgColor txtColor msg label =
         }
 
 
-stepper : Bool -> T.Entry -> Element Msg
-stepper disabled entry =
-    let
-        down =
-           if disabled then Nothing else Just <| EditEntry entry.day { entry | hours = max 0.5 (entry.hours - 0.5) }
-
-        up =
-            if disabled then Nothing else Just <| EditEntry entry.day { entry | hours = min 18 (entry.hours + 0.5) } 
-    in    
-    row
-        [ spacing 10
-        , Border.width 1
-        , Border.rounded 5
-        , Border.color (if disabled then colors.lightGray else colors.black)
-        , padding 10
-        , width (px 100)
-        , Font.color (if disabled then colors.gray else colors.black)
-        ]
-        [ Input.button [ alignLeft ] { onPress = down, label = el [ ] <| faIcon "fa fa-angle-left" }
-        , numberDropdown disabled entry
-        , Input.button [ alignRight ] { onPress = up, label = el [ ] <| faIcon "fa fa-angle-right" }
-        ]
-
-
 dropdown : Bool -> (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
 dropdown disabled handler latest value options = 
     row 
@@ -104,23 +80,20 @@ dropdownRaw disabled handler latest value options =
                 |> Dict.values)
         ]
 
-numberDropdown : Bool -> T.Entry -> Element Msg
-numberDropdown disabled entry =
+numberDropdown : Bool -> (Float -> Msg) -> T.Entry -> Element Msg
+numberDropdown disabled handler entry =
     el 
         [ width fill ]
-        (html <| numberDropdownRaw disabled entry)
+        (html <| numberDropdownRaw disabled handler entry)
 
 
-numberDropdownRaw : Bool -> T.Entry -> Html Msg
-numberDropdownRaw disabled entry =
+numberDropdownRaw : Bool -> (Float -> Msg) -> T.Entry -> Html Msg
+numberDropdownRaw disabled handler entry =
     let
         options =
             List.range 1 36
                 |> List.map toFloat
                 |> List.map (\x -> x * 0.5)
-
-        handler val =
-            EditEntry entry.day { entry | hours = val }
 
         optEl opt =
             Html.option [ HA.value <| String.fromFloat opt, HA.selected (entry.hours == opt) ] [ Html.text <| String.fromFloat opt ]
