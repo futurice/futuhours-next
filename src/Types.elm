@@ -27,7 +27,7 @@ type Msg
     | OpenWeek Int
     | AddWeekEntry
     | EditWeek EditingWeek
-    | EditWeekEntry Int Entry
+    | EditWeekEntry Entry
     | DeleteWeekEntry Int
     | CloseWeek
     | UserResponse (Result Http.Error User)

@@ -234,6 +234,34 @@ update msg model =
                     in
                         ( { model | editingWeek = newWeek }, Cmd.none )
 
+                EditWeekEntry entry ->
+                    let
+                        newEntries =
+                            model.editingWeek
+                                |> Maybe.map .entries
+                                |> Maybe.withDefault []
+                                |> List.map (\e -> if e.id == entry.id then entry else e)
+
+                        newWeek =
+                            model.editingWeek
+                                |> Maybe.map (\ewk -> { ewk | entries = newEntries })
+                    in
+                        ( { model | editingWeek = newWeek }, Cmd.none )
+                        
+                DeleteWeekEntry id ->
+                    let
+                        newEntries =
+                            model.editingWeek
+                                |> Maybe.map .entries
+                                |> Maybe.withDefault []    
+                                |> List.filter (\e -> e.id /= id)
+
+                        newWeek =
+                            model.editingWeek
+                                |> Maybe.map (\ewk -> { ewk | entries = newEntries })
+                    in
+                        ( { model | editingWeek = newWeek }, Cmd.none )
+
                 CloseWeek ->
                     ( { model | editingWeek = Nothing }, Cmd.none )
 
@@ -840,10 +868,10 @@ monthHeader model month hoursMonth =
 editEntryForWeek : Model -> T.Entry -> Element Msg
 editEntryForWeek model entry =
     editEntry model entry
-        { hours = \hrs -> EditWeekEntry entry.id { entry | hours = hrs }
-        , project = \id -> EditWeekEntry entry.id { entry | projectId = id }
-        , task = \id -> EditWeekEntry entry.id { entry | taskId = id }
-        , desc = \desc -> EditWeekEntry entry.id { entry | description = desc }
+        { hours = \hrs -> EditWeekEntry { entry | hours = hrs }
+        , project = \id -> EditWeekEntry { entry | projectId = id }
+        , task = \id -> EditWeekEntry { entry | taskId = id }
+        , desc = \desc -> EditWeekEntry { entry | description = desc }
         , delete = DeleteWeekEntry entry.id
         }
 
@@ -894,7 +922,7 @@ weekEdit model ewk =
                 ]
             ]
         , dayButtons
-        , column [ width fill, paddingXY 25 0 ] <| List.map (editEntryForWeek model) ewk.entries
+        , column [ width fill, paddingXY 25 0, spacing 15 ] <| List.map (editEntryForWeek model) ewk.entries
         , row 
             [ width fill, padding 25, spacing 15, Font.size 16 ] 
             [ Ui.roundButton False colors.white colors.black AddWeekEntry (text "+")
