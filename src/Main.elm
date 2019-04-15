@@ -11,6 +11,7 @@ import Element.Border as Border
 import Element.Events as Event
 import Element.Font as Font
 import Element.Input as Input
+import AnySet exposing (AnySet)
 import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Http
@@ -19,7 +20,7 @@ import Model exposing (Flags, Model, isMobile)
 import Task
 import Time
 import Time.Extra as TE
-import Types as T exposing (Msg(..))
+import Types as T exposing (Msg(..), Workday(..))
 import Ui exposing (colors)
 import Util
 
@@ -197,8 +198,11 @@ update msg model =
                             , s
                             )
 
-                OpenWeek wk ->
-                    ( { model | editingWeek = Just { week = wk, entries = [] } }, Cmd.none )
+                OpenWeek wk -> 
+                    let
+                        days = AnySet.fromList [Mon, Tue, Wed, Thu, Fri]  
+                    in                                   
+                    ( { model | editingWeek = Just <| T.EditingWeek wk days [] }, Cmd.none )
 
                 EditWeek ewk ->
                     ( { model | editingWeek = Just ewk }, Cmd.none )
@@ -794,6 +798,20 @@ monthHeader model month hoursMonth =
 
 weekEdit : Model -> T.EditingWeek -> Element Msg
 weekEdit model ewk =
+    let
+        dayButton day =
+            let
+                isOn = AnySet.member day ewk.days
+                bkgColor = if isOn then colors.darkText else colors.bodyBackground
+                txtColor = if isOn then colors.white else colors.black
+                msg = NoOp
+                label = T.workdayToString day
+            in            
+            Ui.roundButton False bkgColor txtColor msg label
+
+        dayButtons =
+            List.map dayButton [Mon, Tue, Wed, Thu, Fri]  
+    in    
     column
         [ width fill 
         , Background.color colors.white
@@ -823,7 +841,7 @@ weekEdit model ewk =
                     "Apply"
                 ]
             ]
-        , row [] [ text "daybuttons go here" ]
+        , row [] dayButtons
         , column [] [ text "entries go here" ]
         , row 
             [ width fill, padding 25, spacing 15, Font.size 16 ] 

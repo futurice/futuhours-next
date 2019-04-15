@@ -1,7 +1,8 @@
 module Types exposing (..)
 
 import Dict exposing (Dict)
-import EverySet as Set
+import AnySet exposing (AnySet)
+import Set
 import Http
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
@@ -39,8 +40,27 @@ send msg =
         |> Task.perform identity
 
 
+type Workday
+    = Mon
+    | Tue
+    | Wed
+    | Thu
+    | Fri
+
+
+workdayToString : Workday -> String
+workdayToString wd =
+    case wd of
+        Mon -> "Mon"
+        Tue -> "Tue"
+        Wed -> "Wed"
+        Thu -> "Thu"
+        Fri -> "Fri"
+
+
 type alias EditingWeek =
-    { week : Int 
+    { week : Int
+    , days : AnySet Workday
     , entries : List Entry
     }
 
@@ -202,8 +222,8 @@ mergeHoursResponse h1 h2 =
     let
         mergeLists : List (Project a) -> List (Project a) -> List (Project a)
         mergeLists l1 l2 =
-            Set.union (Set.fromList l1) (Set.fromList l2)
-                |> Set.toList
+            AnySet.union (AnySet.fromList l1) (AnySet.fromList l2)
+                |> AnySet.toList
     in
     HoursResponse
         h2.defaultWorkHours
