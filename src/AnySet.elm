@@ -1,4 +1,4 @@
-module AnySet exposing (AnySet, empty, insert, member, union, toList, fromList)
+module AnySet exposing (..)
 
 import AssocList as AL
 
@@ -24,6 +24,19 @@ insert a set =
     AL.insert a () set
 
 
+remove : a -> AnySet a -> AnySet a
+remove a set =
+    AL.remove a set
+
+
+toggle : a -> AnySet a -> AnySet a
+toggle a set =
+    if member a set then
+        remove a set
+    else 
+        insert a set
+
+
 union : AnySet a -> AnySet a -> AnySet a
 union xs ys = 
     AL.union xs ys
@@ -31,8 +44,7 @@ union xs ys =
 
 toList : AnySet a -> List a
 toList xs =
-    AL.toList xs
-        |> List.map Tuple.first
+    AL.keys xs
 
 
 fromList : List a -> AnySet a

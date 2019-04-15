@@ -40,7 +40,7 @@ scButton attrs msg label =
         { onPress = Just msg, label = text label }
 
 
-roundButton : Bool -> Element.Color -> Element.Color -> Msg -> String -> Element Msg
+roundButton : Bool -> Element.Color -> Element.Color -> Msg -> Element Msg -> Element Msg
 roundButton disabled bkgColor txtColor msg label =
     Input.button
         [ Background.color (if disabled then colors.lightGray else bkgColor)
@@ -53,7 +53,7 @@ roundButton disabled bkgColor txtColor msg label =
         , Border.width 1
         ]
         { onPress = if disabled then Nothing else Just msg
-        , label = el [ centerX, centerY ] (text label)
+        , label = el [ centerX, centerY ] label
         }
 
 

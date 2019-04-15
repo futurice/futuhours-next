@@ -576,7 +576,7 @@ editEntry model day entry =
                 latestEntry.taskId
 
         minusButton =
-            Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) "-"
+            Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) (text "-")
     in
     (if isMobile model.window then
         column
@@ -650,7 +650,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ]
-                [ Ui.roundButton False colors.white colors.black (AddEntry day) "+"
+                [ Ui.roundButton False colors.white colors.black (AddEntry day) (text "+")
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
@@ -726,7 +726,7 @@ dayRow model day hoursDay =
                 colors.topBarBackground
                 colors.white
                 (OpenDay day hoursDay)
-                "+"
+                (text "+")
     in
     case Dict.get day model.editingHours of
         Just hd ->
@@ -804,13 +804,13 @@ weekEdit model ewk =
                 isOn = AnySet.member day ewk.days
                 bkgColor = if isOn then colors.darkText else colors.bodyBackground
                 txtColor = if isOn then colors.white else colors.black
-                msg = NoOp
-                label = T.workdayToString day
+                msg = EditWeek <| { ewk | days = AnySet.toggle day ewk.days }
+                label = el [ Font.size 12 ] <| text <| T.workdayToString day
             in            
             Ui.roundButton False bkgColor txtColor msg label
 
         dayButtons =
-            List.map dayButton [Mon, Tue, Wed, Thu, Fri]  
+            row [ paddingXY 25 15, spacing 10 ] (List.map dayButton [Mon, Tue, Wed, Thu, Fri]  )
     in    
     column
         [ width fill 
@@ -841,11 +841,11 @@ weekEdit model ewk =
                     "Apply"
                 ]
             ]
-        , row [] dayButtons
+        , dayButtons
         , column [] [ text "entries go here" ]
         , row 
             [ width fill, padding 25, spacing 15, Font.size 16 ] 
-            [ Ui.roundButton False colors.white colors.black NoOp "+"
+            [ Ui.roundButton False colors.white colors.black NoOp (text "+")
             , text "Add row" 
             ]
         ]
