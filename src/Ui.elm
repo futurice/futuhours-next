@@ -33,6 +33,13 @@ faIcon c =
     html <| Html.i [ HA.class c ] []
 
 
+scButton : List (Element.Attribute Msg) -> Msg -> String -> Element Msg
+scButton attrs msg label =
+    Input.button
+        ([ Font.size 14, width (px 100), height (px 40), Border.rounded 5 ] ++ attrs)
+        { onPress = Just msg, label = text label }
+
+
 roundButton : Bool -> Element.Color -> Element.Color -> Msg -> String -> Element Msg
 roundButton disabled bkgColor txtColor msg label =
     Input.button

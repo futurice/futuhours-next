@@ -1,4 +1,4 @@
-module Model exposing (Flags, Model, Window, init, isMobile)
+module Model exposing (Flags, Model, Window, EditingWeek, init, isMobile)
 
 import Api
 import Dict exposing (Dict)

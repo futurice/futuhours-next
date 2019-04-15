@@ -789,6 +789,39 @@ monthHeader model month hoursMonth =
         ]
 
 
+weekEdit : Model -> Model.EditingWeek -> Element Msg
+weekEdit model ewk =
+    column
+        [ width fill 
+        , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
+        ]
+        [ row 
+            [ width fill
+            , Background.color colors.topBarBackground
+            , Font.color colors.white
+            , Font.size 16
+            , paddingXY 20 15
+            ]
+            [ el [ alignLeft, centerY ] (text <| (++) "Week " <| String.fromInt ewk.week) 
+            , row 
+                [ alignRight, centerY, spacing 10 ]
+                [ Ui.scButton
+                    [ Background.color colors.holidayGray
+                    , Font.color colors.black 
+                    ]
+                    CloseWeek
+                    "Cancel"
+                , Ui.scButton
+                    [ Background.color colors.white
+                    , Font.color colors.black 
+                    ]
+                    NoOp
+                    "Apply"
+                ]
+            ]
+        ]
+
+
 weekHeader : Model -> Int -> Element Msg
 weekHeader model wk =
     let
@@ -802,16 +835,24 @@ weekHeader model wk =
             days
                 |> List.filter (\( d, _ ) -> wk == T.getWeekNumber d)
                 |> List.map Tuple.second
+
+        weekDisplay =
+            row 
+                [ width fill, paddingXY 20 0, spacing 15 ]
+                [ el [] (text <| "Week " ++ String.fromInt wk)
+                , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| EditWeek wk, label = text "Add a whole week" }
+                , row [ alignRight ]
+                    [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours daysForWeek
+                    , text " h"
+                    ]
+                ]
     in
-    row 
-        [ width fill, paddingXY 20 0, spacing 15 ]
-        [ el [] (text <| "Week " ++ String.fromInt wk)
-        , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| EditWeek wk, label = text "Add a whole week" }
-        , row [ alignRight ]
-            [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours daysForWeek
-            , text " h"
-            ]
-        ]
+    case model.editingWeek of
+        Just ewk ->
+            if ewk.week == wk then weekEdit model ewk else weekDisplay
+    
+        Nothing ->
+            weekDisplay
 
 
 dayElements : Model -> List (Element Msg)
