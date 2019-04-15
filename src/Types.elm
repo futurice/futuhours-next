@@ -23,7 +23,8 @@ type Msg
     | DeleteEntry Day Identifier
     | CloseDay Day
     | SaveDay Day HoursDay
-    | EditWeek Int
+    | OpenWeek Int
+    | EditWeek EditingWeek
     | CloseWeek
     | UserResponse (Result Http.Error User)
     | HandleHoursResponse (Result Http.Error HoursResponse)
@@ -36,6 +37,12 @@ send : Msg -> Cmd Msg
 send msg =
     Task.succeed msg
         |> Task.perform identity
+
+
+type alias EditingWeek =
+    { week : Int 
+    , entries : List Entry
+    }
 
 
 type alias Identifier =

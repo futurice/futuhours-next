@@ -1,4 +1,4 @@
-module Model exposing (Flags, Model, Window, EditingWeek, init, isMobile)
+module Model exposing (Flags, Model, Window, init, isMobile)
 
 import Api
 import Dict exposing (Dict)
@@ -40,12 +40,6 @@ isMobile win =
             False
 
 
-type alias EditingWeek =
-    { week : Int 
-    , entries : List T.Entry
-    }
-
-
 type alias Model =
     { isMenuOpen : Bool
     , user : Maybe T.User
@@ -56,7 +50,7 @@ type alias Model =
     , today : Time.Posix
     , window : Window
     , editingHours : Dict T.Day T.HoursDay
-    , editingWeek : Maybe EditingWeek
+    , editingWeek : Maybe T.EditingWeek
     , allDays : Dict T.Day T.HoursDay
     , saveQueue : List (Cmd Msg)
     }

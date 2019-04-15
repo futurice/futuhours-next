@@ -197,8 +197,11 @@ update msg model =
                             , s
                             )
 
-                EditWeek wk ->
+                OpenWeek wk ->
                     ( { model | editingWeek = Just { week = wk, entries = [] } }, Cmd.none )
+
+                EditWeek ewk ->
+                    ( { model | editingWeek = Just ewk }, Cmd.none )
 
                 CloseWeek ->
                     ( { model | editingWeek = Nothing }, Cmd.none )
@@ -789,7 +792,7 @@ monthHeader model month hoursMonth =
         ]
 
 
-weekEdit : Model -> Model.EditingWeek -> Element Msg
+weekEdit : Model -> T.EditingWeek -> Element Msg
 weekEdit model ewk =
     column
         [ width fill 
@@ -840,7 +843,7 @@ weekHeader model wk =
             row 
                 [ width fill, paddingXY 20 0, spacing 15 ]
                 [ el [] (text <| "Week " ++ String.fromInt wk)
-                , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| EditWeek wk, label = text "Add a whole week" }
+                , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| OpenWeek wk, label = text "Add a whole week" }
                 , row [ alignRight ]
                     [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours daysForWeek
                     , text " h"
