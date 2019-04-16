@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Api exposing (..)
+import AssocList
 import Browser
 import Browser.Events
 import Date
@@ -904,7 +905,7 @@ weekEdit model ewk =
             , Font.size 16
             , paddingXY 20 15
             ]
-            [ el [ alignLeft, centerY ] (text <| (++) "Week " <| String.fromInt ewk.week) 
+            [ el [ alignLeft, centerY ] (text <| (++) "Week " <| String.fromInt <| .weekNum ewk.week) 
             , row 
                 [ alignRight, centerY, spacing 10 ]
                 [ Ui.scButton
@@ -931,7 +932,7 @@ weekEdit model ewk =
         ]
 
 
-weekHeader : Model -> Int -> Element Msg
+weekHeader : Model -> T.Week -> Element Msg
 weekHeader model wk =
     let
         days =
@@ -942,13 +943,13 @@ weekHeader model wk =
 
         daysForWeek =
             days
-                |> List.filter (\( d, _ ) -> wk == T.getWeekNumber d)
+                |> List.filter (\( d, _ ) -> wk == T.dayToWeek d)
                 |> List.map Tuple.second
 
         weekDisplay =
             row 
                 [ width fill, paddingXY 20 0, spacing 15 ]
-                [ el [] (text <| "Week " ++ String.fromInt wk)
+                [ el [] (text <| "Week " ++ String.fromInt wk.weekNum)
                 , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| OpenWeek wk, label = text "Add a whole week" }
                 , row [ alignRight ]
                     [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours daysForWeek
@@ -968,7 +969,7 @@ dayElements : Model -> List (Element Msg)
 dayElements model =
     let
         makeElem ( d, hd ) =
-            { month = T.getMonthNumber d, week = T.getWeekNumber d, day = d, elem = dayRow model d hd }
+            { month = T.getMonthNumber d, week = T.dayToWeek d, day = d, elem = dayRow model d hd }
 
         getHoursMonth e =
             model.hours
@@ -998,15 +999,15 @@ dayElements model =
         |> List.map (\e -> ( e.week, e ))
         |> List.foldl
             (\( w, el ) dict ->
-                if Dict.member w dict then
-                    Dict.update w (Maybe.map ((++) [ el ])) dict
+                if AssocList.member w dict then
+                    AssocList.update w (Maybe.map ((++) [ el ])) dict
 
                 else
-                    Dict.insert w [ el ] dict
+                    AssocList.insert w [ el ] dict
             )
-            Dict.empty
-        |> Dict.toList
-        |> List.sortBy Tuple.first
+            AssocList.empty
+        |> AssocList.toList
+        |> List.sortBy (.weekNum << Tuple.first)
         |> List.reverse
         |> List.map (\( wk, ds ) -> ( wk, ds |> List.sortBy (\d -> T.dayToMillis d.day) |> List.reverse ))
         |> List.concatMap

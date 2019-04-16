@@ -24,7 +24,7 @@ type Msg
     | DeleteEntry Day Identifier
     | CloseDay Day
     | SaveDay Day HoursDay
-    | OpenWeek Int
+    | OpenWeek Week
     | AddWeekEntry
     | EditWeek EditingWeek
     | EditWeekEntry Entry
@@ -61,8 +61,14 @@ workdayToString wd =
         Fri -> "Fri"
 
 
+type alias Week =
+    { year: Int 
+    , weekNum: Int
+    }
+
+
 type alias EditingWeek =
-    { week : Int
+    { week : Week
     , days : AnySet Workday
     , entries : List Entry
     }
@@ -84,11 +90,21 @@ type alias Day =
     String
 
 
-getWeekNumber : Day -> Int
-getWeekNumber d =
+dayToWeek : Day -> Week
+dayToWeek d =
+    let
+        date = 
             Date.fromIsoString d
-                |> Result.map Date.weekNumber
+
+        weekNum =
+            Result.map Date.weekNumber date
                 |> Result.withDefault 0
+        
+        year =
+            Result.map Date.weekYear date
+                |> Result.withDefault 1970
+    in
+    Week year weekNum
 
 
 getMonthNumber : Day -> Int
