@@ -1,16 +1,16 @@
-module Types exposing (..)
+module Types exposing (Day, DayType(..), EditingWeek, Entry, EntryAge(..), EntryType(..), EntryUpdate, EntryUpdateResponse, HoursDay, HoursMonth, HoursResponse, Identifier, Login, MarkableTask, Month, Msg(..), NDTd, NDTh, Project, ReportableTask, User, Week, allDays, allDaysAsDict, allEntries, allEntriesAsDict, dayToMillis, dayToWeek, dayTypeDecoder, emptyUser, entryDecoder, entryEditable, entryToJsonBody, entryToUpdate, entryTypeDecoder, entryUpdateEncoder, entryUpdateResponseDecoder, getDay, getMonthNumber, hoursDayDecoder, hoursMonthDecoder, hoursResponseDecoder, hoursToProjectDict, hoursToTaskDict, isEntryDeleted, latestDay, latestEditableEntry, latestEntry, markDeletedEntry, markableTaskDecoder, mergeHoursResponse, oldestDay, oldestEntry, projectDecoder, reportableTaskDecoder, send, userDecoder)
 
-import Dict exposing (Dict)
 import AnySet exposing (AnySet)
-import Set
+import Date
+import Dict exposing (Dict)
 import Http
-import Json.Encode as Encode
-import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
+import Iso8601 as Iso
+import Json.Decode as Decode exposing (Decoder, bool, dict, field, float, int, list, string)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Json.Encode as Encode
+import Set
 import Task
 import Time
-import Iso8601 as Iso
-import Date
 
 
 type Msg
@@ -41,12 +41,12 @@ type Msg
 send : Msg -> Cmd Msg
 send msg =
     Task.succeed msg
-        |> Task.perform identity        
+        |> Task.perform identity
 
 
 type alias Week =
-    { year: Int 
-    , weekNum: Int
+    { year : Int
+    , weekNum : Int
     }
 
 
@@ -76,13 +76,13 @@ type alias Day =
 dayToWeek : Day -> Week
 dayToWeek d =
     let
-        date = 
+        date =
             Date.fromIsoString d
 
         weekNum =
             Result.map Date.weekNumber date
                 |> Result.withDefault 0
-        
+
         year =
             Result.map Date.weekYear date
                 |> Result.withDefault 1970
@@ -229,19 +229,19 @@ mergeHoursResponse h1 h2 =
     in
     HoursResponse
         h2.defaultWorkHours
-        ( mergeLists h1.reportableProjects h2.reportableProjects )
-        ( mergeLists h1.markedProjects h2.markedProjects )
-        ( Dict.merge
+        (mergeLists h1.reportableProjects h2.reportableProjects)
+        (mergeLists h1.markedProjects h2.markedProjects)
+        (Dict.merge
             Dict.insert
-            (\key a b -> 
+            (\key a b ->
                 Dict.insert key
                     { b | days = Dict.union a.days b.days }
             )
             Dict.insert
-            h1.months 
-            h2.months 
+            h1.months
+            h2.months
             Dict.empty
-        )    
+        )
 
 
 hoursToProjectDict : HoursResponse -> Dict Identifier String
@@ -249,28 +249,34 @@ hoursToProjectDict hours =
     let
         toDict projects =
             projects
-                |> List.map (\t -> (t.id, t.name)) 
+                |> List.map (\t -> ( t.id, t.name ))
                 |> Dict.fromList
-        
-        reportable = toDict hours.reportableProjects
-        marked = toDict hours.markedProjects
+
+        reportable =
+            toDict hours.reportableProjects
+
+        marked =
+            toDict hours.markedProjects
     in
-        Dict.union marked reportable
+    Dict.union marked reportable
 
 
 hoursToTaskDict : HoursResponse -> Dict Identifier String
 hoursToTaskDict hours =
     let
-        toTasks projects = 
+        toTasks projects =
             List.map .tasks projects
                 |> List.foldl (++) []
-                |> List.map (\t -> (t.id, t.name))
-                
-        reportableTasks = toTasks hours.reportableProjects
-        markedTasks = toTasks hours.markedProjects
+                |> List.map (\t -> ( t.id, t.name ))
+
+        reportableTasks =
+            toTasks hours.reportableProjects
+
+        markedTasks =
+            toTasks hours.markedProjects
     in
-        (reportableTasks ++ markedTasks)
-            |> Dict.fromList
+    (reportableTasks ++ markedTasks)
+        |> Dict.fromList
 
 
 allEntries : HoursResponse -> List Entry
@@ -294,9 +300,10 @@ allEntriesAsDict hours =
         insertOrAdd e dic =
             if Dict.member e.day dic then
                 Dict.update e.day (Maybe.map ((::) e)) dic
+
             else
                 Dict.insert e.day [ e ] dic
-    in    
+    in
     allEntries hours
         |> List.foldl insertOrAdd blankDict
 
@@ -316,7 +323,7 @@ entryEditable e =
 
         Unknown ->
             False
-    
+
         _ ->
             not e.closed
 
@@ -409,8 +416,16 @@ type DayType
 dayTypeDecoder : Decoder DayType
 dayTypeDecoder =
     Decode.oneOf
-        [ bool |> Decode.andThen (\b -> if b then Decode.succeed Weekend else Decode.succeed Normal)
-        , string |> Decode.andThen (\a -> Decode.succeed (Holiday a))  
+        [ bool
+            |> Decode.andThen
+                (\b ->
+                    if b then
+                        Decode.succeed Weekend
+
+                    else
+                        Decode.succeed Normal
+                )
+        , string |> Decode.andThen (\a -> Decode.succeed (Holiday a))
         ]
 
 
@@ -453,19 +468,20 @@ isEntryDeleted e =
     case e.age of
         Deleted ->
             True
-    
+
         DeletedNew ->
             True
 
-        _ -> 
+        _ ->
             False
+
 
 markDeletedEntry : Entry -> Entry
 markDeletedEntry e =
     case e.age of
         New ->
-            { e | age = DeletedNew}
-    
+            { e | age = DeletedNew }
+
         Old ->
             { e | age = Deleted }
 
@@ -483,13 +499,21 @@ type EntryType
 entryTypeDecoder : Decoder EntryType
 entryTypeDecoder =
     Decode.oneOf
-        [string
+        [ string
             |> Decode.andThen
-                (\str -> case str of
-                    "billable" -> Decode.succeed Billable
-                    "non-billable" -> Decode.succeed NonBillable
-                    "absence" -> Decode.succeed Absence
-                    _ -> Decode.succeed Unknown
+                (\str ->
+                    case str of
+                        "billable" ->
+                            Decode.succeed Billable
+
+                        "non-billable" ->
+                            Decode.succeed NonBillable
+
+                        "absence" ->
+                            Decode.succeed Absence
+
+                        _ ->
+                            Decode.succeed Unknown
                 )
         , Decode.succeed Unknown
         ]
@@ -504,7 +528,7 @@ type alias EntryUpdateResponse =
 entryUpdateResponseDecoder : Decoder EntryUpdateResponse
 entryUpdateResponseDecoder =
     Decode.succeed EntryUpdateResponse
-        |> required "user" userDecoder 
+        |> required "user" userDecoder
         |> required "hours" hoursResponseDecoder
 
 
@@ -521,13 +545,14 @@ type alias EntryUpdate =
 entryUpdateEncoder : EntryUpdate -> Encode.Value
 entryUpdateEncoder eu =
     Encode.object
-        [ ("taskId", Encode.int eu.taskId)
-        , ("projectId", Encode.int eu.projectId)
-        , ("description", Encode.string eu.description)
-        , ("date", Encode.string eu.date)
-        , ("hours", Encode.float eu.hours)
-        , ("closed", Encode.bool eu.closed) 
+        [ ( "taskId", Encode.int eu.taskId )
+        , ( "projectId", Encode.int eu.projectId )
+        , ( "description", Encode.string eu.description )
+        , ( "date", Encode.string eu.date )
+        , ( "hours", Encode.float eu.hours )
+        , ( "closed", Encode.bool eu.closed )
         ]
+
 
 entryToUpdate : Entry -> EntryUpdate
 entryToUpdate e =
