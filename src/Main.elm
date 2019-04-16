@@ -263,6 +263,14 @@ update msg model =
                     in
                         ( { model | editingWeek = newWeek }, Cmd.none )
 
+                SaveWeek ->
+                    case model.editingWeek of
+                        Nothing ->
+                            ( { model | hasError = Just "Edting week is empty" }, Cmd.none )
+                    
+                        Just ewk ->
+                            ( { model | editingWeek = Nothing }, Cmd.batch (updateWeek ewk) )
+
                 CloseWeek ->
                     ( { model | editingWeek = Nothing }, Cmd.none )
 
@@ -918,7 +926,7 @@ weekEdit model ewk =
                     [ Background.color colors.white
                     , Font.color colors.black 
                     ]
-                    NoOp
+                    SaveWeek
                     "Apply"
                 ]
             ]
