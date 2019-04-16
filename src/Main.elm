@@ -643,7 +643,7 @@ editEntry model entry handlers =
                 latestEntry.taskId
 
         minusButton =
-            Ui.roundButton disabled colors.white colors.black handlers.delete (text "-")
+            Ui.roundButton disabled True colors.white colors.black handlers.delete (text "-")
     in
     (if isMobile model.window then
         column
@@ -728,7 +728,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ]
-                [ Ui.roundButton False colors.white colors.black (AddEntry day) (text "+")
+                [ Ui.roundButton False True colors.white colors.black (AddEntry day) (text "+")
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
@@ -800,6 +800,7 @@ dayRow model day hoursDay =
 
         openButton =
             Ui.roundButton
+                False
                 False
                 colors.topBarBackground
                 colors.white
@@ -896,7 +897,7 @@ weekEdit model ewk =
                 msg = EditWeek <| { ewk | days = AnySet.toggle day ewk.days }
                 label = el [ Font.size 12 ] <| text <| Util.toEnglishWeekday day
             in            
-            Ui.roundButton False bkgColor txtColor msg label
+            Ui.roundButton False False bkgColor txtColor msg label
 
         dayButtons =
             row [ paddingXY 25 15, spacing 10 ] (List.map dayButton [Mon, Tue, Wed, Thu, Fri, Sat, Sun]  )
@@ -934,7 +935,7 @@ weekEdit model ewk =
         , column [ width fill, paddingXY 25 0, spacing 15 ] <| List.map (editEntryForWeek model) ewk.entries
         , row 
             [ width fill, padding 25, spacing 15, Font.size 16 ] 
-            [ Ui.roundButton False colors.white colors.black AddWeekEntry (text "+")
+            [ Ui.roundButton False True colors.white colors.black AddWeekEntry (text "+")
             , text "Add row" 
             ]
         ]
