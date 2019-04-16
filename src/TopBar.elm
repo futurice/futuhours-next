@@ -20,7 +20,7 @@ statGroup model =
         statElement icon value label =
             row [ spacing 10 ]
                 [ el [] (Ui.faIcon icon)
-                , text <| String.fromFloat value
+                , text value
                 , text label
                 ]
 
@@ -49,11 +49,11 @@ statGroup model =
          else
             deskOptions
         )
-        [ statElement "far fa-clock" user.balance "h"
+        [ statElement "far fa-clock" (String.fromFloat user.balance) "h"
         , text "|"
-        , statElement "far fa-chart-bar" user.utilizationRate "%"
+        , statElement "far fa-chart-bar" (String.fromInt <| round user.utilizationRate) "%"
         , text "|"
-        , statElement "far fa-sun" user.holidaysLeft "days"
+        , statElement "far fa-sun" (String.fromFloat user.holidaysLeft) "days"
         ]
 
 
