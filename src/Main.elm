@@ -899,7 +899,7 @@ weekEdit model ewk =
             Ui.roundButton False bkgColor txtColor msg label
 
         dayButtons =
-            row [ paddingXY 25 15, spacing 10 ] (List.map dayButton [Mon, Tue, Wed, Thu, Fri]  )
+            row [ paddingXY 25 15, spacing 10 ] (List.map dayButton [Mon, Tue, Wed, Thu, Fri, Sat, Sun]  )
     in    
     column
         [ width fill 
