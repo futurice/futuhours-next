@@ -34,6 +34,10 @@ app.use('/api', proxy(API_URL, {
 }));
 
 // Static resources
+app.get('/service-worker.js', function (req, res) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+    res.sendFile(__dirname + '/build/service-worker.js')
+})
 app.use(express.static(path.join(__dirname + "/build", '/')));
 
 app.listen(PORT, HOST);
