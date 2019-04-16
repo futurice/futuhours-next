@@ -1,14 +1,16 @@
 module Types exposing (..)
 
 import Dict exposing (Dict)
-import EverySet as Set
+import AnySet exposing (AnySet)
+import Set
 import Http
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder, field, float, string, int, bool, list, dict)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Task
 import Time
-import Iso8601 as Date
+import Iso8601 as Iso
+import Date
 
 
 type Msg
@@ -22,6 +24,13 @@ type Msg
     | DeleteEntry Day Identifier
     | CloseDay Day
     | SaveDay Day HoursDay
+    | OpenWeek Week
+    | AddWeekEntry
+    | EditWeek EditingWeek
+    | EditWeekEntry Entry
+    | DeleteWeekEntry Int
+    | SaveWeek
+    | CloseWeek
     | UserResponse (Result Http.Error User)
     | HandleHoursResponse (Result Http.Error HoursResponse)
     | HandleEntryUpdateResponse (Result Http.Error EntryUpdateResponse)
@@ -32,7 +41,20 @@ type Msg
 send : Msg -> Cmd Msg
 send msg =
     Task.succeed msg
-        |> Task.perform identity
+        |> Task.perform identity        
+
+
+type alias Week =
+    { year: Int 
+    , weekNum: Int
+    }
+
+
+type alias EditingWeek =
+    { week : Week
+    , days : AnySet Date.Weekday
+    , entries : List Entry
+    }
 
 
 type alias Identifier =
@@ -49,6 +71,44 @@ type alias NDTd =
 
 type alias Day =
     String
+
+
+dayToWeek : Day -> Week
+dayToWeek d =
+    let
+        date = 
+            Date.fromIsoString d
+
+        weekNum =
+            Result.map Date.weekNumber date
+                |> Result.withDefault 0
+        
+        year =
+            Result.map Date.weekYear date
+                |> Result.withDefault 1970
+    in
+    Week year weekNum
+
+
+getMonthNumber : Day -> Int
+getMonthNumber d =
+    Date.fromIsoString d
+        |> Result.map Date.monthNumber
+        |> Result.withDefault 0
+
+
+getDay : Day -> Int
+getDay d =
+    Date.fromIsoString d
+        |> Result.map Date.day
+        |> Result.withDefault 0
+
+
+dayToMillis : Day -> Int
+dayToMillis d =
+    Iso.toTime d
+        |> Result.map Time.posixToMillis
+        |> Result.withDefault 0
 
 
 type alias Month =
@@ -164,8 +224,8 @@ mergeHoursResponse h1 h2 =
     let
         mergeLists : List (Project a) -> List (Project a) -> List (Project a)
         mergeLists l1 l2 =
-            Set.union (Set.fromList l1) (Set.fromList l2)
-                |> Set.toList
+            AnySet.union (AnySet.fromList l1) (AnySet.fromList l2)
+                |> AnySet.toList
     in
     HoursResponse
         h2.defaultWorkHours
@@ -219,7 +279,26 @@ allEntries hours =
         |> Dict.values
         |> List.concatMap (\m -> m.days |> Dict.values)
         |> List.concatMap .entries
-        |> List.sortBy (\e -> e.day |> Date.toTime |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.sortBy (\e -> dayToMillis e.day)
+
+
+allEntriesAsDict : HoursResponse -> Dict Day (List Entry)
+allEntriesAsDict hours =
+    let
+        blankDict =
+            hours.months
+                |> Dict.values
+                |> List.concatMap (Dict.keys << .days)
+                |> List.foldl (\d dic -> Dict.insert d [] dic) Dict.empty
+
+        insertOrAdd e dic =
+            if Dict.member e.day dic then
+                Dict.update e.day (Maybe.map ((::) e)) dic
+            else
+                Dict.insert e.day [ e ] dic
+    in    
+    allEntries hours
+        |> List.foldl insertOrAdd blankDict
 
 
 latestEntry : HoursResponse -> Maybe Entry
@@ -264,10 +343,18 @@ allDays hours =
         |> List.concatMap Dict.keys
 
 
+allDaysAsDict : HoursResponse -> Dict Day HoursDay
+allDaysAsDict hours =
+    hours.months
+        |> Dict.values
+        |> List.map .days
+        |> List.foldl Dict.union Dict.empty
+
+
 latestDay : HoursResponse -> Maybe Day
 latestDay hours =
     allDays hours
-        |> List.sortBy (\d -> Date.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.sortBy dayToMillis
         |> List.reverse
         |> List.head
 
@@ -275,7 +362,7 @@ latestDay hours =
 oldestDay : HoursResponse -> Maybe Day
 oldestDay hours =
     allDays hours
-        |> List.sortBy (\d -> Date.toTime d |> Result.map Time.posixToMillis |> Result.withDefault 0)
+        |> List.sortBy dayToMillis
         |> List.head
 
 

@@ -1,8 +1,10 @@
 module Main exposing (main)
 
 import Api exposing (..)
+import AssocList
 import Browser
 import Browser.Events
+import Date
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Background as Background
@@ -10,12 +12,14 @@ import Element.Border as Border
 import Element.Events as Event
 import Element.Font as Font
 import Element.Input as Input
+import AnySet exposing (AnySet)
 import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Http
-import Iso8601 as Date
+import Iso8601 as Iso
+import Model exposing (Flags, Model, isMobile)
 import Task
-import Time
+import Time exposing (Weekday(..))
 import Time.Extra as TE
 import Types as T exposing (Msg(..))
 import Ui exposing (colors)
@@ -30,81 +34,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Browser.Events.onResize WindowResize ]
-
-
-
----- MODEL ----
-
-
-type alias Flags =
-    { now : Int
-    , width : Int
-    , height : Int
-    }
-
-
-type alias Window =
-    { width : Int
-    , height : Int
-    , device : Device
-    }
-
-
-isMobile : Window -> Bool
-isMobile win =
-    let
-        device =
-            win.device
-    in
-    case device.class of
-        Phone ->
-            True
-
-        _ ->
-            False
-
-
-type alias Model =
-    { isMenuOpen : Bool
-    , user : Maybe T.User
-    , hours : Maybe T.HoursResponse
-    , projectNames : Maybe (Dict T.Identifier String)
-    , taskNames : Maybe (Dict T.Identifier String)
-    , hasError : Maybe String
-    , today : Time.Posix
-    , window : Window
-    , editingHours : Dict T.Day T.HoursDay
-    , saveQueue : List (Cmd Msg)
-    }
-
-
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    let
-        today =
-            Time.millisToPosix flags.now
-
-        thirtyDaysAgo =
-            flags.now
-                |> Time.millisToPosix
-                |> TE.add TE.Day -30 Time.utc
-    in
-    ( { isMenuOpen = False
-      , user = Nothing
-      , hours = Nothing
-      , projectNames = Nothing
-      , taskNames = Nothing
-      , hasError = Nothing
-      , today = today
-      , window = { width = flags.width, height = flags.height, device = classifyDevice flags }
-      , editingHours = Dict.empty
-      , saveQueue = []
-      }
-    , Cmd.batch
-        [ fetchUser
-        , fetchHours thirtyDaysAgo today
-        ]
-    )
 
 
 
@@ -130,7 +59,7 @@ update msg model =
                         latestDate =
                             model.hours
                                 |> Maybe.andThen T.latestDay
-                                |> Maybe.andThen (Date.toTime >> Result.toMaybe)
+                                |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
                                 |> Maybe.withDefault model.today
 
                         nextThirtyDays =
@@ -145,7 +74,7 @@ update msg model =
                         oldestDate =
                             model.hours
                                 |> Maybe.andThen T.oldestDay
-                                |> Maybe.andThen (Date.toTime >> Result.toMaybe)
+                                |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
                                 |> Maybe.withDefault model.today
 
                         oldestMinus30 =
@@ -270,6 +199,81 @@ update msg model =
                             , s
                             )
 
+                OpenWeek wk -> 
+                    let
+                        days = AnySet.fromList [Mon, Tue, Wed, Thu, Fri]
+
+                        latest =
+                            Maybe.andThen T.latestEditableEntry model.hours
+                                |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New })
+                                |> Maybe.map List.singleton
+                                |> Maybe.withDefault []
+                    in                                   
+                    ( { model | editingWeek = Just <| T.EditingWeek wk days latest }, Cmd.none )
+
+                EditWeek ewk ->
+                    ( { model | editingWeek = Just ewk }, Cmd.none )
+
+                AddWeekEntry ->
+                    let
+                        latest =
+                            Maybe.andThen T.latestEditableEntry model.hours                                
+
+                        newEntry = 
+                            model.editingWeek
+                                |> Maybe.map .entries
+                                |> Maybe.map List.reverse
+                                |> Maybe.andThen List.head
+                                |> (\e -> Util.maybeOr e latest)
+                                |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New })
+                                |> Maybe.map List.singleton
+                                |> Maybe.withDefault []
+
+                        newWeek =
+                            model.editingWeek
+                                |> Maybe.map (\ewk -> { ewk | entries = ewk.entries ++ newEntry })
+                    in
+                        ( { model | editingWeek = newWeek }, Cmd.none )
+
+                EditWeekEntry entry ->
+                    let
+                        newEntries =
+                            model.editingWeek
+                                |> Maybe.map .entries
+                                |> Maybe.withDefault []
+                                |> List.map (\e -> if e.id == entry.id then entry else e)
+
+                        newWeek =
+                            model.editingWeek
+                                |> Maybe.map (\ewk -> { ewk | entries = newEntries })
+                    in
+                        ( { model | editingWeek = newWeek }, Cmd.none )
+                        
+                DeleteWeekEntry id ->
+                    let
+                        newEntries =
+                            model.editingWeek
+                                |> Maybe.map .entries
+                                |> Maybe.withDefault []    
+                                |> List.filter (\e -> e.id /= id)
+
+                        newWeek =
+                            model.editingWeek
+                                |> Maybe.map (\ewk -> { ewk | entries = newEntries })
+                    in
+                        ( { model | editingWeek = newWeek }, Cmd.none )
+
+                SaveWeek ->
+                    case model.editingWeek of
+                        Nothing ->
+                            ( { model | hasError = Just "Edting week is empty" }, Cmd.none )
+                    
+                        Just ewk ->
+                            ( { model | editingWeek = Nothing }, Cmd.batch (updateWeek ewk) )
+
+                CloseWeek ->
+                    ( { model | editingWeek = Nothing }, Cmd.none )
+
                 UserResponse result ->
                     case result of
                         Ok user ->
@@ -294,6 +298,7 @@ update msg model =
                                 | hours = Just newHours
                                 , projectNames = Just <| T.hoursToProjectDict newHours
                                 , taskNames = Just <| T.hoursToTaskDict newHours
+                                , allDays = T.allDaysAsDict newHours
                               }
                             , Cmd.none
                             )
@@ -308,8 +313,12 @@ update msg model =
                                 newHours =
                                     model.hours
                                         |> Maybe.map (T.mergeHoursResponse resp.hours)
+
+                                newDays =
+                                    Maybe.map T.allDaysAsDict newHours
+                                        |> Maybe.withDefault Dict.empty
                             in
-                            ( { model | hours = newHours, user = Just resp.user }, Cmd.none )
+                            ( { model | hours = newHours, user = Just resp.user, allDays = newDays }, Cmd.none )
 
                         Err err ->
                             ( { model | hasError = Just <| Util.httpErrToString err }, Cmd.none )
@@ -563,8 +572,17 @@ entryColumn model entries =
         (List.map (entryRow model) entries)
 
 
-editEntry : Model -> T.Day -> T.Entry -> Element Msg
-editEntry model day entry =
+type alias EntryHandlers =
+    { hours : Float -> Msg
+    , project : Int -> Msg 
+    , task : Int -> Msg 
+    , desc : String -> Msg 
+    , delete : Msg
+    }
+
+
+editEntry : Model -> T.Entry -> EntryHandlers -> Element Msg
+editEntry model entry handlers =
     let
         latestEntry =
             Maybe.andThen T.latestEditableEntry model.hours
@@ -610,12 +628,6 @@ editEntry model day entry =
             else
                 reportableTaskNames
 
-        updateProject i =
-            EditEntry day { entry | projectId = i }
-
-        updateTask i =
-            EditEntry day { entry | taskId = i }
-
         latestProjectId =
             if disabled then
                 entry.projectId
@@ -631,16 +643,34 @@ editEntry model day entry =
                 latestEntry.taskId
 
         minusButton =
-            Ui.roundButton disabled colors.white colors.black (DeleteEntry day entry.id) "-"
+            Ui.roundButton disabled colors.white colors.black handlers.delete (text "-")
     in
-    (if isMobile model.window then column else row)
+    (if isMobile model.window then
+        column
+
+     else
+        row
+    )
         [ width fill
         , spacing 10
         ]
-        [ if isMobile model.window then el [ alignRight ] minusButton else none
-        , el [ width (if isMobile model.window then fill else px 75) ] (Ui.numberDropdown disabled entry)
-        , Ui.dropdown disabled updateProject latestProjectId entry.projectId projectNames
-        , Ui.dropdown disabled updateTask latestTaskId entry.taskId taskNames
+        [ if isMobile model.window then
+            el [ alignRight ] minusButton
+
+          else
+            none
+        , el
+            [ width
+                (if isMobile model.window then
+                    fill
+
+                 else
+                    px 75
+                )
+            ]
+            (Ui.numberDropdown disabled handlers.hours entry)
+        , Ui.dropdown disabled handlers.project latestProjectId entry.projectId projectNames
+        , Ui.dropdown disabled handlers.task latestTaskId entry.taskId taskNames
         , Input.text
             [ Border.width 1
             , Border.rounded 5
@@ -655,14 +685,33 @@ editEntry model day entry =
             , padding 10
             , htmlAttribute <| HA.disabled disabled
             ]
-            { onChange = \t -> EditEntry day { entry | description = t }
+            { onChange = handlers.desc
             , text = entry.description
             , placeholder = Nothing
             , label = Input.labelHidden "description"
             }
-        , if isMobile model.window then none else minusButton
-        , if isMobile model.window then html <| Html.hr [ HA.style "width" "100%" ] [] else none
+        , if isMobile model.window then
+            none
+
+          else
+            minusButton
+        , if isMobile model.window then
+            html <| Html.hr [ HA.style "width" "100%" ] []
+
+          else
+            none
         ]
+
+
+editEntryForDay : Model -> T.Day -> T.Entry -> Element Msg
+editEntryForDay model day entry =
+    editEntry model entry
+        { hours = \val -> EditEntry entry.day { entry | hours = val }
+        , project = \i -> EditEntry day { entry | projectId = i }
+        , task = \i -> EditEntry day { entry | taskId = i }
+        , desc = \t -> EditEntry day { entry | description = t }
+        , delete = DeleteEntry day entry.id
+        }
 
 
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
@@ -679,7 +728,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ]
-                [ Ui.roundButton False colors.white colors.black (AddEntry day) "+"
+                [ Ui.roundButton False colors.white colors.black (AddEntry day) (text "+")
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ scButton
@@ -720,7 +769,7 @@ dayEdit model day hoursDay =
             , padding 30
             , spacing 20
             ]
-            (List.map (editEntry model day) filteredEntries ++ [ editingControls ])
+            (List.map (editEntryForDay model day) filteredEntries ++ [ editingControls ])
         ]
 
 
@@ -755,7 +804,7 @@ dayRow model day hoursDay =
                 colors.topBarBackground
                 colors.white
                 (OpenDay day hoursDay)
-                "+"
+                (text "+")
     in
     case Dict.get day model.editingHours of
         Just hd ->
@@ -825,22 +874,171 @@ monthHeader model month hoursMonth =
         ]
 
 
-monthColumn : Model -> T.Month -> T.HoursMonth -> Element Msg
-monthColumn model month hoursMonth =
+editEntryForWeek : Model -> T.Entry -> Element Msg
+editEntryForWeek model entry =
+    editEntry model entry
+        { hours = \hrs -> EditWeekEntry { entry | hours = hrs }
+        , project = \id -> EditWeekEntry { entry | projectId = id }
+        , task = \id -> EditWeekEntry { entry | taskId = id }
+        , desc = \desc -> EditWeekEntry { entry | description = desc }
+        , delete = DeleteWeekEntry entry.id
+        }
+
+
+weekEdit : Model -> T.EditingWeek -> Element Msg
+weekEdit model ewk =
+    let
+        dayButton day =
+            let
+                isOn = AnySet.member day ewk.days
+                bkgColor = if isOn then colors.darkText else colors.bodyBackground
+                txtColor = if isOn then colors.white else colors.black
+                msg = EditWeek <| { ewk | days = AnySet.toggle day ewk.days }
+                label = el [ Font.size 12 ] <| text <| Util.toEnglishWeekday day
+            in            
+            Ui.roundButton False bkgColor txtColor msg label
+
+        dayButtons =
+            row [ paddingXY 25 15, spacing 10 ] (List.map dayButton [Mon, Tue, Wed, Thu, Fri, Sat, Sun]  )
+    in    
+    column
+        [ width fill 
+        , Background.color colors.white
+        , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
+        ]
+        [ row 
+            [ width fill
+            , Background.color colors.topBarBackground
+            , Font.color colors.white
+            , Font.size 16
+            , paddingXY 20 15
+            ]
+            [ el [ alignLeft, centerY ] (text <| (++) "Week " <| String.fromInt <| .weekNum ewk.week) 
+            , row 
+                [ alignRight, centerY, spacing 10 ]
+                [ Ui.scButton
+                    [ Background.color colors.holidayGray
+                    , Font.color colors.black 
+                    ]
+                    CloseWeek
+                    "Cancel"
+                , Ui.scButton
+                    [ Background.color colors.white
+                    , Font.color colors.black 
+                    ]
+                    SaveWeek
+                    "Apply"
+                ]
+            ]
+        , dayButtons
+        , column [ width fill, paddingXY 25 0, spacing 15 ] <| List.map (editEntryForWeek model) ewk.entries
+        , row 
+            [ width fill, padding 25, spacing 15, Font.size 16 ] 
+            [ Ui.roundButton False colors.white colors.black AddWeekEntry (text "+")
+            , text "Add row" 
+            ]
+        ]
+
+
+weekHeader : Model -> T.Week -> Element Msg
+weekHeader model wk =
     let
         days =
-            hoursMonth.days
+            model.allDays
                 |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
+                |> List.sortBy (\( k, _ ) -> T.dayToMillis k)
                 |> List.reverse
+
+        daysForWeek =
+            days
+                |> List.filter (\( d, _ ) -> wk == T.dayToWeek d)
+                |> List.map Tuple.second
+
+        weekDisplay =
+            row 
+                [ width fill, paddingXY 20 0, spacing 15 ]
+                [ el [] (text <| "Week " ++ String.fromInt wk.weekNum)
+                , Input.button [ Font.underline, Font.size 14 ] { onPress = Just <| OpenWeek wk, label = text "Add a whole week" }
+                , row [ alignRight ]
+                    [ text <| String.fromFloat <| List.foldl (+) 0 <| List.map .hours daysForWeek
+                    , text " h"
+                    ]
+                ]
     in
-    column
-        [ width fill
-        , spacing 15
-        ]
-        ([ monthHeader model month hoursMonth ]
-            ++ List.map (\( d, hd ) -> dayRow model d hd) days
-        )
+    case model.editingWeek of
+        Just ewk ->
+            if ewk.week == wk then weekEdit model ewk else weekDisplay
+    
+        Nothing ->
+            weekDisplay
+
+
+dayElements : Model -> List (Element Msg)
+dayElements model =
+    let
+        makeElem ( d, hd ) =
+            { month = T.getMonthNumber d, week = T.dayToWeek d, day = d, elem = dayRow model d hd }
+
+        getHoursMonth e =
+            model.hours
+                |> Maybe.map .months
+                |> Maybe.withDefault Dict.empty
+                |> Dict.get (String.left 7 e.day)
+                |> Maybe.withDefault { hours = 0, capacity = 0, utilizationRate = 0.0, days = Dict.empty }
+
+        mkMonthHeader e =
+            monthHeader model (String.left 7 e.day) (getHoursMonth e)
+
+        isLastDay e =
+            getHoursMonth e
+                |> .days
+                |> Dict.keys
+                |> List.sortBy T.dayToMillis
+                |> List.reverse
+                |> List.head
+                |> Maybe.map ((==) e.day)
+                |> Maybe.withDefault False
+    in
+    model.allDays
+        |> Dict.toList
+        |> List.sortBy (\( d, _ ) -> T.dayToMillis d)
+        |> List.reverse
+        |> List.map makeElem
+        |> List.map (\e -> ( e.week, e ))
+        |> List.foldl
+            (\( w, el ) dict ->
+                if AssocList.member w dict then
+                    AssocList.update w (Maybe.map ((++) [ el ])) dict
+
+                else
+                    AssocList.insert w [ el ] dict
+            )
+            AssocList.empty
+        |> AssocList.toList
+        |> List.sortBy (.weekNum << Tuple.first)
+        |> List.reverse
+        |> List.map (\( wk, ds ) -> ( wk, ds |> List.sortBy (\d -> T.dayToMillis d.day) |> List.reverse ))
+        |> List.concatMap
+            (\( wk, ds ) ->
+                let
+                    markMonth d =
+                        if isLastDay d then
+                            [ mkMonthHeader d, d.elem ]
+
+                        else
+                            [ d.elem ]
+                in
+                case ds of
+                    [] ->
+                        []
+
+                    x :: xs ->
+                        if isLastDay x then
+                            mkMonthHeader x :: weekHeader model wk :: List.map .elem (x :: xs)
+
+                        else
+                            weekHeader model wk :: List.concatMap markMonth (x :: xs)
+            )
 
 
 hoursList : Model -> Element Msg
@@ -851,7 +1049,7 @@ hoursList model =
                 |> Maybe.map .months
                 |> Maybe.withDefault Dict.empty
                 |> Dict.toList
-                |> List.sortBy (\( k, _ ) -> Time.posixToMillis <| Result.withDefault (Time.millisToPosix 0) <| Date.toTime k)
+                |> List.sortBy (\( k, _ ) -> T.dayToMillis k)
                 |> List.reverse
 
         loadMoreButton msg =
@@ -868,8 +1066,15 @@ hoursList model =
     el [ scrollbarY, width fill, height fill ] <|
         column
             [ centerX
-            , width (if isMobile model.window then fill else fill |> maximum 900)
+            , width
+                (if isMobile model.window then
+                    fill
+
+                 else
+                    fill |> maximum 900
+                )
             , height fill
+            , spacing 15
             , if isMobile model.window then
                 paddingXY 0 0
 
@@ -882,7 +1087,7 @@ hoursList model =
 
                 _ ->
                     loadMoreButton LoadMoreNext
-                        :: List.map (\( m, hm ) -> monthColumn model m hm) months
+                        :: dayElements model
                         ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
             )
 
@@ -966,7 +1171,7 @@ main : Program Flags Model Msg
 main =
     Browser.element
         { view = view
-        , init = init
+        , init = Model.init
         , update = update
         , subscriptions = subscriptions
         }
