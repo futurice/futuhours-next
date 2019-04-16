@@ -1,18 +1,20 @@
-module Api exposing (..)
+module Api exposing (deleteEntry, fetchHours, fetchUser, postNewEntry, putEntryUpdate, rootUrl, updateHoursDay, updateWeek)
 
-import Http
-import Types as T exposing (Msg(..))
-import Time
-import Iso8601 as Iso
-import Date
 import AnySet
+import Date
+import Http
+import Iso8601 as Iso
+import Time
+import Types as T exposing (Msg(..))
+
 
 
 ---- API ----
 
 
 rootUrl : String
-rootUrl = "/api/v1"
+rootUrl =
+    "/api/v1"
 
 
 fetchUser : Cmd Msg
@@ -98,15 +100,18 @@ updateWeek ewk =
     let
         markEntriesByDay day =
             let
-                year = .year ewk.week
-                week = .weekNum ewk.week
-            in            
+                year =
+                    .year ewk.week
+
+                week =
+                    .weekNum ewk.week
+            in
             ewk.entries
                 |> List.map (\e -> { e | day = Date.fromWeekDate year week day |> Date.toIsoString })
 
         entries =
             ewk.days
-                |> AnySet.toList 
+                |> AnySet.toList
                 |> List.concatMap markEntriesByDay
     in
     List.map postNewEntry entries

@@ -1,10 +1,14 @@
-module AnySet exposing (..)
+module AnySet exposing (AnySet, empty, fromList, insert, member, remove, toList, toggle, union)
 
 import AssocList as AL
+
+
 
 -- A simple wrapper for AssocList's Dicts to create a Set with any type
 -- Normal Set requires the values to be `comparable`, which prevents using it with custom types
 -- This AnySet can be used with any type given
+
+
 type alias AnySet a =
     AL.Dict a ()
 
@@ -33,12 +37,13 @@ toggle : a -> AnySet a -> AnySet a
 toggle a set =
     if member a set then
         remove a set
-    else 
+
+    else
         insert a set
 
 
 union : AnySet a -> AnySet a -> AnySet a
-union xs ys = 
+union xs ys =
     AL.union xs ys
 
 
