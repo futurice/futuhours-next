@@ -19,9 +19,9 @@ import Http
 import Iso8601 as Iso
 import Model exposing (Flags, Model, isMobile)
 import Task
-import Time
+import Time exposing (Weekday(..))
 import Time.Extra as TE
-import Types as T exposing (Msg(..), Workday(..))
+import Types as T exposing (Msg(..))
 import Ui exposing (colors)
 import Util
 
@@ -886,7 +886,7 @@ weekEdit model ewk =
                 bkgColor = if isOn then colors.darkText else colors.bodyBackground
                 txtColor = if isOn then colors.white else colors.black
                 msg = EditWeek <| { ewk | days = AnySet.toggle day ewk.days }
-                label = el [ Font.size 12 ] <| text <| T.workdayToString day
+                label = el [ Font.size 12 ] <| text <| Util.toEnglishWeekday day
             in            
             Ui.roundButton False bkgColor txtColor msg label
 

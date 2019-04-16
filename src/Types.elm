@@ -29,6 +29,7 @@ type Msg
     | EditWeek EditingWeek
     | EditWeekEntry Entry
     | DeleteWeekEntry Int
+    | SaveWeek
     | CloseWeek
     | UserResponse (Result Http.Error User)
     | HandleHoursResponse (Result Http.Error HoursResponse)
@@ -40,25 +41,7 @@ type Msg
 send : Msg -> Cmd Msg
 send msg =
     Task.succeed msg
-        |> Task.perform identity
-
-
-type Workday
-    = Mon
-    | Tue
-    | Wed
-    | Thu
-    | Fri
-
-
-workdayToString : Workday -> String
-workdayToString wd =
-    case wd of
-        Mon -> "Mon"
-        Tue -> "Tue"
-        Wed -> "Wed"
-        Thu -> "Thu"
-        Fri -> "Fri"
+        |> Task.perform identity        
 
 
 type alias Week =
@@ -69,7 +52,7 @@ type alias Week =
 
 type alias EditingWeek =
     { week : Week
-    , days : AnySet Workday
+    , days : AnySet Date.Weekday
     , entries : List Entry
     }
 
