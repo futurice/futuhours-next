@@ -1,4 +1,4 @@
-module Types exposing (Day, DayType(..), EditingWeek, Entry, EntryAge(..), EntryType(..), EntryUpdate, EntryUpdateResponse, HoursDay, HoursMonth, HoursResponse, Identifier, Login, MarkableTask, Month, Msg(..), NDTd, NDTh, Project, ReportableTask, User, Week, allDays, allDaysAsDict, allEntries, allEntriesAsDict, dayToMillis, dayToWeek, dayTypeDecoder, emptyUser, entryDecoder, entryEditable, entryToJsonBody, entryToUpdate, entryTypeDecoder, entryUpdateEncoder, entryUpdateResponseDecoder, getDay, getMonthNumber, hoursDayDecoder, hoursMonthDecoder, hoursResponseDecoder, hoursToProjectDict, hoursToTaskDict, isEntryDeleted, latestDay, latestEditableEntry, latestEntry, markDeletedEntry, markableTaskDecoder, mergeHoursResponse, oldestDay, oldestEntry, projectDecoder, reportableTaskDecoder, send, userDecoder)
+module Types exposing (..)
 
 import AnySet exposing (AnySet)
 import Date
@@ -334,6 +334,13 @@ latestEditableEntry hours =
         |> List.filter entryEditable
         |> List.reverse
         |> List.head
+
+
+latestEditableEntries : HoursResponse -> List Entry
+latestEditableEntries hours =
+    allEntries hours
+        |> List.filter entryEditable
+        |> List.reverse
 
 
 oldestEntry : HoursResponse -> Maybe Entry

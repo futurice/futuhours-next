@@ -8,6 +8,7 @@ import Element.Input as Input
 import Html
 import Html.Attributes as HA
 import Model exposing (Model, isMobile)
+import Set
 import Types as T exposing (Msg(..))
 import Ui exposing (colors)
 
@@ -24,9 +25,9 @@ type alias EntryHandlers =
 editEntry : Model -> T.Entry -> EntryHandlers -> Element Msg
 editEntry model entry handlers =
     let
-        latestEntry =
-            Maybe.andThen T.latestEditableEntry model.hours
-                |> Maybe.withDefault entry
+        latestEntries =
+            Maybe.map T.latestEditableEntries model.hours
+                |> Maybe.withDefault [entry]
 
         reportableProjects =
             model.hours
@@ -68,19 +69,27 @@ editEntry model entry handlers =
             else
                 reportableTaskNames
 
-        latestProjectId =
+        latestProjects =
             if disabled then
-                entry.projectId
+                [entry.projectId]
 
             else
-                latestEntry.projectId
+                List.map .projectId latestEntries
+                    |> List.filter (\id -> Dict.member id projectNames)
+                    |> Set.fromList
+                    |> Set.toList
+                    |> List.take 3
 
-        latestTaskId =
+        latestTasks =
             if disabled then
-                entry.taskId
+                [entry.taskId]
 
             else
-                latestEntry.taskId
+                List.map .taskId latestEntries
+                    |> List.filter (\id -> Dict.member id taskNames)
+                    |> Set.fromList
+                    |> Set.toList
+                    |> List.take 3
 
         minusButton =
             Ui.roundButton disabled True colors.white colors.black handlers.delete (text "-")
@@ -109,8 +118,8 @@ editEntry model entry handlers =
                 )
             ]
             (Ui.numberDropdown disabled handlers.hours entry)
-        , Ui.dropdown disabled handlers.project latestProjectId entry.projectId projectNames
-        , Ui.dropdown disabled handlers.task latestTaskId entry.taskId taskNames
+        , Ui.dropdown disabled handlers.project latestProjects entry.projectId projectNames
+        , Ui.dropdown disabled handlers.task latestTasks entry.taskId taskNames
         , Input.text
             [ Border.width 1
             , Border.rounded 5

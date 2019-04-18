@@ -80,7 +80,7 @@ roundButton disabled hasBorder bkgColor txtColor msg label =
         }
 
 
-dropdown : Bool -> (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
+dropdown : Bool -> (Int -> Msg) -> List T.Identifier -> T.Identifier -> Dict T.Identifier String -> Element Msg
 dropdown disabled handler latest value options =
     row
         [ width fill
@@ -88,7 +88,7 @@ dropdown disabled handler latest value options =
         [ html <| dropdownRaw disabled handler latest value options ]
 
 
-dropdownRaw : Bool -> (Int -> Msg) -> T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
+dropdownRaw : Bool -> (Int -> Msg) -> List T.Identifier -> T.Identifier -> Dict T.Identifier String -> Html Msg
 dropdownRaw disabled handler latest value options =
     Html.select
         [ HA.class "dropdown"
@@ -96,8 +96,8 @@ dropdownRaw disabled handler latest value options =
         , HA.disabled disabled
         ]
         [ Html.optgroup [ HA.attribute "label" "Most Recent" ]
-            [ Html.option [ HA.value <| String.fromInt latest ] [ Html.text <| Maybe.withDefault "" <| Dict.get latest options ]
-            ]
+            (List.map (\id -> Html.option [ HA.value <| String.fromInt id ] [ Html.text <| Maybe.withDefault "" <| Dict.get id options ])
+                <| latest)
         , Html.optgroup [ HA.attribute "label" "All" ]
             (Dict.map (\id name -> Html.option [ HA.value <| String.fromInt id, HA.selected (id == value) ] [ Html.text name ]) options
                 |> Dict.values
