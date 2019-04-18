@@ -41,7 +41,7 @@ entryRow model entry =
 
         textElem t =
             el
-                [ width (px 180)
+                [ width fill
                 ]
                 (html <| Html.div [ HA.class "truncate" ] [ Html.text t ])
     in
