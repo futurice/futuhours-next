@@ -116,6 +116,10 @@ dayEdit model day hoursDay =
         filteredEntries =
             hoursDay.entries
                 |> List.filter (not << T.isEntryDeleted)
+
+        hours =
+            List.map .hours filteredEntries
+                |> List.foldl (+) 0
     in
     column
         [ width fill
@@ -132,7 +136,7 @@ dayEdit model day hoursDay =
             , pointer
             ]
             [ el [ alignLeft, centerY ] (text <| Util.formatDate day)
-            , el [ alignRight, centerY ] (text <| String.fromFloat hoursDay.hours ++ " h")
+            , el [ alignRight, centerY ] (text <| String.fromFloat hours ++ " h")
             ]
         , column
             [ width fill
