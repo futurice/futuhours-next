@@ -13,6 +13,8 @@ Currently in Beta and deployed at [betahours](https://betahours.app.futurice.com
 - [Futuswarm](https://github.com/futurice/futuswarm) (for deploying)
   - Futurice employees only use [Appswarm](https://futuswarm-mainpage.app.futurice.com/)
 
+You will also need a running backend API server on the same host at port 8000, for which you will need to set up [haskell-mega-repo](https://github.com/futurice/haskell-mega-repo). The backend server code is in [hours-api](https://github.com/futurice/haskell-mega-repo/tree/master/hours-api). For development, it is sufficient to get as far as being able to run `cabal new-run hours-mock-server`.
+
 **Development**
 
 To start the development environment, do:
