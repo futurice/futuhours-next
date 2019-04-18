@@ -99,8 +99,9 @@ dropdownRaw disabled handler latest value options =
             (List.map (\id -> Html.option [ HA.value <| String.fromInt id ] [ Html.text <| Maybe.withDefault "" <| Dict.get id options ])
                 <| latest)
         , Html.optgroup [ HA.attribute "label" "All" ]
-            (Dict.map (\id name -> Html.option [ HA.value <| String.fromInt id, HA.selected (id == value) ] [ Html.text name ]) options
-                |> Dict.values
+            (Dict.toList options
+                |> List.sortBy Tuple.second
+                |> List.map (\( id, name ) -> Html.option [ HA.value <| String.fromInt id, HA.selected (id == value) ] [ Html.text name ])
             )
         ]
 
