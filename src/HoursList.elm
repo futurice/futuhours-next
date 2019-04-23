@@ -244,7 +244,7 @@ monthHeader model month hoursMonth =
                     , text <| String.fromFloat hoursMonth.capacity
                     ]
                 , el [] (Ui.faIcon "far fa-chart-bar")
-                , paragraph [] [ text <| String.fromFloat hoursMonth.utilizationRate, text "%" ]
+                , paragraph [] [ text <| String.fromInt <| round hoursMonth.utilizationRate, text "%" ]
                 ]
             )
         ]
