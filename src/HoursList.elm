@@ -60,7 +60,7 @@ entryRow model entry =
         [ el [ width (px 30), Font.center ] (text <| String.fromFloat entry.hours)
         , textElem projectName
         , displayIfDesk <| textElem taskName
-        , displayIfDesk <| textElem entry.description
+        , displayIfDesk <| textElem <| T.entryDescToString entry.description
         ]
 
 
@@ -80,7 +80,7 @@ editEntryForDay model day entry =
         { hours = \val -> EditEntry entry.day { entry | hours = val }
         , project = \i -> EditEntry day { entry | projectId = i }
         , task = \i -> EditEntry day { entry | taskId = i }
-        , desc = \t -> EditEntry day { entry | description = t }
+        , desc = \t -> EditEntry day { entry | description =  T.Filled t }
         , delete = DeleteEntry day entry.id
         }
 
@@ -257,7 +257,7 @@ editEntryForWeek model entry =
         { hours = \hrs -> EditWeekEntry { entry | hours = hrs }
         , project = \id -> EditWeekEntry { entry | projectId = id }
         , task = \id -> EditWeekEntry { entry | taskId = id }
-        , desc = \desc -> EditWeekEntry { entry | description = desc }
+        , desc = \desc -> EditWeekEntry { entry | description = T.Filled desc }
         , delete = DeleteWeekEntry entry.id
         }
 

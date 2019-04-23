@@ -61,7 +61,7 @@ update msg model =
                     let
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
-                                |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
+                                |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
 
                         addEntryIfEmpty =
                             if List.isEmpty hoursDay.entries then
@@ -94,7 +94,7 @@ update msg model =
 
                         newEntry =
                             Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEditableEntry model.hours)
-                                |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New })
+                                |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton
                                 |> Maybe.withDefault []
 
@@ -200,7 +200,7 @@ update msg model =
                                 |> Maybe.map List.reverse
                                 |> Maybe.andThen List.head
                                 |> (\e -> Util.maybeOr e latest)
-                                |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New })
+                                |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton
                                 |> Maybe.withDefault []
 

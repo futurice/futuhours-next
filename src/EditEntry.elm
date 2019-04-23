@@ -135,8 +135,18 @@ editEntry model entry handlers =
             , htmlAttribute <| HA.disabled disabled
             ]
             { onChange = handlers.desc
-            , text = entry.description
-            , placeholder = Nothing
+            , text = case entry.description of
+                T.Filled str ->
+                    str
+
+                T.Default _ ->
+                    ""
+            , placeholder = case entry.description of
+                T.Default str ->
+                    Just <| Input.placeholder [] (paragraph [ Font.alignLeft ] [ text str ])
+            
+                T.Filled str ->
+                    Nothing
             , label = Input.labelHidden "description"
             }
         , if isMobile model.window then

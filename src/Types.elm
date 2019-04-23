@@ -443,12 +443,37 @@ type EntryAge
     | DeletedNew
 
 
+type EntryDesc
+    = Filled String
+    | Default String
+
+
+entryDescToString : EntryDesc -> String
+entryDescToString desc =
+    case desc of
+        Filled str ->
+            str
+    
+        Default str ->
+            str
+
+
+filledToDefault : EntryDesc -> EntryDesc
+filledToDefault desc =
+    case desc of
+        Filled str ->
+            Default str
+    
+        Default str ->
+            Default str
+
+
 type alias Entry =
     { id : Identifier
     , projectId : Identifier
     , taskId : Identifier
     , day : Day
-    , description : String
+    , description : EntryDesc
     , closed : Bool
     , hours : NDTh
     , billable : EntryType
@@ -463,7 +488,7 @@ entryDecoder =
         |> required "projectId" int
         |> required "taskId" int
         |> required "day" string
-        |> required "description" string
+        |> required "description" (Decode.map Filled string)
         |> required "closed" bool
         |> required "hours" float
         |> required "billable" entryTypeDecoder
@@ -565,7 +590,7 @@ entryToUpdate : Entry -> EntryUpdate
 entryToUpdate e =
     { taskId = e.taskId
     , projectId = e.projectId
-    , description = e.description
+    , description = entryDescToString e.description
     , date = e.day
     , hours = e.hours
     , closed = e.closed
