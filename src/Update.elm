@@ -160,6 +160,24 @@ update msg model =
                     )
 
                 SaveDay day hoursDay ->
+                    let
+                        addHours hours =
+                            { hours
+                                | months =
+                                    hours.months
+                                        |> Dict.map
+                                            (\mo hmo ->
+                                                if mo == String.left 7 day then
+                                                    { hmo | days = Dict.insert day hoursDay hmo.days }
+
+                                                else
+                                                    hmo
+                                            )
+                            }
+
+                        tempHours =
+                            Maybe.map addHours model.hours
+                    in
                     case Api.updateHoursDay hoursDay of
                         [] ->
                             ( { model | hasError = Just "Saved day had no hours entries" }, Cmd.none )
@@ -167,6 +185,7 @@ update msg model =
                         s :: saves ->
                             ( { model
                                 | editingHours = Dict.remove day model.editingHours
+                                , hours = tempHours
                                 , saveQueue = saves
                                 , isLoading = True
                               }
@@ -302,7 +321,11 @@ update msg model =
                                         |> Maybe.withDefault Dict.empty
 
                                 isLoading =
-                                    if List.isEmpty model.saveQueue then False else True
+                                    if List.isEmpty model.saveQueue then
+                                        False
+
+                                    else
+                                        True
                             in
                             ( { model | hours = newHours, user = Just resp.user, allDays = newDays, isLoading = isLoading }, Cmd.none )
 
