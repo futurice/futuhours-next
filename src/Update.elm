@@ -168,6 +168,7 @@ update msg model =
                             ( { model
                                 | editingHours = Dict.remove day model.editingHours
                                 , saveQueue = saves
+                                , isLoading = True
                               }
                             , s
                             )
@@ -250,7 +251,7 @@ update msg model =
                             ( { model | hasError = Just "Edting week is empty" }, Cmd.none )
 
                         Just ewk ->
-                            ( { model | editingWeek = Nothing }, Cmd.batch (Api.updateWeek ewk) )
+                            ( { model | editingWeek = Nothing, isLoading = True }, Cmd.batch (Api.updateWeek ewk) )
 
                 CloseWeek ->
                     ( { model | editingWeek = Nothing }, Cmd.none )
@@ -280,6 +281,7 @@ update msg model =
                                 , projectNames = Just <| T.hoursToProjectDict newHours
                                 , taskNames = Just <| T.hoursToTaskDict newHours
                                 , allDays = T.allDaysAsDict newHours
+                                , isLoading = False
                               }
                             , Cmd.none
                             )
@@ -298,8 +300,11 @@ update msg model =
                                 newDays =
                                     Maybe.map T.allDaysAsDict newHours
                                         |> Maybe.withDefault Dict.empty
+
+                                isLoading =
+                                    if List.isEmpty model.saveQueue then False else True
                             in
-                            ( { model | hours = newHours, user = Just resp.user, allDays = newDays }, Cmd.none )
+                            ( { model | hours = newHours, user = Just resp.user, allDays = newDays, isLoading = isLoading }, Cmd.none )
 
                         Err err ->
                             ( { model | hasError = Just <| Util.httpErrToString err }, Cmd.none )

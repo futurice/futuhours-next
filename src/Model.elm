@@ -53,6 +53,7 @@ type alias Model =
     , editingWeek : Maybe T.EditingWeek
     , allDays : Dict T.Day T.HoursDay
     , saveQueue : List (Cmd Msg)
+    , isLoading : Bool
     }
 
 
@@ -79,6 +80,7 @@ init flags =
       , editingWeek = Nothing
       , allDays = Dict.empty
       , saveQueue = []
+      , isLoading = False
       }
     , Cmd.batch
         [ Api.fetchUser

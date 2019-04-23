@@ -38,7 +38,7 @@ mainLayout model =
                     Ui.errorMsg err
 
                 Nothing ->
-                    if List.isEmpty model.saveQueue then
+                    if List.isEmpty model.saveQueue && not model.isLoading then
                         none
 
                     else
