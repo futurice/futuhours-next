@@ -465,7 +465,13 @@ hoursList model =
                 ]
                 { onPress = Just msg, label = text "Load More" }
     in
-    el [ scrollbarY, width fill, height fill ] <|
+    el 
+        [ scrollbarY
+        , width fill
+        , height fill 
+        , htmlAttribute <| HA.style "overflow-y" "scroll"
+        , htmlAttribute <| HA.style "-webkit-overflow-scrolling" "touch"
+        ] <|
         column
             [ centerX
             , width
