@@ -32,12 +32,8 @@ isMobile win =
         device =
             win.device
     in
-    case device.class of
-        Phone ->
-            True
+    device.class == Phone || win.width < 768
 
-        _ ->
-            False
 
 
 type alias Model =
