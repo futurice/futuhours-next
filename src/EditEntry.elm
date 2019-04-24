@@ -143,7 +143,7 @@ editEntry model entry handlers =
                     ""
             , placeholder = case entry.description of
                 T.Default str ->
-                    Just <| Input.placeholder [] (paragraph [ Font.alignLeft ] [ text str ])
+                    Just <| Input.placeholder [] (html <| Html.div [ HA.class "truncate-field" ] [ Html.text str ])
             
                 T.Filled str ->
                     Nothing
