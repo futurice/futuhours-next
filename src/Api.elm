@@ -4,6 +4,8 @@ import AnySet
 import Date
 import Http
 import Iso8601 as Iso
+import Process
+import Task
 import Time
 import Types as T exposing (Msg(..))
 
@@ -75,6 +77,12 @@ deleteEntry e =
         }
 
 
+wait : Cmd Msg
+wait =
+    Process.sleep 200
+        |> Task.perform (\_ -> NoOp)
+
+
 updateHoursDay : T.HoursDay -> List (Cmd Msg)
 updateHoursDay hoursDay =
     let
@@ -93,6 +101,7 @@ updateHoursDay hoursDay =
                     Cmd.none
     in
     List.map whichCmd hoursDay.entries
+        |> List.intersperse wait
 
 
 updateWeek : T.EditingWeek -> List (Cmd Msg)

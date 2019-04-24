@@ -90,6 +90,7 @@ img {
 }
 
 .truncate-field {
+  text-align: left;
   min-width: 0;
   max-width: 200px;
   white-space: nowrap;
