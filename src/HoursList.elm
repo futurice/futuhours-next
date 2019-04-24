@@ -13,8 +13,9 @@ import Element.Input as Input
 import Html
 import Html.Attributes as HA
 import Model exposing (Model, isMobile)
+import Msg exposing (Msg(..))
 import Time exposing (Weekday(..))
-import Types as T exposing (Msg(..))
+import Types as T
 import Ui exposing (colors)
 import Util
 
@@ -80,7 +81,7 @@ editEntryForDay model day entry =
         { hours = \val -> EditEntry entry.day { entry | hours = val }
         , project = \i -> EditEntry day { entry | projectId = i, taskId = getNewDefaultTaskId model i }
         , task = \i -> EditEntry day { entry | taskId = i }
-        , desc = \t -> EditEntry day { entry | description =  T.Filled t }
+        , desc = \t -> EditEntry day { entry | description = T.Filled t }
         , delete = DeleteEntry day entry.id
         }
 

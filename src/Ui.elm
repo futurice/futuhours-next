@@ -12,7 +12,8 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Html.Events.Extra as HEX
 import Json.Decode as Json
-import Types as T exposing (Msg(..))
+import Msg exposing (Msg(..))
+import Types as T
 
 
 colors =
@@ -96,8 +97,9 @@ dropdownRaw disabled handler latest value options =
         , HA.disabled disabled
         ]
         [ Html.optgroup [ HA.attribute "label" "Most Recent" ]
-            (List.map (\id -> Html.option [ HA.value <| String.fromInt id ] [ Html.text <| Maybe.withDefault "" <| Dict.get id options ])
-                <| latest)
+            (List.map (\id -> Html.option [ HA.value <| String.fromInt id ] [ Html.text <| Maybe.withDefault "" <| Dict.get id options ]) <|
+                latest
+            )
         , Html.optgroup [ HA.attribute "label" "All" ]
             (Dict.toList options
                 |> List.sortBy Tuple.second
