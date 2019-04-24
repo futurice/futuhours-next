@@ -203,7 +203,10 @@ dayRow model day hoursDay =
                     [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
                     , case hoursDay.type_ of
                         T.Holiday name ->
-                            el [ Font.alignLeft, width fill ] (text name)
+                            if hoursDay.hours == 0 then
+                                el [ Font.alignLeft, width fill ] (text name)
+                            else
+                                entryColumn model hoursDay.entries
 
                         _ ->
                             entryColumn model hoursDay.entries
