@@ -1,4 +1,4 @@
-module EditEntry exposing (editEntry)
+module EditEntry exposing (editEntry, getNewDefaultTaskId)
 
 import Dict
 import Element exposing (..)
@@ -11,6 +11,7 @@ import Model exposing (Model, isMobile)
 import Set
 import Types as T exposing (Msg(..))
 import Ui exposing (colors)
+import Util
 
 
 type alias EntryHandlers =
@@ -20,6 +21,29 @@ type alias EntryHandlers =
     , desc : String -> Msg
     , delete : Msg
     }
+
+
+getNewDefaultTaskId : Model -> T.Identifier -> T.Identifier
+getNewDefaultTaskId model projectId =
+    let
+        latestTaskId =
+            Maybe.map T.latestEditableEntries model.hours
+                |> Maybe.withDefault []
+                |> List.filter (\e -> e.projectId == projectId)
+                |> List.map .taskId
+                |> List.head
+
+        defaultTaskId =
+            model.hours
+                |> Maybe.map .reportableProjects
+                |> Maybe.withDefault []
+                |> List.filter (\p -> p.id == projectId)
+                |> List.concatMap .tasks
+                |> List.map .id
+                |> List.head
+    in
+        Util.maybeOr latestTaskId defaultTaskId
+            |> Maybe.withDefault 0
 
 
 editEntry : Model -> T.Entry -> EntryHandlers -> Element Msg

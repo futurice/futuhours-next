@@ -3,7 +3,7 @@ module HoursList exposing (hoursList)
 import AnySet
 import AssocList
 import Dict
-import EditEntry exposing (editEntry)
+import EditEntry exposing (editEntry, getNewDefaultTaskId)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -78,7 +78,7 @@ editEntryForDay model day entry =
     editEntry model
         entry
         { hours = \val -> EditEntry entry.day { entry | hours = val }
-        , project = \i -> EditEntry day { entry | projectId = i }
+        , project = \i -> EditEntry day { entry | projectId = i, taskId = getNewDefaultTaskId model i }
         , task = \i -> EditEntry day { entry | taskId = i }
         , desc = \t -> EditEntry day { entry | description =  T.Filled t }
         , delete = DeleteEntry day entry.id
@@ -255,7 +255,7 @@ editEntryForWeek model entry =
     editEntry model
         entry
         { hours = \hrs -> EditWeekEntry { entry | hours = hrs }
-        , project = \id -> EditWeekEntry { entry | projectId = id }
+        , project = \id -> EditWeekEntry { entry | projectId = id, taskId = getNewDefaultTaskId model id }
         , task = \id -> EditWeekEntry { entry | taskId = id }
         , desc = \desc -> EditWeekEntry { entry | description = T.Filled desc }
         , delete = DeleteWeekEntry entry.id
