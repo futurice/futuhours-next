@@ -17,15 +17,17 @@ import Types as T
 
 
 colors =
-    { topBarBackground = rgb255 0 54 67
+    { topBarBackground = rgb255 32 10 116
     , bodyBackground = rgb255 227 236 236
-    , darkText = rgb255 133 178 190
+    , darkText = rgb255 205 237 253
     , white = rgb 1 1 1
     , gray = rgb255 96 96 96
     , lightGray = rgb 0.75 0.75 0.75
-    , holidayGray = rgb255 205 219 220
-    , holidayYellow = rgb255 254 254 230
+    , holidayGray = rgb255 217 217 217
+    , holidayYellow = rgb255 255 205 115
     , black = rgb 0 0 0
+    , save = rgb255 0 159 119
+    , cancel = rgb255 217 217 217
     }
 
 

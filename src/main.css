@@ -84,6 +84,7 @@ img {
 
 .truncate-field {
   text-align: left;
+  padding-top: 2px;
   min-width: 0;
   max-width: 200px;
   white-space: nowrap;
