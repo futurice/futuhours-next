@@ -89,11 +89,6 @@ editEntryForDay model day entry =
 dayEdit : Model -> T.Day -> T.HoursDay -> Element Msg
 dayEdit model day hoursDay =
     let
-        scButton attrs msg label =
-            Input.button
-                ([ Font.size 14, width (px 100), height (px 40), Border.rounded 5 ] ++ attrs)
-                { onPress = Just msg, label = text label }
-
         editingControls =
             row
                 [ width fill
@@ -103,12 +98,12 @@ dayEdit model day hoursDay =
                 [ Ui.roundButton False True colors.white colors.black (AddEntry day) (text "+")
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
-                    [ scButton
-                        [ Background.color colors.holidayGray ]
+                    [ Ui.scButton
+                        [ Background.color colors.cancel ]
                         (CloseDay day)
                         "Cancel"
-                    , scButton
-                        [ Background.color colors.topBarBackground, Font.color colors.white ]
+                    , Ui.scButton
+                        [ Background.color colors.save, Font.color colors.white ]
                         (SaveDay day hoursDay)
                         "Save"
                     ]
@@ -276,7 +271,7 @@ weekEdit model ewk =
 
                 bkgColor =
                     if isOn then
-                        colors.darkText
+                        colors.save
 
                     else
                         colors.bodyBackground
@@ -315,14 +310,14 @@ weekEdit model ewk =
             , row
                 [ alignRight, centerY, spacing 10 ]
                 [ Ui.scButton
-                    [ Background.color colors.holidayGray
+                    [ Background.color colors.cancel
                     , Font.color colors.black
                     ]
                     CloseWeek
                     "Cancel"
                 , Ui.scButton
-                    [ Background.color colors.white
-                    , Font.color colors.black
+                    [ Background.color colors.save
+                    , Font.color colors.white
                     ]
                     SaveWeek
                     "Apply"

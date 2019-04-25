@@ -60,8 +60,8 @@ mainLayout model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Font.family [ Font.typeface "Work Sans" ]
-        , Font.light
+        [ Font.family [ Font.typeface "FuturiceSans" ]
+        , Font.extraLight
         ]
         (mainLayout model)
 
