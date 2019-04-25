@@ -58,29 +58,6 @@ img {
   font-weight: 300;
 }
 
-.number-dropdown {
-  appearance: none;
-  background: none;
-  border: 0px solid black;
-  border-radius: 5px 5px 5px 5px;
-  font-family: 'Work Sans';
-  font-size: 16px;
-  font-weight: lighter;
-  width: 100%;
-  background-image: url('/angle-down-solid.svg'), linear-gradient(#ffffff, #ffffff);
-  background-size: 14px;
-  background-repeat: no-repeat;
-  background-position: right 0px center;
-}
-
-.number-dropdown:disabled {
-  border-color: rgb(191, 191, 191);
-}
-
-.number-dropdown option {
-  font-weight: 300;
-}
-
 .truncate {
   min-width: 0;
   max-width: 180px;
