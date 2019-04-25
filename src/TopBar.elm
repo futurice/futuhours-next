@@ -7,7 +7,8 @@ import Element.Events as Event
 import Element.Font as Font
 import Html.Attributes exposing (style)
 import Model exposing (Model, isMobile)
-import Types as T exposing (Msg(..))
+import Msg exposing (Msg(..))
+import Types as T
 import Ui exposing (colors)
 
 

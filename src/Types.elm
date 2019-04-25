@@ -13,37 +13,6 @@ import Task
 import Time
 
 
-type Msg
-    = NoOp
-    | CloseError
-    | LoadMoreNext
-    | LoadMorePrevious
-    | OpenDay Day HoursDay
-    | AddEntry Day
-    | EditEntry Day Entry
-    | DeleteEntry Day Identifier
-    | CloseDay Day
-    | SaveDay Day HoursDay
-    | OpenWeek Week
-    | AddWeekEntry
-    | EditWeek EditingWeek
-    | EditWeekEntry Entry
-    | DeleteWeekEntry Int
-    | SaveWeek
-    | CloseWeek
-    | UserResponse (Result Http.Error User)
-    | HandleHoursResponse (Result Http.Error HoursResponse)
-    | HandleEntryUpdateResponse (Result Http.Error EntryUpdateResponse)
-    | WindowResize Int Int
-    | ToggleMenu
-
-
-send : Msg -> Cmd Msg
-send msg =
-    Task.succeed msg
-        |> Task.perform identity
-
-
 type alias Week =
     { year : Int
     , weekNum : Int
@@ -220,26 +189,26 @@ hoursResponseDecoder =
 
 
 mergeHoursResponse : HoursResponse -> HoursResponse -> HoursResponse
-mergeHoursResponse h1 h2 =
+mergeHoursResponse newHours oldHours =
     let
         mergeLists : List (Project a) -> List (Project a) -> List (Project a)
-        mergeLists l1 l2 =
-            AnySet.union (AnySet.fromList l1) (AnySet.fromList l2)
+        mergeLists new old =
+            AnySet.union (AnySet.fromList new) (AnySet.fromList old)
                 |> AnySet.toList
     in
     HoursResponse
-        h2.defaultWorkHours
-        (mergeLists h1.reportableProjects h2.reportableProjects)
-        (mergeLists h1.markedProjects h2.markedProjects)
+        newHours.defaultWorkHours
+        (mergeLists newHours.reportableProjects oldHours.reportableProjects)
+        (mergeLists newHours.markedProjects oldHours.markedProjects)
         (Dict.merge
             Dict.insert
             (\key a b ->
                 Dict.insert key
-                    { b | days = Dict.union a.days b.days }
+                    { a | days = Dict.union a.days b.days }
             )
             Dict.insert
-            h1.months
-            h2.months
+            newHours.months
+            oldHours.months
             Dict.empty
         )
 

@@ -7,9 +7,10 @@ import Dict
 import Element
 import Iso8601 as Iso
 import Model exposing (Model)
+import Msg exposing (Msg(..))
 import Time exposing (Weekday(..))
 import Time.Extra as TE
-import Types as T exposing (Msg(..))
+import Types as T
 import Util
 
 

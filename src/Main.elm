@@ -9,8 +9,9 @@ import HoursList exposing (hoursList)
 import Html exposing (Html)
 import Html.Attributes as HA exposing (class, style)
 import Model exposing (Flags, Model, isMobile)
+import Msg exposing (Msg(..))
 import TopBar exposing (topBar)
-import Types as T exposing (Msg(..))
+import Types as T
 import Ui exposing (colors)
 import Update exposing (update)
 

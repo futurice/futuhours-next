@@ -8,8 +8,9 @@ import Element.Input as Input
 import Html
 import Html.Attributes as HA
 import Model exposing (Model, isMobile)
+import Msg exposing (Msg(..))
 import Set
-import Types as T exposing (Msg(..))
+import Types as T
 import Ui exposing (colors)
 import Util
 
@@ -42,8 +43,8 @@ getNewDefaultTaskId model projectId =
                 |> List.map .id
                 |> List.head
     in
-        Util.maybeOr latestTaskId defaultTaskId
-            |> Maybe.withDefault 0
+    Util.maybeOr latestTaskId defaultTaskId
+        |> Maybe.withDefault 0
 
 
 editEntry : Model -> T.Entry -> EntryHandlers -> Element Msg
@@ -51,7 +52,7 @@ editEntry model entry handlers =
     let
         latestEntries =
             Maybe.map T.latestEditableEntries model.hours
-                |> Maybe.withDefault [entry]
+                |> Maybe.withDefault [ entry ]
 
         reportableProjects =
             model.hours
@@ -95,7 +96,7 @@ editEntry model entry handlers =
 
         latestProjects =
             if disabled then
-                [entry.projectId]
+                [ entry.projectId ]
 
             else
                 List.map .projectId latestEntries
@@ -106,7 +107,7 @@ editEntry model entry handlers =
 
         latestTasks =
             if disabled then
-                [entry.taskId]
+                [ entry.taskId ]
 
             else
                 List.map .taskId latestEntries
@@ -159,18 +160,20 @@ editEntry model entry handlers =
             , htmlAttribute <| HA.disabled disabled
             ]
             { onChange = handlers.desc
-            , text = case entry.description of
-                T.Filled str ->
-                    str
+            , text =
+                case entry.description of
+                    T.Filled str ->
+                        str
 
-                T.Default _ ->
-                    ""
-            , placeholder = case entry.description of
-                T.Default str ->
-                    Just <| Input.placeholder [] (html <| Html.div [ HA.class "truncate-field" ] [ Html.text str ])
-            
-                T.Filled str ->
-                    Nothing
+                    T.Default _ ->
+                        ""
+            , placeholder =
+                case entry.description of
+                    T.Default str ->
+                        Just <| Input.placeholder [] (html <| Html.div [ HA.class "truncate-field" ] [ Html.text str ])
+
+                    T.Filled str ->
+                        Nothing
             , label = Input.labelHidden "description"
             }
         , if isMobile model.window then

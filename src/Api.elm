@@ -7,7 +7,8 @@ import Iso8601 as Iso
 import Process
 import Task
 import Time
-import Types as T exposing (Msg(..))
+import Types as T
+import Msg exposing (Msg(..))
 
 
 

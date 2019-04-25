@@ -3,9 +3,10 @@ module Model exposing (Flags, Model, Window, init, isMobile)
 import Api
 import Dict exposing (Dict)
 import Element exposing (Device, DeviceClass(..))
+import Msg exposing (Msg)
 import Time
 import Time.Extra as TE
-import Types as T exposing (Msg)
+import Types as T
 
 
 
@@ -33,7 +34,6 @@ isMobile win =
             win.device
     in
     device.class == Phone || win.width < 768
-
 
 
 type alias Model =
