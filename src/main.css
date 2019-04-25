@@ -9,6 +9,22 @@
   height: inherit;
 }
 
+@font-face {
+  font-family: FuturiceSans;
+  src: url('/FuturiceRegular.otf');
+}
+
+@font-face {
+  font-family: FuturiceSans;
+  font-weight: bold;
+  src: url('/FuturiceBold.otf');
+}
+
+@font-face {
+  font-family: FuturiceMono;
+  src: url('/FuturiceMono.otf');
+}
+
 body {
   font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
@@ -36,7 +52,7 @@ img {
   border-radius: 5px 5px 5px 5px;
   padding: 10px;
   padding-right: 32px;
-  font-family: 'Work Sans';
+  font-family: 'FuturiceSans';
   font-size: 16px;
   font-weight: lighter;
   width: 100%;
