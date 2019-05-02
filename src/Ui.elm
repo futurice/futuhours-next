@@ -60,7 +60,7 @@ roundButton disabled hasBorder bkgColor txtColor msg label =
              else
                 txtColor
             )
-        , Font.size 30
+        , Font.size 16
         , Font.extraLight
         , width <| px 35
         , height <| px 35

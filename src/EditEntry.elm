@@ -117,7 +117,7 @@ editEntry model entry handlers =
                     |> List.take 3
 
         minusButton =
-            Ui.roundButton disabled True colors.white colors.black handlers.delete (text "-")
+            Ui.roundButton disabled True colors.white colors.black handlers.delete (Ui.faIcon "fa fa-minus")
     in
     (if isMobile model.window then
         column

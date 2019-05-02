@@ -95,7 +95,7 @@ dayEdit model day hoursDay =
                 , spacing 15
                 , Font.size 16
                 ]
-                [ Ui.roundButton False True colors.white colors.black (AddEntry day) (text "+")
+                [ Ui.roundButton False True colors.white colors.black (AddEntry day) (Ui.faIcon "fa fa-plus")
                 , text "Add row"
                 , row [ alignRight, spacing 10 ]
                     [ Ui.scButton
@@ -176,7 +176,7 @@ dayRow model day hoursDay =
                 colors.topBarBackground
                 colors.white
                 (OpenDay day hoursDay)
-                (text "+")
+                (Ui.faIcon "fa fa-plus")
     in
     case Dict.get day model.editingHours of
         Just hd ->
@@ -327,7 +327,7 @@ weekEdit model ewk =
         , column [ width fill, paddingXY 25 0, spacing 15 ] <| List.map (editEntryForWeek model) ewk.entries
         , row
             [ width fill, padding 25, spacing 15, Font.size 16 ]
-            [ Ui.roundButton False True colors.white colors.black AddWeekEntry (text "+")
+            [ Ui.roundButton False True colors.white colors.black AddWeekEntry (Ui.faIcon "fa fa-plus")
             , text "Add row"
             ]
         ]
