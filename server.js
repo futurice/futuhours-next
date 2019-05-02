@@ -22,7 +22,6 @@ app.use('/api', proxy(API_URL, {
         return updatedPath + (queryString ? '?' + queryString : '');
     },
     proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
-        console.log(`Proxy request to: ${proxyReqOpts.path}`);
         proxyReqOpts.headers['X-Forwarded-Proto'] = srcReq.protocol;
         proxyReqOpts.headers['X-Real-IP'] = srcReq.ip;
         return proxyReqOpts;
