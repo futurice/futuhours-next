@@ -206,21 +206,29 @@ dayRow model day hoursDay =
                 , pointer
                 ]
                 [ row [ paddingXY 5 10, width fill ]
-                    [ el 
+                    [ el
                         [ Font.alignLeft
-                        , alignTop, width (px 100)
-                        , if isToday then Font.bold else Font.medium
-                        , Font.color (if List.isEmpty hoursDay.entries && hoursDay.type_ == T.Normal then 
-                                colors.warningRed 
-                            else 
+                        , alignTop
+                        , width (px 100)
+                        , if isToday then
+                            Font.bold
+
+                          else
+                            Font.medium
+                        , Font.color
+                            (if List.isEmpty hoursDay.entries && hoursDay.type_ == T.Normal then
+                                colors.warningRed
+
+                             else
                                 colors.black
                             )
-                        ] 
+                        ]
                         (text (Util.formatDate day))
                     , case hoursDay.type_ of
                         T.Holiday name ->
                             if hoursDay.hours == 0 then
                                 el [ Font.alignLeft, width fill ] (text name)
+
                             else
                                 entryColumn model hoursDay.entries
 
@@ -483,13 +491,14 @@ hoursList model =
                 ]
                 { onPress = Just msg, label = text "Load More" }
     in
-    el 
+    el
         [ scrollbarY
         , width fill
-        , height fill 
+        , height fill
         , htmlAttribute <| HA.style "overflow-y" "scroll"
         , htmlAttribute <| HA.style "-webkit-overflow-scrolling" "touch"
-        ] <|
+        ]
+    <|
         column
             [ centerX
             , width
