@@ -15,7 +15,6 @@ const app = express();
 // API proxy
 app.use('/api', proxy(API_URL, {
     proxyReqPathResolver: function(req) {
-        console.log(`Proxy request from: ${req.url}`);
         var parts = req.url.split('?');
         var queryString = parts[1];
         var updatedPath = parts[0].replace(/v1/, 'api/v1');
@@ -33,6 +32,10 @@ app.use('/api', proxy(API_URL, {
 }));
 
 // Static resources
+app.get('/service-worker.js', function (req, res) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+    res.sendFile(__dirname + '/build/service-worker.js')
+})
 app.use(express.static(path.join(__dirname + "/build", '/')));
 
 app.listen(PORT, HOST);
