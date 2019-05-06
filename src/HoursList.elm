@@ -206,9 +206,15 @@ dayRow model day hoursDay =
                                 el [ Font.alignLeft, width fill ] (text name)
                             else
                                 entryColumn model hoursDay.entries
+                        
+                        T.Weekend ->
+                            entryColumn model hoursDay.entries
 
                         _ ->
-                            entryColumn model hoursDay.entries
+                            if List.isEmpty hoursDay.entries then
+                                el [ Font.color colors.warningRed ] (text " Entries missing")
+                            else
+                                entryColumn model hoursDay.entries
                     , if hoursDay.hours == 0 then
                         Element.none
 
