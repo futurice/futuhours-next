@@ -25,6 +25,7 @@ colors =
     , lightGray = rgb 0.75 0.75 0.75
     , holidayGray = rgb255 217 217 217
     , holidayYellow = rgb255 255 205 115
+    , warningRed = rgb255 255 70 90
     , black = rgb 0 0 0
     , save = rgb255 0 159 119
     , cancel = rgb255 217 217 217
