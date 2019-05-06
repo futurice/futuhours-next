@@ -209,7 +209,13 @@ dayRow model day hoursDay =
                     [ el 
                         [ Font.alignLeft
                         , alignTop, width (px 100)
-                        , if isToday then Font.bold else Font.medium 
+                        , if isToday then Font.bold else Font.medium
+                        , Font.color (case hoursDay.type_ of
+                            T.Normal ->
+                                if List.isEmpty hoursDay.entries then colors.warningRed else colors.black
+                            _ ->
+                                colors.black
+                        )
                         ] 
                         (text (Util.formatDate day))
                     , case hoursDay.type_ of
@@ -218,15 +224,9 @@ dayRow model day hoursDay =
                                 el [ Font.alignLeft, width fill ] (text name)
                             else
                                 entryColumn model hoursDay.entries
-                        
-                        T.Weekend ->
-                            entryColumn model hoursDay.entries
 
                         _ ->
-                            if List.isEmpty hoursDay.entries then
-                                el [ Font.color colors.warningRed ] (text " Entries missing")
-                            else
-                                entryColumn model hoursDay.entries
+                            entryColumn model hoursDay.entries
                     , if hoursDay.hours == 0 then
                         Element.none
 
