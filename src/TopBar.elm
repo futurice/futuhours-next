@@ -5,7 +5,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Event
 import Element.Font as Font
-import Html.Attributes exposing (style)
+import Html.Attributes as HA exposing (style)
 import Model exposing (Model, isMobile)
 import Msg exposing (Msg(..))
 import Types as T
@@ -18,8 +18,10 @@ statGroup model =
         user =
             Maybe.withDefault T.emptyUser model.user
 
-        statElement icon value label =
-            row [ spacing 10 ]
+        statElement icon value label tooltip =
+            row [ spacing 10
+                , htmlAttribute <| HA.title tooltip
+                ]
                 [ el [] (Ui.faIcon icon)
                 , text value
                 , text label
@@ -50,11 +52,11 @@ statGroup model =
          else
             deskOptions
         )
-        [ statElement "far fa-clock" (String.fromFloat user.balance) "h"
+        [ statElement "far fa-clock" (String.fromFloat user.balance) "h" "Hour balance"
         , text "|"
-        , statElement "far fa-chart-bar" (String.fromInt <| round user.utilizationRate) "%"
+        , statElement "far fa-chart-bar" (String.fromInt <| round user.utilizationRate) "%" "Utilization rate for last 30 days"
         , text "|"
-        , statElement "far fa-sun" (String.fromFloat user.holidaysLeft) "days"
+        , statElement "far fa-sun" (String.fromFloat user.holidaysLeft) "days" "Holidays left"
         ]
 
 
