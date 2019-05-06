@@ -120,6 +120,7 @@ dayEdit model day hoursDay =
     column
         [ width fill
         , Font.extraLight
+        , Border.rounded 5
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         ]
         [ row
@@ -128,6 +129,7 @@ dayEdit model day hoursDay =
             , Font.color colors.white
             , Font.size 16
             , paddingXY 20 25
+            , Border.roundEach { topLeft = 5, topRight = 5, bottomLeft = 0, bottomRight = 0 }
             , Event.onClick <| CloseDay day
             , pointer
             ]
@@ -137,6 +139,7 @@ dayEdit model day hoursDay =
         , column
             [ width fill
             , Background.color colors.white
+            , Border.roundEach { topLeft = 0, topRight = 0, bottomLeft = 5, bottomRight = 5 }
             , padding 30
             , spacing 20
             ]
@@ -189,6 +192,7 @@ dayRow model day hoursDay =
                 , spaceEvenly
                 , Font.size 16
                 , Font.color colors.gray
+                , Border.rounded 5
                 , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
                 , Background.color backgroundColor
                 , Event.onClick <| OpenDay day hoursDay
@@ -297,11 +301,13 @@ weekEdit model ewk =
     column
         [ width fill
         , Background.color colors.white
+        , Border.rounded 5
         , Border.shadow { offset = ( 2, 2 ), size = 1, blur = 3, color = colors.lightGray }
         ]
         [ row
             [ width fill
             , Background.color colors.topBarBackground
+            , Border.roundEach { topLeft = 5, topRight = 5, bottomLeft = 0, bottomRight = 0 }
             , Font.color colors.white
             , Font.size 16
             , paddingXY 20 15
