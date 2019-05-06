@@ -210,12 +210,11 @@ dayRow model day hoursDay =
                         [ Font.alignLeft
                         , alignTop, width (px 100)
                         , if isToday then Font.bold else Font.medium
-                        , Font.color (case hoursDay.type_ of
-                            T.Normal ->
-                                if List.isEmpty hoursDay.entries then colors.warningRed else colors.black
-                            _ ->
+                        , Font.color (if List.isEmpty hoursDay.entries && hoursDay.type_ == T.Normal then 
+                                colors.warningRed 
+                            else 
                                 colors.black
-                        )
+                            )
                         ] 
                         (text (Util.formatDate day))
                     , case hoursDay.type_ of
