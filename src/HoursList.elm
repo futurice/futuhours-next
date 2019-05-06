@@ -2,6 +2,7 @@ module HoursList exposing (hoursList)
 
 import AnySet
 import AssocList
+import Date
 import Dict
 import EditEntry exposing (editEntry, getNewDefaultTaskId)
 import Element exposing (..)
@@ -161,6 +162,12 @@ dayRow model day hoursDay =
                 T.Weekend ->
                     colors.holidayGray
 
+        isToday =
+            Date.fromIsoString day
+                |> Result.map (\d -> Date.compare d <| Date.fromPosix Time.utc model.today)
+                |> Result.map ((==) EQ)
+                |> Result.withDefault False
+
         hoursElem =
             el [ alignTop, alignRight, Font.medium ] (text <| String.fromFloat hoursDay.hours)
 
@@ -199,7 +206,12 @@ dayRow model day hoursDay =
                 , pointer
                 ]
                 [ row [ paddingXY 5 10, width fill ]
-                    [ el [ Font.alignLeft, alignTop, width (px 100) ] (text (Util.formatDate day))
+                    [ el 
+                        [ Font.alignLeft
+                        , alignTop, width (px 100)
+                        , if isToday then Font.bold else Font.medium 
+                        ] 
+                        (text (Util.formatDate day))
                     , case hoursDay.type_ of
                         T.Holiday name ->
                             if hoursDay.hours == 0 then
