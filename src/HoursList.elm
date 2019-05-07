@@ -321,7 +321,7 @@ weekEdit model ewk =
             Ui.roundButton False False bkgColor txtColor msg label
 
         dayButtons =
-            row [ paddingXY 25 15, spacing 10 ]
+            wrappedRow [ paddingXY 25 15, spacing 10 ]
                 (List.map dayButton [ Mon, Tue, Wed, Thu, Fri, Sat, Sun ]
                     ++ [ if hasHolidays then
                             paragraph [ Font.size 16, Font.color colors.warningRed ] 
