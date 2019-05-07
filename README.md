@@ -27,18 +27,19 @@ $ elm-app start
 
 **Deployment**
 
-To deploy:
+To deploy, use the following commands, where `<server-id>` is replaced with either `betahours` for the beta server, or `hours-ui` for production:
 
 ``` 
 $ docker build -t futurice/futuhours-next:$(git log --pretty=format:'%h' -n 1) .
 $ appswarm image:push -i futurice/futuhours-next -t $(git log --pretty=format:'%h' -n 1)
-$ appswarm app:deploy -i futurice/futuhours-next -t $(git log --pretty=format:'%h' -n 1) -n betahours
+$ appswarm app:deploy -i futurice/futuhours-next -t $(git log --pretty=format:'%h' -n 1) -n <server-id>
 ```
 
-Alternately, a simple bash script is provided to save you typing:
+Alternately, simple bash scripts are provided to save you typing:
 
 ```
-./deploy.sh
+./deploy-beta.sh
+./deploy-prod.sh
 ```
 
 
