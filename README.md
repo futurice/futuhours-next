@@ -27,7 +27,7 @@ $ elm-app start
 
 **Deployment**
 
-To deploy, use the following commands, where `<server-id>` is replaced with either `betahours` for the beta server, or `hours-ui` for production:
+To deploy, use the following commands, where `<server-id>` is replaced with either `betahours` for the beta server, or `hours` for production:
 
 ``` 
 $ docker build -t futurice/futuhours-next:$(git log --pretty=format:'%h' -n 1) .
