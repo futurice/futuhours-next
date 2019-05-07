@@ -300,7 +300,7 @@ weekEdit model ewk =
 
                 bkgColor =
                     if isOn then
-                        colors.save
+                        if isHoliday day then colors.holidayYellow else colors.save
 
                     else
                         colors.bodyBackground
@@ -321,7 +321,43 @@ weekEdit model ewk =
             Ui.roundButton False False bkgColor txtColor msg label
 
         dayButtons =
-            row [ paddingXY 25 15, spacing 10 ] (List.map dayButton [ Mon, Tue, Wed, Thu, Fri, Sat, Sun ])
+            row [ paddingXY 25 15, spacing 10 ]
+                (List.map dayButton [ Mon, Tue, Wed, Thu, Fri, Sat, Sun ]
+                    ++ [ if hasHolidays then
+                            paragraph [ Font.size 16, Font.color colors.warningRed ] 
+                                [ Ui.faIcon "fa fa-exclamation-circle", text " Holidays marked!" ]
+
+                         else
+                            none
+                       ]
+                )
+
+        isHoliday day =
+            let
+                year =
+                    .year ewk.week
+
+                week =
+                    .weekNum ewk.week
+
+                date =
+                    Date.fromWeekDate year week day
+                        |> Date.toIsoString
+
+            in
+            Dict.get date model.allDays
+                |> Maybe.map (\d -> case d.type_ of
+                    T.Holiday _ ->
+                        True
+                
+                    _ ->
+                        False)
+                |> Maybe.withDefault False
+
+        hasHolidays =
+            ewk.days
+                |> AnySet.toList
+                |> List.any isHoliday
     in
     column
         [ width fill
