@@ -3,6 +3,7 @@ module Update exposing (update)
 import AnySet
 import Api
 import AssocList
+import Date
 import Dict
 import Element
 import Iso8601 as Iso
@@ -195,8 +196,28 @@ update msg model =
 
                 OpenWeek wk ->
                     let
+                        date day =
+                            Date.fromWeekDate wk.year wk.weekNum day
+                                |> Date.toIsoString
+                                
+                        hasHours day =
+                            Dict.get (date day) model.allDays
+                                |> Maybe.map .entries
+                                |> Maybe.map (not << List.isEmpty)
+                                |> Maybe.withDefault False
+                        
+                        isHoliday day =
+                            Dict.get (date day) model.allDays
+                                |> Maybe.map (\d -> case d.type_ of
+                                    T.Holiday _ ->
+                                        True
+                                
+                                    _ ->
+                                        False)
+                                |> Maybe.withDefault False
+
                         days =
-                            AnySet.fromList [ Mon, Tue, Wed, Thu, Fri ]
+                            AnySet.fromList <| List.filter (\d -> not <| hasHours d || isHoliday d) [ Mon, Tue, Wed, Thu, Fri ]
 
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
