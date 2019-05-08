@@ -294,7 +294,7 @@ entryEditable e =
             False
 
         _ ->
-            True
+            not e.closed
 
 
 latestEditableEntry : HoursResponse -> Maybe Entry

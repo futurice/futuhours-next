@@ -61,10 +61,11 @@ view : Model -> Html Msg
 view model =
     Element.layoutWith
         { options =
-            -- TODO: Check that these get preserved in Windows High-Contrast Mode
             [ Element.focusStyle
                 { borderColor = Nothing
                 , backgroundColor = Nothing
+                -- This shadow will disappear in Windows High-Contrast mode
+                -- We add a transparent outline on .focusable in main.css
                 , shadow =
                     Just
                         { color = colors.focus

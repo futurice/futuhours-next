@@ -107,6 +107,14 @@ img {
   outline-offset: 2px;
 }
 
+/** Ensure that elm-ui .focusable links have an outline in Windows High-Contrast mode.
+  * NOTE: This relies on internals (the class name).
+  * A better fix is a PR to add the outline option to elm-ui's layoutWith.
+*/
+.focusable:focus {
+  outline: solid 3px transparent !important;
+}
+
 /** Enhanced focus style for menu.
   * Pattern: Menu button gets focused -> Something nested gets the focus style
 */
