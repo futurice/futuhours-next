@@ -59,7 +59,22 @@ mainLayout model =
 
 view : Model -> Html Msg
 view model =
-    Element.layout
+    Element.layoutWith
+        { options =
+            -- TODO: Check that these get preserved in Windows High-Contrast Mode
+            [ Element.focusStyle
+                { borderColor = Nothing
+                , backgroundColor = Nothing
+                , shadow =
+                    Just
+                        { color = colors.focus
+                        , offset = ( 0, 0 )
+                        , blur = 0
+                        , size = 3
+                        }
+                }
+            ]
+        }
         [ Font.family [ Font.typeface "FuturiceSans" ]
         , Font.extraLight
         ]

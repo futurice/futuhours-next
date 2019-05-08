@@ -62,6 +62,14 @@ img {
   background-position: right 10px center;
 }
 
+.dropdown:focus {
+  /** "Hide" the outline, but preserve it in Windows High-Contrast mode, where box-shadows are hidden */
+  outline: solid 3px transparent !important;
+
+  /** Focus style that follows borders */
+  box-shadow: 0 0 0 3px rgb(105, 171, 255);
+}
+
 .dropdown:disabled {
   border-color: rgb(191, 191, 191);
 }
@@ -90,4 +98,33 @@ img {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/** Enhanced link focus styles */
+.link:focus {
+  /** elm-ui hides the outlines and wins by source order, so we must use !important here */
+  outline: solid 2px rgb(105, 171, 255) !important;
+  outline-offset: 2px;
+}
+
+/** Enhanced focus style for menu.
+  * Pattern: Menu button gets focused -> Something nested gets the focus style
+*/
+.nested-focus:focus {
+  /** "Hide" the outline, but preserve it in Windows High-Contrast mode, where box-shadows are hidden */
+  outline: solid 3px transparent !important;
+  /** We set a box-shadow via layoutWith, which wins by source order, so we must use !important here */
+  box-shadow: none !important;
+}
+
+.nested-focus:focus .nested-focus-target {
+  box-shadow: 0 0 0 3px rgb(105, 171, 255);
+}
+
+.menu-circle {
+  border-radius: 50%;
+}
+
+.menu-circle > img {
+  border-radius: 50%;
 }

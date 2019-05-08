@@ -20,6 +20,7 @@ colors =
     { topBarBackground = rgb255 32 10 116
     , bodyBackground = rgb255 227 236 236
     , darkText = rgb255 205 237 253
+    , focus = rgb255 105 171 255
     , white = rgb 1 1 1
     , gray = rgb255 96 96 96
     , lightGray = rgb 0.75 0.75 0.75
