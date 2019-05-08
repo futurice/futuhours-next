@@ -25,6 +25,12 @@ To start the development environment, do:
 $ elm-app start
 ```
 
+**Git Workflow**
+
+The repo contains two main branches: `master`, which is the current production version which should be deployed to `hours`, and `develop` which is the current development version and may be deployed to `betahours`. 
+
+Feature branches, fixes, and PRs should be made against `develop`, and releases are handled as a PR from `develop` to `master`, with a corresponding deployment to `hours`.
+
 **Deployment**
 
 To deploy, use the following commands, where `<server-id>` is replaced with either `betahours` for the beta server, or `hours` for production:
