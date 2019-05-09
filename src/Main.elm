@@ -59,7 +59,23 @@ mainLayout model =
 
 view : Model -> Html Msg
 view model =
-    Element.layout
+    Element.layoutWith
+        { options =
+            [ Element.focusStyle
+                { borderColor = Nothing
+                , backgroundColor = Nothing
+                -- This shadow will disappear in Windows High-Contrast mode
+                -- We add a transparent outline on .focusable in main.css
+                , shadow =
+                    Just
+                        { color = colors.focus
+                        , offset = ( 0, 0 )
+                        , blur = 0
+                        , size = 3
+                        }
+                }
+            ]
+        }
         [ Font.family [ Font.typeface "FuturiceSans" ]
         , Font.extraLight
         ]

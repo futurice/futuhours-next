@@ -3,6 +3,7 @@ module Update exposing (update)
 import AnySet
 import Api
 import AssocList
+import Date
 import Dict
 import Element
 import Iso8601 as Iso
@@ -60,19 +61,28 @@ update msg model =
 
                 OpenDay date hoursDay ->
                     let
+                        defaultHours =
+                            model.hours
+                                |> Maybe.map .defaultWorkHours
+                                |> Maybe.withDefault 7.5
+
+                        projects =
+                            model.hours
+                                |> Maybe.map .reportableProjects
+                                |> Maybe.withDefault []
+
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
                                 |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
+                                |> Maybe.withDefault (T.makeEntry date defaultHours projects)
 
                         addEntryIfEmpty =
                             if List.isEmpty hoursDay.entries then
                                 { hoursDay
                                     | entries =
-                                        Maybe.map List.singleton latest
-                                            |> Maybe.withDefault []
+                                        List.singleton latest
                                     , hours =
-                                        Maybe.map .hours latest
-                                            |> Maybe.withDefault 0
+                                        latest.hours
                                 }
 
                             else
@@ -84,6 +94,16 @@ update msg model =
 
                 AddEntry date ->
                     let
+                        defaultHours =
+                            model.hours
+                                |> Maybe.map .defaultWorkHours
+                                |> Maybe.withDefault 7.5
+
+                        projects =
+                            model.hours
+                                |> Maybe.map .reportableProjects
+                                |> Maybe.withDefault []
+                                
                         mostRecentEdit =
                             model.editingHours
                                 |> Dict.get date
@@ -97,7 +117,7 @@ update msg model =
                             Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEditableEntry model.hours)
                                 |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton
-                                |> Maybe.withDefault []
+                                |> Maybe.withDefault [T.makeEntry date defaultHours projects]
 
                         insertNew =
                             model.editingHours
@@ -195,8 +215,28 @@ update msg model =
 
                 OpenWeek wk ->
                     let
+                        date day =
+                            Date.fromWeekDate wk.year wk.weekNum day
+                                |> Date.toIsoString
+                                
+                        hasHours day =
+                            Dict.get (date day) model.allDays
+                                |> Maybe.map .entries
+                                |> Maybe.map (not << List.isEmpty)
+                                |> Maybe.withDefault False
+                        
+                        isHoliday day =
+                            Dict.get (date day) model.allDays
+                                |> Maybe.map (\d -> case d.type_ of
+                                    T.Holiday _ ->
+                                        True
+                                
+                                    _ ->
+                                        False)
+                                |> Maybe.withDefault False
+
                         days =
-                            AnySet.fromList [ Mon, Tue, Wed, Thu, Fri ]
+                            AnySet.fromList <| List.filter (\d -> not <| hasHours d || isHoliday d) [ Mon, Tue, Wed, Thu, Fri ]
 
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours

@@ -292,18 +292,60 @@ editEntryForWeek model entry =
 
 weekEdit : Model -> T.EditingWeek -> Element Msg
 weekEdit model ewk =
-    let
+    let        
+        year =
+            .year ewk.week
+
+        week =
+            .weekNum ewk.week
+
+        date day =
+            Date.fromWeekDate year week day
+                |> Date.toIsoString
+
+        isHoliday day =
+            Dict.get (date day) model.allDays
+                |> Maybe.map (\d -> case d.type_ of
+                    T.Holiday _ ->
+                        True
+                
+                    _ ->
+                        False)
+                |> Maybe.withDefault False
+
+        hasHolidays =
+            ewk.days
+                |> AnySet.toList
+                |> List.any isHoliday
+
+        hasHours day =
+            Dict.get (date day) model.allDays
+                |> Maybe.map .entries
+                |> Maybe.map (not << List.isEmpty)
+                |> Maybe.withDefault False
+
+        hasHoursAny =
+            AnySet.toList ewk.days
+                |> List.any hasHours
+
         dayButton day =
             let
                 isOn =
                     AnySet.member day ewk.days
 
                 bkgColor =
-                    if isOn then
-                        if isHoliday day then colors.holidayYellow else colors.save
+                    case (isOn, isHoliday day, hasHours day) of
+                        (True, _, True) ->
+                            colors.warningRed   
+                    
+                        (True, True, _) ->
+                            colors.holidayYellow
 
-                    else
-                        colors.bodyBackground
+                        (True, _, _) ->
+                            colors.save
+
+                        (False, _, _) ->
+                            colors.bodyBackground
 
                 txtColor =
                     if isOn then
@@ -323,41 +365,17 @@ weekEdit model ewk =
         dayButtons =
             wrappedRow [ paddingXY 25 15, spacing 10 ]
                 (List.map dayButton [ Mon, Tue, Wed, Thu, Fri, Sat, Sun ]
-                    ++ [ if hasHolidays then
+                    ++ [ if hasHolidays || hasHoursAny then
                             paragraph [ Font.size 16, Font.color colors.warningRed ] 
-                                [ Ui.faIcon "fa fa-exclamation-circle", text " Holidays marked!" ]
+                                [ Ui.faIcon "fa fa-exclamation-circle"
+                                , text <| if hasHoursAny then " Marked days already have hours!" else " Holidays marked!" 
+                                ]
 
                          else
                             none
                        ]
                 )
 
-        isHoliday day =
-            let
-                year =
-                    .year ewk.week
-
-                week =
-                    .weekNum ewk.week
-
-                date =
-                    Date.fromWeekDate year week day
-                        |> Date.toIsoString
-
-            in
-            Dict.get date model.allDays
-                |> Maybe.map (\d -> case d.type_ of
-                    T.Holiday _ ->
-                        True
-                
-                    _ ->
-                        False)
-                |> Maybe.withDefault False
-
-        hasHolidays =
-            ewk.days
-                |> AnySet.toList
-                |> List.any isHoliday
     in
     column
         [ width fill
