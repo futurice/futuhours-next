@@ -61,19 +61,28 @@ update msg model =
 
                 OpenDay date hoursDay ->
                     let
+                        defaultHours =
+                            model.hours
+                                |> Maybe.map .defaultWorkHours
+                                |> Maybe.withDefault 7.5
+
+                        projects =
+                            model.hours
+                                |> Maybe.map .reportableProjects
+                                |> Maybe.withDefault []
+
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
                                 |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
+                                |> Maybe.withDefault (T.makeEntry date defaultHours projects)
 
                         addEntryIfEmpty =
                             if List.isEmpty hoursDay.entries then
                                 { hoursDay
                                     | entries =
-                                        Maybe.map List.singleton latest
-                                            |> Maybe.withDefault []
+                                        List.singleton latest
                                     , hours =
-                                        Maybe.map .hours latest
-                                            |> Maybe.withDefault 0
+                                        latest.hours
                                 }
 
                             else
@@ -85,6 +94,16 @@ update msg model =
 
                 AddEntry date ->
                     let
+                        defaultHours =
+                            model.hours
+                                |> Maybe.map .defaultWorkHours
+                                |> Maybe.withDefault 7.5
+
+                        projects =
+                            model.hours
+                                |> Maybe.map .reportableProjects
+                                |> Maybe.withDefault []
+                                
                         mostRecentEdit =
                             model.editingHours
                                 |> Dict.get date
@@ -98,7 +117,7 @@ update msg model =
                             Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEditableEntry model.hours)
                                 |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton
-                                |> Maybe.withDefault []
+                                |> Maybe.withDefault [T.makeEntry date defaultHours projects]
 
                         insertNew =
                             model.editingHours

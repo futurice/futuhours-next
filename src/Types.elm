@@ -464,6 +464,29 @@ entryDecoder =
         |> hardcoded Old
 
 
+makeEntry : Day -> NDTh -> List (Project ReportableTask) -> Entry
+makeEntry date defaultHours projects =
+    let
+        project =
+            List.head projects
+
+        task =
+            project
+                |> Maybe.map .tasks
+                |> Maybe.andThen List.head    
+    in    
+    { id = 0
+    , projectId = Maybe.map .id project |> Maybe.withDefault 0
+    , taskId = Maybe.map .id task |> Maybe.withDefault 0
+    , day = date
+    , description = Default "description here"
+    , closed = False
+    , hours = defaultHours
+    , billable = Billable
+    , age = New
+    }
+
+
 isEntryDeleted : Entry -> Bool
 isEntryDeleted e =
     case e.age of
