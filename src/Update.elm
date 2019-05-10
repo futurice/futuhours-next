@@ -70,6 +70,7 @@ update msg model =
                             model.hours
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
+                                |> List.filter (\rp -> String.contains "Absence" rp.name)
 
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
@@ -103,6 +104,7 @@ update msg model =
                             model.hours
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
+                                |> List.filter (\rp -> String.contains "Absence" rp.name)
                                 
                         mostRecentEdit =
                             model.editingHours
