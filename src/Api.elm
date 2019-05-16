@@ -51,7 +51,7 @@ postNewEntry e =
         , url = rootUrl ++ "/entry"
         , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
         , body = Http.jsonBody <| T.entryToJsonBody e
-        , timeout = Just 1000
+        , timeout = Just 3000
         , tracker = Nothing
         }
 
@@ -64,7 +64,7 @@ putEntryUpdate e =
         , url = rootUrl ++ "/entry/" ++ String.fromInt e.id
         , body = Http.jsonBody <| T.entryToJsonBody e
         , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
-        , timeout = Just 1000
+        , timeout = Just 3000
         , tracker = Nothing
         }
 
@@ -77,7 +77,7 @@ deleteEntry e =
         , url = rootUrl ++ "/entry/" ++ String.fromInt e.id
         , body = Http.emptyBody
         , expect = Http.expectJson HandleEntryUpdateResponse T.entryUpdateResponseDecoder
-        , timeout = Just 1000
+        , timeout = Just 3000
         , tracker = Nothing
         }
 
