@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "The next version of Futuhours",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-http-proxy": "^1.5.1"
   },

@@ -3,6 +3,7 @@
 const express = require('express');
 const proxy = require('express-http-proxy');
 const path = require('path');
+const cors = require('cors');
 
 const PORT = 8000;
 const HOST = '0.0.0.0';
@@ -10,7 +11,15 @@ const HOST = '0.0.0.0';
 const API_URL = process.env.API_HOST;
 console.log(`API proxy set to ${API_URL}`);
 
+const CORS_ORIGIN = API_URL;
+const CORS_OPTIONS = {
+    credentials: true,
+    origin: ['http://localhost:3000', 'https://login.futurice.com', CORS_ORIGIN],
+  };
+
 const app = express();
+
+app.use(cors(CORS_OPTIONS));
 
 // API proxy
 app.use('/api', proxy(API_URL, {
@@ -24,11 +33,6 @@ app.use('/api', proxy(API_URL, {
         proxyReqOpts.headers['X-Forwarded-Proto'] = srcReq.protocol;
         proxyReqOpts.headers['X-Real-IP'] = srcReq.ip;
         return proxyReqOpts;
-    },
-    userResHeaderDecorator: function(proxyRes, proxyResData, userReq, userRes) {
-        proxyRes["access-control-allow-origin"] = userReq.getHeader("Origin");
-        proxyRes["access-control-allow-credentials"] = "true";
-        return proxyRes;
     },
     proxyErrorHandler: function(err, res, next) {
         console.log(`API Proxy encountered error: ${err.code} - ${res}`);
