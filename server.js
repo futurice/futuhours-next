@@ -28,9 +28,6 @@ app.use('/api', proxy(API_URL, {
     userResHeaderDecorator: function(proxyRes, proxyResData, userReq, userRes) {
         proxyRes["access-control-allow-origin"] = userReq.getHeader("Origin");
         proxyRes["access-control-allow-credentials"] = "true";
-        proxyRes["access-control-allow-methods"] = "POST, GET, PUT, DELETE";
-        proxyRes["access-control-max-age"] = "3600"
-        proxyRes["access-control-allow-headers"] = "Content-Type, Accept, X-Requested-With, remember-me";
         return proxyRes;
     },
     proxyErrorHandler: function(err, res, next) {
