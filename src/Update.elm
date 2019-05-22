@@ -104,7 +104,7 @@ update msg model =
                             model.hours
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
-                                |> List.filter (\rp -> String.contains "Absence" rp.name)
+                                |> List.filter (\rp -> not <| String.contains "Absence" rp.name)
                                 
                         mostRecentEdit =
                             model.editingHours
