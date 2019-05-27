@@ -105,7 +105,8 @@ updateHoursDay hoursDay =
                 T.DeletedNew ->
                     Cmd.none
     in
-    List.map whichCmd hoursDay.entries
+    List.filter T.entryEditable hoursDay.entries
+        |> List.map whichCmd 
         |> List.intersperse wait
 
 
