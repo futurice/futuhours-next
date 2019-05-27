@@ -7,6 +7,7 @@ import Date
 import Dict
 import Element
 import Iso8601 as Iso
+import Maybe.Extra as MX
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Time exposing (Weekday(..))
@@ -104,7 +105,7 @@ update msg model =
                             model.hours
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
-                                |> List.filter (\rp -> String.contains "Absence" rp.name)
+                                |> List.filter (\rp -> not <| String.contains "Absence" rp.name)
                                 
                         mostRecentEdit =
                             model.editingHours
@@ -114,6 +115,7 @@ update msg model =
                                 |> Maybe.map (List.sortBy .id)
                                 |> Maybe.map List.reverse
                                 |> Maybe.andThen List.head
+                                |> MX.filter T.entryEditable
 
                         newEntry =
                             Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEditableEntry model.hours)
@@ -261,6 +263,7 @@ update msg model =
                                 |> Maybe.map .entries
                                 |> Maybe.map List.reverse
                                 |> Maybe.andThen List.head
+                                |> MX.filter T.entryEditable
                                 |> (\e -> Util.maybeOr e latest)
                                 |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton
