@@ -88,8 +88,8 @@ wait =
         |> Task.perform (\_ -> NoOp)
 
 
-updateHoursDay : T.HoursDay -> List (Cmd Msg)
-updateHoursDay hoursDay =
+updateHoursDay : Maybe T.HoursResponse -> T.HoursDay -> List (Cmd Msg)
+updateHoursDay hours hoursDay =
     let
         whichCmd e =
             case e.age of
@@ -105,7 +105,7 @@ updateHoursDay hoursDay =
                 T.DeletedNew ->
                     Cmd.none
     in
-    List.filter T.entryEditable hoursDay.entries
+    List.filter (T.entryEditable hours) hoursDay.entries
         |> List.map whichCmd 
         |> List.intersperse wait
 
