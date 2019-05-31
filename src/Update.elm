@@ -115,7 +115,7 @@ update msg model =
                                 |> Maybe.map (List.sortBy .id)
                                 |> Maybe.map List.reverse
                                 |> Maybe.andThen List.head
-                                |> MX.filter T.entryEditable
+                                |> MX.filter (T.entryEditable model.hours)
 
                         newEntry =
                             Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEditableEntry model.hours)
@@ -203,7 +203,7 @@ update msg model =
                         tempHours =
                             Maybe.map addHours model.hours
                     in
-                    case Api.updateHoursDay hoursDay of
+                    case Api.updateHoursDay model.hours hoursDay of
                         [] ->
                             ( { model | hasError = Just "Saved day had no hours entries" }, Cmd.none )
 
@@ -263,7 +263,7 @@ update msg model =
                                 |> Maybe.map .entries
                                 |> Maybe.map List.reverse
                                 |> Maybe.andThen List.head
-                                |> MX.filter T.entryEditable
+                                |> MX.filter (T.entryEditable model.hours)
                                 |> (\e -> Util.maybeOr e latest)
                                 |> Maybe.map (\e -> { e | id = e.id + 1, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton

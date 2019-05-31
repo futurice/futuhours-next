@@ -284,8 +284,8 @@ latestEntry hours =
         |> List.head
 
 
-entryEditable : Entry -> Bool
-entryEditable e =
+entryEditable : Maybe HoursResponse -> Entry -> Bool
+entryEditable hours e =
     case e.billable of
         Absence ->
             False
@@ -294,22 +294,21 @@ entryEditable e =
             False
 
         _ ->
-            True
-
-
-latestEditableEntry : HoursResponse -> Maybe Entry
-latestEditableEntry hours =
-    allEntries hours
-        |> List.filter entryEditable
-        |> List.reverse
-        |> List.head
+            Maybe.map (\h -> List.member e.projectId <| List.map .id h.reportableProjects) hours
+                |> Maybe.withDefault False
 
 
 latestEditableEntries : HoursResponse -> List Entry
 latestEditableEntries hours =
     allEntries hours
-        |> List.filter entryEditable
+        |> List.filter (entryEditable <| Just hours)
         |> List.reverse
+
+
+latestEditableEntry : HoursResponse -> Maybe Entry
+latestEditableEntry hours =
+    latestEditableEntries hours
+        |> List.head
 
 
 oldestEntry : HoursResponse -> Maybe Entry
