@@ -145,7 +145,7 @@ editEntry model entry handlers =
             (Ui.numberDropdown disabled handlers.hours entry)
         , Ui.dropdown disabled handlers.project latestProjects entry.projectId projectNames
         , Ui.dropdown disabled handlers.task latestTasks entry.taskId taskNames
-        , Input.text
+        , Input.multiline
             [ Border.width 1
             , Border.rounded 5
             , Border.color
@@ -157,6 +157,7 @@ editEntry model entry handlers =
                 )
             , Font.size 16
             , padding 10
+            , height <| minimum 44 <| shrink
             , htmlAttribute <| HA.disabled disabled
             ]
             { onChange = handlers.desc
@@ -175,6 +176,7 @@ editEntry model entry handlers =
                     T.Filled str ->
                         Nothing
             , label = Input.labelHidden "description"
+            , spellcheck = True
             }
         , if isMobile model.window then
             none
