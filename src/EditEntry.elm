@@ -127,6 +127,7 @@ editEntry model entry handlers =
     )
         [ width fill
         , spacing 10
+        , htmlAttribute <| HA.class "entry-edit"
         ]
         [ if isMobile model.window then
             el [ alignRight ] minusButton
