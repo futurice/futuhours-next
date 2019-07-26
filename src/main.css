@@ -136,3 +136,7 @@ img {
 .menu-circle > img {
   border-radius: 50%;
 }
+
+.entry-edit {
+  align-items: flex-start !important;
+}
