@@ -157,7 +157,7 @@ editEntry model entry handlers =
                     colors.black
                 )
             , Font.size 16
-            , padding 10
+            , padding 14
             , height <| minimum 44 <| shrink
             , htmlAttribute <| HA.disabled disabled
             ]
