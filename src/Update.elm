@@ -71,7 +71,7 @@ update msg model =
                             model.hours
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
-                                |> List.filter (\rp -> String.contains "Absence" rp.name)
+                                |> List.filter (\rp -> not <| String.contains "Absence" rp.name)
 
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
@@ -336,9 +336,10 @@ update msg model =
                                     case model.hours of
                                         Just oldHours ->
                                             T.mergeHoursResponse oldHours hoursResponse
+                                                |> T.sanitizeHoursResponse
 
                                         Nothing ->
-                                            hoursResponse
+                                            T.sanitizeHoursResponse hoursResponse
                             in
                             ( { model
                                 | hours = Just newHours
@@ -347,7 +348,10 @@ update msg model =
                                 , allDays = T.allDaysAsDict newHours
                                 , isLoading = False
                               }
-                            , Cmd.none
+                            , if List.isEmpty newHours.reportableProjects then 
+                                Msg.send LoadMorePrevious
+                              else 
+                                Cmd.none
                             )
 
                         Err err ->
@@ -360,6 +364,7 @@ update msg model =
                                 newHours =
                                     model.hours
                                         |> Maybe.map (T.mergeHoursResponse resp.hours)
+                                        |> Maybe.map T.sanitizeHoursResponse
 
                                 newDays =
                                     Maybe.map T.allDaysAsDict newHours
