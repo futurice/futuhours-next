@@ -213,6 +213,16 @@ mergeHoursResponse newHours oldHours =
         )
 
 
+sanitizeHoursResponse: HoursResponse -> HoursResponse
+sanitizeHoursResponse hours =
+    let
+        cleanProjects =
+            hours.reportableProjects
+                |> List.filter (not << String.contains "Absence" << .name)
+    in
+        { hours | reportableProjects = cleanProjects }
+
+
 hoursToProjectDict : HoursResponse -> Dict Identifier String
 hoursToProjectDict hours =
     let

@@ -71,7 +71,7 @@ update msg model =
                             model.hours
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
-                                |> List.filter (\rp -> String.contains "Absence" rp.name)
+                                |> List.filter (\rp -> not <| String.contains "Absence" rp.name)
 
                         latest =
                             Maybe.andThen T.latestEditableEntry model.hours
@@ -336,9 +336,10 @@ update msg model =
                                     case model.hours of
                                         Just oldHours ->
                                             T.mergeHoursResponse oldHours hoursResponse
+                                                |> T.sanitizeHoursResponse
 
                                         Nothing ->
-                                            hoursResponse
+                                            T.sanitizeHoursResponse hoursResponse
                             in
                             ( { model
                                 | hours = Just newHours
