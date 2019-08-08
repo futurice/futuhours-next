@@ -106,7 +106,7 @@ update msg model =
                                 |> Maybe.map .reportableProjects
                                 |> Maybe.withDefault []
                                 |> List.filter (\rp -> not <| String.contains "Absence" rp.name)
-                                
+
                         mostRecentEdit =
                             model.editingHours
                                 |> Dict.get date
@@ -120,7 +120,7 @@ update msg model =
                             Util.maybeOr mostRecentEdit (Maybe.andThen T.latestEditableEntry model.hours)
                                 |> Maybe.map (\e -> { e | id = e.id + 1, day = date, age = T.New, description = T.filledToDefault e.description })
                                 |> Maybe.map List.singleton
-                                |> Maybe.withDefault [T.makeEntry date defaultHours projects]
+                                |> Maybe.withDefault [ T.makeEntry date defaultHours projects ]
 
                         insertNew =
                             model.editingHours
@@ -221,21 +221,24 @@ update msg model =
                         date day =
                             Date.fromWeekDate wk.year wk.weekNum day
                                 |> Date.toIsoString
-                                
+
                         hasHours day =
                             Dict.get (date day) model.allDays
                                 |> Maybe.map .entries
                                 |> Maybe.map (not << List.isEmpty)
                                 |> Maybe.withDefault False
-                        
+
                         isHoliday day =
                             Dict.get (date day) model.allDays
-                                |> Maybe.map (\d -> case d.type_ of
-                                    T.Holiday _ ->
-                                        True
-                                
-                                    _ ->
-                                        False)
+                                |> Maybe.map
+                                    (\d ->
+                                        case d.type_ of
+                                            T.Holiday _ ->
+                                                True
+
+                                            _ ->
+                                                False
+                                    )
                                 |> Maybe.withDefault False
 
                         days =
@@ -348,9 +351,23 @@ update msg model =
                                 , allDays = T.allDaysAsDict newHours
                                 , isLoading = False
                               }
-                            , if List.isEmpty newHours.reportableProjects then 
+                            , let
+                                oldestDate =
+                                    model.hours
+                                        |> Maybe.andThen T.oldestDay
+                                        |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
+                                        |> Maybe.withDefault model.today
+
+                                latestDate =
+                                    model.hours
+                                        |> Maybe.andThen T.latestDay
+                                        |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
+                                        |> Maybe.withDefault model.today
+                              in
+                              if List.isEmpty newHours.reportableProjects && TE.diff TE.Day Time.utc latestDate oldestDate < 60 then
                                 Msg.send LoadMorePrevious
-                              else 
+
+                              else
                                 Cmd.none
                             )
 
