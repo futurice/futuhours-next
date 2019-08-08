@@ -59,10 +59,10 @@ init flags =
         today =
             Time.millisToPosix flags.now
 
-        sixtyDaysAgo =
+        thirtyDaysAgo =
             flags.now
                 |> Time.millisToPosix
-                |> TE.add TE.Day -60 Time.utc
+                |> TE.add TE.Day -30 Time.utc
     in
     ( { isMenuOpen = False
       , user = Nothing
@@ -80,6 +80,6 @@ init flags =
       }
     , Cmd.batch
         [ Api.fetchUser
-        , Api.fetchHours sixtyDaysAgo today
+        , Api.fetchHours thirtyDaysAgo today
         ]
     )
