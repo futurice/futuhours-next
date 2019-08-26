@@ -343,28 +343,19 @@ update msg model =
 
                                         Nothing ->
                                             T.sanitizeHoursResponse hoursResponse
+
+                                newDays =
+                                    T.allDaysAsDict newHours
                             in
                             ( { model
                                 | hours = Just newHours
                                 , projectNames = Just <| T.hoursToProjectDict newHours
                                 , taskNames = Just <| T.hoursToTaskDict newHours
-                                , allDays = T.allDaysAsDict newHours
+                                , allDays = newDays
                                 , isLoading = False
                               }
-                            , let
-                                oldestDate =
-                                    model.hours
-                                        |> Maybe.andThen T.oldestDay
-                                        |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
-                                        |> Maybe.withDefault model.today
-
-                                latestDate =
-                                    model.hours
-                                        |> Maybe.andThen T.latestDay
-                                        |> Maybe.andThen (Iso.toTime >> Result.toMaybe)
-                                        |> Maybe.withDefault model.today
-                              in
-                              if List.isEmpty newHours.reportableProjects && TE.diff TE.Day Time.utc latestDate oldestDate < 60 then
+                            , 
+                              if (List.isEmpty newHours.reportableProjects) && (Dict.size newDays < 60) then
                                 Msg.send LoadMorePrevious
 
                               else
