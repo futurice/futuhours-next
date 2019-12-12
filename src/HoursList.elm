@@ -497,7 +497,7 @@ dayElements model =
             )
             AssocList.empty
         |> AssocList.toList
-        |> List.sortBy (.weekNum << Tuple.first)
+        |> List.sortBy ((\w -> ( w.year, w.weekNum )) << Tuple.first)
         |> List.reverse
         |> List.map (\( wk, ds ) -> ( wk, ds |> List.sortBy (\d -> T.dayToMillis d.day) |> List.reverse ))
         |> List.concatMap
