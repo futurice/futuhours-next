@@ -9,6 +9,7 @@ Currently in Beta and deployed at [betahours](https://betahours.app.futurice.com
 
 - npm
 - [create-elm-app](https://github.com/halfzebra/create-elm-app)
+  - version 4.5.0 is confirmed to work
 - Docker (for deploying)
 - [Futuswarm](https://github.com/futurice/futuswarm) (for deploying)
   - Futurice employees only use [Appswarm](https://futuswarm-mainpage.app.futurice.com/)
