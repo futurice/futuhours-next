@@ -17,9 +17,8 @@ import Model exposing (Model, isMobile)
 import Msg exposing (Msg(..))
 import Time exposing (Weekday(..))
 import Types as T
-import Ui exposing (colors)
+import Ui exposing (colors, futucortexPanel)
 import Util
-
 
 entryRow : Model -> T.Entry -> Element Msg
 entryRow model entry =
@@ -51,7 +50,6 @@ entryRow model entry =
         [ spacing
             (if isMobile model.window then
                 10
-
              else
                 50
             )
@@ -522,7 +520,6 @@ dayElements model =
                             weekHeader model wk :: List.concatMap markMonth (x :: xs)
             )
 
-
 hoursList : Model -> Element Msg
 hoursList model =
     let
@@ -546,36 +543,65 @@ hoursList model =
                 { onPress = Just msg, label = text "Load More" }
     in
     el
-        [ scrollbarY
+        [ 
+          scrollbarY
         , width fill
         , height fill
         , htmlAttribute <| HA.style "overflow-y" "scroll"
         , htmlAttribute <| HA.style "-webkit-overflow-scrolling" "touch"
         ]
     <|
-        column
-            [ centerX
-            , width
-                (if isMobile model.window then
-                    fill
+        
+        if isMobile model.window then
+            column
+                    [ centerX
+                    , height fill
+                    , width fill
+                    , spacing 15
+                    , paddingXY 0 0
+                    ]
+                    (case months of
+                        [] ->
+                            [ Ui.waiting ]
 
-                 else
-                    fill |> maximum 900
-                )
-            , height fill
-            , spacing 15
-            , if isMobile model.window then
-                paddingXY 0 0
+                        _ ->
+                            loadMoreButton LoadMoreNext
+                                :: dayElements model
+                                ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
+                    )
+        else 
+            let 
+                futucortexPanelElem = 
+                    if model.showFutucortexPanel then
+                        column
+                        [
+                            alignTop
+                            , width <| fillPortion 2
+                        ][futucortexPanel]
+                    else
+                        none
+            in
+            row[centerX
+                ,spacing 30
+                , width ( fill |> maximum 980)
+                ,paddingXY 50 0
+                ][
+                column
+                    [ centerX
+                    , height fill
+                    , width <| fillPortion 3
+                    , spacing 15
+                    , paddingXY 0 20
+                    ]
+                    (case months of
+                        [] ->
+                            [ Ui.waiting ]
 
-              else
-                paddingXY 0 20
+                        _ ->
+                            loadMoreButton LoadMoreNext
+                                :: dayElements model
+                                ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
+                    ),
+                futucortexPanelElem
             ]
-            (case months of
-                [] ->
-                    [ Ui.waiting ]
-
-                _ ->
-                    loadMoreButton LoadMoreNext
-                        :: dayElements model
-                        ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
-            )
+        

@@ -28,6 +28,7 @@ type Msg
     | HandleEntryUpdateResponse (Result Http.Error EntryUpdateResponse)
     | WindowResize Int Int
     | ToggleMenu
+    | CloseFutucortexPanel
 
 
 send : Msg -> Cmd Msg

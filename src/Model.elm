@@ -50,6 +50,7 @@ type alias Model =
     , allDays : Dict T.Day T.HoursDay
     , saveQueue : List (Cmd Msg)
     , isLoading : Bool
+    , showFutucortexPanel : Bool
     }
 
 
@@ -77,6 +78,7 @@ init flags =
       , allDays = Dict.empty
       , saveQueue = []
       , isLoading = False
+      , showFutucortexPanel = True
       }
     , Cmd.batch
         [ Api.fetchUser
