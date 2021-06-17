@@ -7,7 +7,8 @@ Elm.Main.init({
   flags: { 
     now: Date.now(),
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
+    futucortexIframeUrl: process.env.ELM_APP_FUTUCORTEX_IFRAME_URL
   }
 });
 

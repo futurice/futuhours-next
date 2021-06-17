@@ -17,6 +17,7 @@ type alias Flags =
     { now : Int
     , width : Int
     , height : Int
+    , futucortexIframeUrl: String
     }
 
 
@@ -51,6 +52,7 @@ type alias Model =
     , saveQueue : List (Cmd Msg)
     , isLoading : Bool
     , showFutucortexPanel : Bool
+    , futucortexIframeUrl: String
     }
 
 
@@ -79,6 +81,7 @@ init flags =
       , saveQueue = []
       , isLoading = False
       , showFutucortexPanel = True
+      , futucortexIframeUrl = flags.futucortexIframeUrl
       }
     , Cmd.batch
         [ Api.fetchUser

@@ -17,7 +17,7 @@ import Model exposing (Model, isMobile)
 import Msg exposing (Msg(..))
 import Time exposing (Weekday(..))
 import Types as T
-import Ui exposing (colors, futucortexPanel)
+import Ui exposing (colors, faIcon)
 import Util
 
 entryRow : Model -> T.Entry -> Element Msg
@@ -520,6 +520,40 @@ dayElements model =
                             weekHeader model wk :: List.concatMap markMonth (x :: xs)
             )
 
+
+futucortexPanel : Model -> Element Msg
+futucortexPanel model =
+    let
+        closeButton =
+            el [ Event.onClick CloseFutucortexPanel
+                , paddingEach 
+                        { top = 135
+                        , right = 0
+                        , bottom = 0
+                        , left = 290
+                        } 
+                    ,htmlAttribute <| HA.class "nested-focus"
+                 ] (faIcon "fa fa-times")
+    in
+    column[
+    ]
+        [   
+            closeButton,
+            Element.html (
+                Html.iframe  
+                    [ 
+                        HA.src model.futucortexIframeUrl,
+                        HA.height 340,
+                        HA.alt "Could not display Futurice proposals.",
+                        HA.style "height" "350px",
+                        HA.style "margin-top" "18px",
+                        HA.style "border" "0",
+                        HA.style "box-shadow" "2px 2px 5px rgb(96,96,96)"
+                        ]
+                    []
+                )
+        ]
+
 hoursList : Model -> Element Msg
 hoursList model =
     let
@@ -577,7 +611,7 @@ hoursList model =
                         [
                             alignTop
                             , width <| fillPortion 2
-                        ][futucortexPanel]
+                        ][futucortexPanel model]
                     else
                         none
             in

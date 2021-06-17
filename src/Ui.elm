@@ -1,4 +1,4 @@
-module Ui exposing (colors, dropdown, dropdownRaw, errorMsg, faIcon, numberDropdown, numberDropdownRaw, roundButton, scButton, waiting, futucortexPanel)
+module Ui exposing (colors, dropdown, dropdownRaw, errorMsg, faIcon, numberDropdown, numberDropdownRaw, roundButton, scButton, waiting)
 
 import Dict exposing (Dict)
 import Element exposing (..)
@@ -171,36 +171,3 @@ waiting =
         , Background.color colors.white
         ]
         (text "Waiting ...")
-
-futucortexPanel : Element Msg
-futucortexPanel =
-    let
-        closeButton =
-            el [ Event.onClick CloseFutucortexPanel
-                , paddingEach 
-                        { top = 135
-                        , right = 0
-                        , bottom = 0
-                        , left = 290
-                        } 
-                    ,htmlAttribute <| HA.class "nested-focus"
-                 ] (faIcon "fa fa-times")
-    in
-    column[
-    ]
-        [   
-            closeButton,
-            Element.html (
-                Html.iframe  
-                    [ 
-                        HA.src "http://localhost:3001/embed-futuhours-proposal",
-                        HA.height 340,
-                        HA.alt "Could not display Futurice proposals.",
-                        HA.style "height" "350px",
-                        HA.style "margin-top" "18px",
-                        HA.style "border" "0",
-                        HA.style "box-shadow" "2px 2px 5px rgb(96,96,96)"
-                        ]
-                    []
-                )
-        ]
