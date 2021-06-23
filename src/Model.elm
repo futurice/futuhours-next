@@ -17,6 +17,8 @@ type alias Flags =
     { now : Int
     , width : Int
     , height : Int
+    , futucortexIframeUrl: String
+    , futucortexIframeViewers: List (String)
     }
 
 
@@ -50,6 +52,9 @@ type alias Model =
     , allDays : Dict T.Day T.HoursDay
     , saveQueue : List (Cmd Msg)
     , isLoading : Bool
+    , showFutucortexPanel : Bool
+    , futucortexIframeUrl: String
+    , futucortexIframeViewers: List (String)
     }
 
 
@@ -77,6 +82,9 @@ init flags =
       , allDays = Dict.empty
       , saveQueue = []
       , isLoading = False
+      , showFutucortexPanel = True
+      , futucortexIframeUrl = flags.futucortexIframeUrl
+      , futucortexIframeViewers = flags.futucortexIframeViewers
       }
     , Cmd.batch
         [ Api.fetchUser

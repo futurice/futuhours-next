@@ -27,6 +27,9 @@ update msg model =
                 CloseError ->
                     ( { model | hasError = Nothing }, Cmd.none )
 
+                CloseFutucortexPanel ->
+                    ( { model | showFutucortexPanel = False }, Cmd.none )
+
                 ToggleMenu ->
                     ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
 
