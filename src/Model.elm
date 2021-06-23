@@ -18,6 +18,7 @@ type alias Flags =
     , width : Int
     , height : Int
     , futucortexIframeUrl: String
+    , futucortexIframeViewers: List (String)
     }
 
 
@@ -53,6 +54,7 @@ type alias Model =
     , isLoading : Bool
     , showFutucortexPanel : Bool
     , futucortexIframeUrl: String
+    , futucortexIframeViewers: List (String)
     }
 
 
@@ -82,6 +84,7 @@ init flags =
       , isLoading = False
       , showFutucortexPanel = True
       , futucortexIframeUrl = flags.futucortexIframeUrl
+      , futucortexIframeViewers = flags.futucortexIframeViewers
       }
     , Cmd.batch
         [ Api.fetchUser

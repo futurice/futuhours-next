@@ -523,8 +523,21 @@ dayElements model =
 
 futucortexPanel : Model -> Element Msg
 futucortexPanel model =
-    let
-        closeButton =
+    let 
+        fullName = 
+            case model.user of 
+                Just user ->
+                    String.toLower (String.join "_" [user.firstName, user.lastName])
+                Nothing ->
+                    "noname"  
+    in
+    if model.showFutucortexPanel && (List.member fullName model.futucortexIframeViewers || List.member "all" model.futucortexIframeViewers) then
+        column
+        [
+            alignTop
+            , width <| fillPortion 2
+        ]
+        [
             el [ Event.onClick CloseFutucortexPanel
                 , paddingEach 
                         { top = 135
@@ -533,14 +546,9 @@ futucortexPanel model =
                         , left = 290
                         } 
                     ,htmlAttribute <| HA.class "nested-focus"
-                 ] (faIcon "fa fa-times")
-    in
-    column[
-    ]
-        [   
-            closeButton,
+                ] (faIcon "fa fa-times"),
             Element.html (
-                Html.iframe  
+                Html.iframe
                     [ 
                         HA.src model.futucortexIframeUrl,
                         HA.height 340,
@@ -553,6 +561,9 @@ futucortexPanel model =
                     []
                 )
         ]
+    else
+        none
+    
 
 hoursList : Model -> Element Msg
 hoursList model =
@@ -636,6 +647,6 @@ hoursList model =
                                 :: dayElements model
                                 ++ [ el [ paddingXY 0 20, centerX ] <| loadMoreButton LoadMorePrevious ]
                     ),
-                futucortexPanelElem
+                futucortexPanel model
             ]
         

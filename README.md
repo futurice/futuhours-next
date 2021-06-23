@@ -26,7 +26,6 @@ To start the development environment, do:
 $ elm-app start
 ```
 
-
 **Git Workflow**
 
 The repo contains two main branches: `master`, which is the current production version which should be deployed to `hours`, and `develop` which is the current development version and may be deployed to `betahours`. 
@@ -58,6 +57,12 @@ There are two environment variables needed to run this in a container.
 |--------------|---------------|-------------------------------------------|
 | API_HOST     | http://hours-api.app   | The API url |
 | ELM_APP_FUTUCORTEX_IFRAME_URL         | https://futucortex.play.futurice.com/embed-futurice-proposals              | The URL of Futucortex to render in the iframe|
+| ELM_APP_FUTUCORTEX_IFRAME_VIEWERS | john_doe, all | csv of employee names who can see the Futucortex Iframe panel. If 'all' is present, everyone will be able to see it. |
+
+To start the development environment with the environment variables do this
+```
+ELM_APP_FUTUCORTEX_IFRAME_VIEWERS=all ELM_APP_FUTUCORTEX_IFRAME_URL=https://futucortex.play.futurice.com/embed-futurice-proposals API_HOST=http://hours-api.app elm-app start
+```
 
 **License**
 
