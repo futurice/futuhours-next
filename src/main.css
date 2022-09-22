@@ -11,18 +11,18 @@
 
 @font-face {
   font-family: FuturiceSans;
-  src: url('/FuturiceRegular.otf');
+  src: url('/public/FuturiceRegular.otf');
 }
 
 @font-face {
   font-family: FuturiceSans;
   font-weight: bold;
-  src: url('/FuturiceBold.otf');
+  src: url('/public/FuturiceBold.otf');
 }
 
 @font-face {
   font-family: FuturiceMono;
-  src: url('/FuturiceMono.otf');
+  src: url('/public/FuturiceMono.otf');
 }
 
 body {
@@ -56,7 +56,7 @@ img {
   font-size: 16px;
   font-weight: lighter;
   width: 100%;
-  background-image: url('/angle-down-solid.svg'), linear-gradient(#ffffff, #ffffff);
+  background-image: url('/public/angle-down-solid.svg'), linear-gradient(#ffffff, #ffffff);
   background-size: 16px;
   background-repeat: no-repeat;
   background-position: right 10px center;
