@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "The next version of Futuhours",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "express-http-proxy": "^1.6.0"
   },
   "devDependencies": {
